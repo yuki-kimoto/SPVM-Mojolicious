@@ -5,12 +5,13 @@ class HTTP::Tiny::Daemon {
   version_from HTTP::Tiny;
   
   use IO::Socket::IP;
-  use HTTP::Tiny::Message::Request;
-  use HTTP::Tiny::Message::Response;
   use IO;
   use Re;
   use Sys::Time::Tm;
-  use HTTP::Tiny::Date;
+  
+  use Mojo::Date;
+  use Mojo::Message::Request;
+  use Mojo::Message::Response;
   
   our $CRLF : string;
   
@@ -23,9 +24,9 @@ class HTTP::Tiny::Daemon {
   
   has io_socket : IO::Socket;
   
-  has request : HTTP::Tiny::Message::Request;
+  has request : Mojo::Message::Request;
   
-  has response : ro HTTP::Tiny::Message::Response;
+  has response : ro Mojo::Message::Response;
   
   # Private Fields
   
@@ -62,7 +63,7 @@ class HTTP::Tiny::Daemon {
     return $daemon;
   }
   
-  method send_response : void ($res : HTTP::Tiny::Message::Response) {
+  method send_response : void ($res : Mojo::Message::Response) {
     
     my $io_socket = $self->{io_socket};
     
@@ -100,7 +101,7 @@ class HTTP::Tiny::Daemon {
     my $start_line = $res->build_start_line;
     $io_socket->write($start_line);
     
-    my $http_date = HTTP::Tiny::Date->new;
+    my $http_date = Mojo::Date->new;
     $http_date->set_epoch(Sys->time);
     my $http_date_string = $http_date->to_datetime;
     
@@ -124,7 +125,7 @@ class HTTP::Tiny::Daemon {
     
     my $io_socket = $self->{io_socket};
     
-    my $res = HTTP::Tiny::Message::Response->new;
+    my $res = Mojo::Message::Response->new;
     
     $res->set_code($status);
     
@@ -133,7 +134,7 @@ class HTTP::Tiny::Daemon {
     my $start_line = $res->build_start_line;
     $io_socket->write($start_line);
     
-    my $http_date = HTTP::Tiny::Date->new;
+    my $http_date = Mojo::Date->new;
     $http_date->set_epoch(Sys->time);
     my $http_date_string = $http_date->to_datetime;
     
@@ -170,7 +171,7 @@ $error
     return $http_version_number;
   }
   
-  method get_request : HTTP::Tiny::Message::Request () {
+  method get_request : Mojo::Message::Request () {
     
     my $tmp_buffer = (mutable string)new_string_len 2048;
     
@@ -210,7 +211,7 @@ $error
       }
     }
     
-    my $request = (HTTP::Tiny::Message::Request)undef;
+    my $request = (Mojo::Message::Request)undef;
     if (my $replace_info = Re->s($buf, "^(\S+)[ \t]+(\S+)(?:[ \t]+(HTTP\/\d+\.\d+))?[^\012]*\012", "")) {
       my $match = $replace_info->match;
       
@@ -220,7 +221,7 @@ $error
       
       my $url = HTTP::Tiny::URL->new($url_string);
       
-      $request = HTTP::Tiny::Message::Request->new({method => $method, url => $url});
+      $request = Mojo::Message::Request->new({method => $method, url => $url});
       
       my $httpd_version_number = &_http_version_number($http_version);
       
