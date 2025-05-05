@@ -380,8 +380,6 @@ class Mojo::Message::Request extends Mojo::Message {
       $path = "/$path" ;
     }
     
-    warn $self;
-    
     # CONNECT
     my $method = Fn->uc($self->method);
     if ($method eq "CONNECT") {
