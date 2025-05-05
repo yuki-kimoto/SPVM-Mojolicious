@@ -6,52 +6,15 @@ our $VERSION = "0.001";
 
 =head1 Name
 
-SPVM::Mojolicious - Short Description
+SPVM::Mojolicious - Porting Mojolicious to SPVM
 
 =head1 Description
 
-Mojolicious class in L<SPVM> has methods to do someting.
+Mojolicious in L<SPVM> is a Mojolicious porting to SPVM.
 
-=head1 Usage
+B<WARNINGS:>
 
-  use Mojolicious;
-
-=head1 Details
-
-
-
-=head1 Super Class
-
-
-
-=head1 Interfaces
-
-
-
-=head1 Enumerations
-
-
-
-=head1 Fields
-
-
-
-=head1 Class Methods
-
-
-
-=head1 Instance Methods
-
-
-
-=head1 See Also
-
-
-
-
-=head1 Repository
-
-
+This framework is still in early development: there is no documentation yet and method names, functionality and implementations change frequently and without warning.
 
 =head1 Author
 
