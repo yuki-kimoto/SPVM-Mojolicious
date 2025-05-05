@@ -1,20 +1,20 @@
 # Copyright (c) 2023 Yuki Kimoto
 # MIT License
 
-class HTTP::Tiny::Response {
-  version_from HTTP::Tiny;
+class TestUtil::HTTP::Tiny::Response {
+  version_from TestUtil::HTTP::Tiny;
   
-  allow HTTP::Tiny::Handle;
-  allow HTTP::Tiny;
+  allow TestUtil::HTTP::Tiny::Handle;
+  allow TestUtil::HTTP::Tiny;
   
   use Mojo::Headers;
   
   has response : Mojo::Message::Response;
   
   # Class Methods
-  private static method new : HTTP::Tiny::Response ($response : Mojo::Message::Response) {
+  private static method new : TestUtil::HTTP::Tiny::Response ($response : Mojo::Message::Response) {
     
-    my $self = new HTTP::Tiny::Response;
+    my $self = new TestUtil::HTTP::Tiny::Response;
     
     $self->{response} = $response;
     

@@ -1,9 +1,6 @@
 .gitattributes
 .gitignore
 Changes
-lib/SPVM/HTTP/Tiny.spvm
-lib/SPVM/HTTP/Tiny/Daemon.spvm
-lib/SPVM/HTTP/Tiny/Response.spvm
 lib/SPVM/Mojo.pm
 lib/SPVM/Mojo.spvm
 lib/SPVM/Mojo/Asset.pm
@@ -30,8 +27,6 @@ lib/SPVM/Mojo/EventEmitter.pm
 lib/SPVM/Mojo/EventEmitter.spvm
 lib/SPVM/Mojo/EventEmitter/Callback.pm
 lib/SPVM/Mojo/EventEmitter/Callback.spvm
-lib/SPVM/Mojo/Handle.pm
-lib/SPVM/Mojo/Handle.spvm
 lib/SPVM/Mojo/Headers.pm
 lib/SPVM/Mojo/Headers.spvm
 lib/SPVM/Mojo/Message.pm
@@ -64,8 +59,11 @@ MANIFEST			This list of files
 MANIFEST.SKIP
 README.md
 t/basic.t
-t/HTTP-Tiny-online.t
-t/HTTP-Tiny.t.disable
-t/lib/SPVM/TestCase/Mojo.spvm
 t/lib/SPVM/TestCase/Mojolicious.spvm
+t/lib/SPVM/TestCase/Online.spvm
+t/lib/SPVM/TestUtil/HTTP/Tiny.spvm
+t/lib/SPVM/TestUtil/HTTP/Tiny/Daemon.spvm
+t/lib/SPVM/TestUtil/HTTP/Tiny/Handle.spvm
+t/lib/SPVM/TestUtil/HTTP/Tiny/Response.spvm
+t/online.t
 t/webapp/basic.pl

@@ -1,10 +1,10 @@
 # Copyright (c) 2023 Yuki Kimoto
 # MIT License
 
-class HTTP::Tiny::Handle {
+class TestUtil::HTTP::Tiny::Handle {
   version_from Mojo;
   
-  allow HTTP::Tiny;
+  allow TestUtil::HTTP::Tiny;
   
   use Mojo::Message::Request;
   use Mojo::Message::Response;
@@ -23,11 +23,11 @@ class HTTP::Tiny::Handle {
   
   has socket : IO::Socket;
   
-  private static method new : HTTP::Tiny::Handle ($options : object[]) {
+  private static method new : TestUtil::HTTP::Tiny::Handle ($options : object[]) {
     
     my $options_h = Hash->new($options);
     
-    my $self = new HTTP::Tiny::Handle;
+    my $self = new TestUtil::HTTP::Tiny::Handle;
     
     # The timeout field
     my $timeout = $options_h->delete_or_default_double("timeout", 60.0);
@@ -36,7 +36,7 @@ class HTTP::Tiny::Handle {
     return $self;
   }
   
-  private method connect : HTTP::Tiny::Handle ($req : Mojo::Message::Request) {
+  private method connect : TestUtil::HTTP::Tiny::Handle ($req : Mojo::Message::Request) {
     
     my $url = $req->url;
     my $scheme = $url->scheme;

@@ -1,7 +1,7 @@
 # Copyright (c) 2023 Yuki Kimoto
 # MIT License
 
-class HTTP::Tiny {
+class TestUtil::HTTP::Tiny {
   version "0.011";
   
   use Fn;
@@ -14,8 +14,8 @@ class HTTP::Tiny {
   use IO::File;
   use Time::Piece;
   
-  use HTTP::Tiny::Handle;
-  use HTTP::Tiny::Response;
+  use TestUtil::HTTP::Tiny::Handle;
+  use TestUtil::HTTP::Tiny::Response;
   
   use Mojo::Message::Request;
   use Mojo::Message::Response;
@@ -50,11 +50,11 @@ class HTTP::Tiny {
   has tmp_dir : File::Temp::Dir;
   
   # Class Methods
-  static method new : HTTP::Tiny ($options : object[] = undef) {
+  static method new : TestUtil::HTTP::Tiny ($options : object[] = undef) {
     
     my $options_h = Hash->new($options);
     
-    my $self = new HTTP::Tiny;
+    my $self = new TestUtil::HTTP::Tiny;
     
     # timeout
     my $timeout = $options_h->delete_or_default_double("timeout", 60.0);
@@ -130,7 +130,7 @@ class HTTP::Tiny {
     
     if ($self->{verify_SSL} || $ssl_options_h->get("SSL_verify_mode")) {
       
-      my $handle = HTTP::Tiny::Handle->new({
+      my $handle = TestUtil::HTTP::Tiny::Handle->new({
         SSL_options => $self->{SSL_options},
         verify_SSL  => $self->{verify_SSL},
       });
@@ -149,49 +149,49 @@ class HTTP::Tiny {
   }
   
   # Instance Methods
-  method get : HTTP::Tiny::Response ($url : string, $options : object[] = undef) {
+  method get : TestUtil::HTTP::Tiny::Response ($url : string, $options : object[] = undef) {
     
     my $response = $self->request("GET", $url, $options);
     
     return $response;
   }
   
-  method head : HTTP::Tiny::Response ($url : string, $options : object[] = undef) {
+  method head : TestUtil::HTTP::Tiny::Response ($url : string, $options : object[] = undef) {
     
     my $response = $self->request("HEAD", $url, $options);
     
     return $response;
   }
   
-  method put : HTTP::Tiny::Response ($url : string, $options : object[] = undef) {
+  method put : TestUtil::HTTP::Tiny::Response ($url : string, $options : object[] = undef) {
     
     my $response = $self->request("PUT", $url, $options);
     
     return $response;
   }
   
-  method post : HTTP::Tiny::Response ($url : string, $options : object[] = undef) {
+  method post : TestUtil::HTTP::Tiny::Response ($url : string, $options : object[] = undef) {
     
     my $response = $self->request("POST", $url, $options);
     
     return $response;
   }
   
-  method patch : HTTP::Tiny::Response ($url : string, $options : object[] = undef) {
+  method patch : TestUtil::HTTP::Tiny::Response ($url : string, $options : object[] = undef) {
     
     my $response = $self->request("PATCH", $url, $options);
     
     return $response;
   }
   
-  method delete : HTTP::Tiny::Response ($url : string, $options : object[] = undef) {
+  method delete : TestUtil::HTTP::Tiny::Response ($url : string, $options : object[] = undef) {
     
     my $response = $self->request("DELETE", $url, $options);
     
     return $response;
   }
   
-  method post_form : HTTP::Tiny::Response ($url : string, $data : object[], $options : object[] = undef) {
+  method post_form : TestUtil::HTTP::Tiny::Response ($url : string, $data : object[], $options : object[] = undef) {
     
     my $options_h = Hash->new($options);
     
@@ -295,16 +295,16 @@ class HTTP::Tiny {
   
   method create_default_agent : string () {
     
-    my $default_agent = "SPVM/HTTP::Tiny";
+    my $default_agent = "SPVM/TestUtil::HTTP::Tiny";
     
-    my $version = Fn->get_version_string("HTTP::Tiny");
+    my $version = Fn->get_version_string("TestUtil::HTTP::Tiny");
     
     $default_agent .= "/$version";
     
     return $default_agent;
   }
   
-  private method request : HTTP::Tiny::Response ($method : string, $url_string : string, $options : object[])  {
+  private method request : TestUtil::HTTP::Tiny::Response ($method : string, $url_string : string, $options : object[])  {
     
     my $options_h = Hash->new($options);
     
@@ -337,7 +337,7 @@ class HTTP::Tiny {
       headers   => $headers,
     });
     
-    my $socket  = HTTP::Tiny::Handle->new({
+    my $socket  = TestUtil::HTTP::Tiny::Handle->new({
       timeout => $timeout,
       data_callback => $data_callback,
     });
@@ -348,7 +348,7 @@ class HTTP::Tiny {
     
     my $response = $socket->read_response;
     
-    my $result = HTTP::Tiny::Response->new($response);
+    my $result = TestUtil::HTTP::Tiny::Response->new($response);
     
     return $result;
   }
@@ -412,7 +412,7 @@ class HTTP::Tiny {
     return $ca_file;
   }
   
-  method mirror : HTTP::Tiny::Response ($url : string, $file : string, $options : object[] = undef) {
+  method mirror : TestUtil::HTTP::Tiny::Response ($url : string, $file : string, $options : object[] = undef) {
     
     unless ($file) {
       die "\$file must be defined.";

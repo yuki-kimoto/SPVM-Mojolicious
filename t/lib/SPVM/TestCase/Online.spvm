@@ -1,5 +1,5 @@
-class TestCase::Mojo {
-  use HTTP::Tiny;
+class TestCase::Online {
+  use TestUtil::HTTP::Tiny;
   use Fn;
   use Go;
   use Array;
@@ -10,11 +10,11 @@ class TestCase::Mojo {
   
   our $RESULT : IntList;
   
-  static method test : int () {
+  static method test_http_tiny : int () {
     
     my $url = "http://google.com";
     
-    my $http = HTTP::Tiny->new;
+    my $http = TestUtil::HTTP::Tiny->new;
     
     my $res = $http->get($url);
     
@@ -31,14 +31,14 @@ class TestCase::Mojo {
     return 1;
   }
   
-  static method go : int () {
+  static method go_http_tiny : int () {
     
     $RESULT = IntList->new;
     
     Go->go(method : void () {
       my $url = "http://google.com";
       
-      my $http = HTTP::Tiny->new;
+      my $http = TestUtil::HTTP::Tiny->new;
       
       my $res = $http->get($url);
       
@@ -50,7 +50,7 @@ class TestCase::Mojo {
     Go->go(method : void () {
       my $url = "http://google.com";
       
-      my $http = HTTP::Tiny->new;
+      my $http = TestUtil::HTTP::Tiny->new;
       
       my $res = $http->get($url);
       
