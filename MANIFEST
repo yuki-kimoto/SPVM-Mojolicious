@@ -1,4 +1,8 @@
 .gitattributes
+.github/workflows/linux-ubuntu-latest-perl-v5.20.3.yml
+.github/workflows/linux-ubuntu-latest.yml
+.github/workflows/macos-latest.yml
+.github/workflows/windows-latest.yml
 .gitignore
 Changes
 lib/SPVM/Mojo.pm
@@ -49,6 +53,16 @@ lib/SPVM/Mojo/Upload.pm
 lib/SPVM/Mojo/Upload.spvm
 lib/SPVM/Mojo/URL.pm
 lib/SPVM/Mojo/URL.spvm
+lib/SPVM/Mojo/UserAgent.pm
+lib/SPVM/Mojo/UserAgent.spvm
+lib/SPVM/Mojo/UserAgent/CookieJar.pm
+lib/SPVM/Mojo/UserAgent/CookieJar.spvm
+lib/SPVM/Mojo/UserAgent/Proxy.pm
+lib/SPVM/Mojo/UserAgent/Proxy.spvm
+lib/SPVM/Mojo/UserAgent/Server.pm
+lib/SPVM/Mojo/UserAgent/Server.spvm
+lib/SPVM/Mojo/UserAgent/Transactor.pm
+lib/SPVM/Mojo/UserAgent/Transactor.spvm
 lib/SPVM/Mojo/Util.pm
 lib/SPVM/Mojo/Util.spvm
 lib/SPVM/Mojolicious.pm
