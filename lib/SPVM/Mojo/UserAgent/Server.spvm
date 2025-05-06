@@ -3,6 +3,8 @@
 
 class Mojo::UserAgent::Server {
   version_from Mojolicious;
+  
+  
 }
 
 __END__

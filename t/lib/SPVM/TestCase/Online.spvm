@@ -8,6 +8,8 @@ class TestCase::Online {
   use Mojo::Transaction::HTTP;
   use Mojo::Content::Single;
   
+  use Mojo::UserAgent;
+  
   our $RESULT : IntList;
   
   static method test_http_tiny : int () {

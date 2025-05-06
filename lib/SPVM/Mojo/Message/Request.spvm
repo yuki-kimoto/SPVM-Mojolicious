@@ -10,21 +10,21 @@ class Mojo::Message::Request extends Mojo::Message {
   use Mojo::URL;
   
   # Fields
-  has env : ro Hash of string;
+  has env : rw Hash of string;
   
-  has method : ro string;
+  has method : rw string;
   
-  has proxy : ro Mojo::URL;
+  has proxy : rw Mojo::URL;
   
-  has reverse_proxy : ro byte;
+  has reverse_proxy : rw byte;
   
-  has url : ro Mojo::URL;
+  has url : rw Mojo::URL;
   
   has request_id : int;
   
-  has trusted_proxies : ro string[];
+  has trusted_proxies : rw string[];
   
-  has via_proxy : ro byte;
+  has via_proxy : rw byte;
   
   # Undocumented Fields
   has params : Mojo::Parameters;
