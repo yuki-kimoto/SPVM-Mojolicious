@@ -5,6 +5,7 @@ class Mojo::UserAgent {
   version_from Mojolicious;
   
   use Mojo::UserAgent::Proxy;
+  use Mojo::UserAgent::CookieJar;
   
 }
 
