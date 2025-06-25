@@ -31,6 +31,8 @@ lib/SPVM/Mojo/EventEmitter.pm
 lib/SPVM/Mojo/EventEmitter.spvm
 lib/SPVM/Mojo/EventEmitter/Callback.pm
 lib/SPVM/Mojo/EventEmitter/Callback.spvm
+lib/SPVM/Mojo/File.pm
+lib/SPVM/Mojo/File.spvm
 lib/SPVM/Mojo/Headers.pm
 lib/SPVM/Mojo/Headers.spvm
 lib/SPVM/Mojo/Message.pm

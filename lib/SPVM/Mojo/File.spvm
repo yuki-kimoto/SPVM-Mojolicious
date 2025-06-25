@@ -29,8 +29,7 @@ class Mojo::File {
           die "Invalid path";
         }
       }
-      my $dirs = 
-      $self->{path} = File::Spec->catfile(Array->$pathes);
+      $self->{path} = File::Spec->catfile($pathes);
     }
     else {
       die "The path \$path is an invalid type.";

@@ -3,6 +3,9 @@
 
 class Mojo::UserAgent::CookieJar {
   version_from Mojolicious;
+  
+  use Mojo::Cookie::Request;
+  use Mojo::File;
 }
 
 __END__
