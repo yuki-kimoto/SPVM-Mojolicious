@@ -79,6 +79,7 @@ class Mojo::UserAgent::CookieJar {
         if (&_compare($cookie_cur, $path, $name, $domain)) {
           $jar_list->set($i, $cookie);
           $replaced = 1;
+          last;
         }
       }
       
@@ -89,6 +90,23 @@ class Mojo::UserAgent::CookieJar {
       $self->{jar}->set($domain, $jar_list);
     }
     
+  }
+  
+  method all : Mojo::Cookie::Response[] () {
+    my $jar = $self->{jar};
+    
+    my $keys = $jar->keys;
+    
+    Sort->sort_string_asc($keys);
+    
+    my $all_cookies_list = List->new(new Mojo::Cookie::Response[0]);
+    
+    for my $key (@$keys) {
+      my $jar_list = (List)$jar->get($key);
+      $all_cookies_list->push_array($jar_list->to_array);
+    }
+    
+    return (Mojo::Cookie::Response[])$all_cookies_list->to_array;
   }
   
   static method _compare : int ($cookie : Mojo::Cookie::Response, $path : string, $name : string, $domain : string) {
