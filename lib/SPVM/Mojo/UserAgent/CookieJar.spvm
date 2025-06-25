@@ -67,20 +67,26 @@ class Mojo::UserAgent::CookieJar {
         next;
       }
       
-      my $jar = $self->{jar}->get($domain);
+      my $jar_list = (List)$self->{jar}->get($domain);
       
-      my $new_jar_list = List->new(new Mojo::Cookie::Response[0]);
-      if ($jar) {
-        for (my $i = 0; $i < $new_jar_list->length; $i++) {
-          my $cookie = (Mojo::Cookie::Response)$new_jar_list->get($i);
-          if (&_compare($cookie, $path, $name, $domain)) {
-            $new_jar_list->push($cookie);
-          }
+      unless ($jar_list) {
+        $jar_list = List->new(new Mojo::Cookie::Response[0]);
+      }
+      
+      my $replaced = 0;
+      for (my $i = 0; $i < $jar_list->length; $i++) {
+        my $cookie_cur = (Mojo::Cookie::Response)$jar_list->get($i);
+        if (&_compare($cookie_cur, $path, $name, $domain)) {
+          $jar_list->set($i, $cookie);
+          $replaced = 1;
         }
       }
-      $new_jar_list->push($cookie);
       
-      $self->{jar}->set($domain, $new_jar_list->to_array);
+      unless ($replaced) {
+        $jar_list->push($cookie);
+      }
+      
+      $self->{jar}->set($domain, $jar_list);
     }
     
   }
