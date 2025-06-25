@@ -222,6 +222,24 @@ class Mojo::UserAgent::CookieJar {
     
     $req->set_cookies($self->find($req->url));
   }
+  
+  method to_string : string () {
+    
+    my $lines = StringList->new;
+    for my $cookie (@{$self->all}) {
+      my $line = [(string)
+        $cookie->domain, $cookie->host_only ? "FALSE" : "TRUE",
+        $cookie->path,   $cookie->secure    ? "TRUE"  : "FALSE",
+        $cookie->expires < 0 ? $cookie->expires : 0, $cookie->name,
+        $cookie->value
+      ];
+      $lines->push(Fn->join("\t", $line));
+    }
+    
+    $lines->push("");
+    
+    return Fn->join("\n", $lines->to_array);
+  }
 
 }
 
