@@ -7,6 +7,7 @@ class Mojo::UserAgent::CookieJar {
   use Mojo::Cookie::Response;
   use Mojo::File;
   use Mojo::Path;
+  use Mojo::UserAgent::CookieJar::Callback::Ignore;
   
   # Class Variables
   our $COMMENT : string;
@@ -17,7 +18,7 @@ class Mojo::UserAgent::CookieJar {
   # Fields
   has file : ro string;
   
-  has ignore : ro byte;
+  has ignore : ro Mojo::UserAgent::CookieJar::Callback::Ignore;
   
   has max_cookie_size : ro int;
   
@@ -35,21 +36,34 @@ class Mojo::UserAgent::CookieJar {
     return $self;
   }
   
+  private static method _compare : int ($cookie : Mojo::Cookie::Response, $path : string, $name : string, $domain : string) {
+    
+    return $cookie->path ne $path || $cookie->name ne $name || $cookie->domain ne $domain;
+  }
+  
+  private static method _path : int ($path : Mojo::Path, $path_abs_string : string) {
+    return $path->to_string eq "/" || $path->to_string eq $path_abs_string || Fn->index($path_abs_string, $path->to_string . "/") == 0;
+  }
+  
   # Instance Methods
-  method add : void ($cookies : Mojo::Cookie::Response[]) {
+  method add : void ($cookie : Mojo::Cookie::Response) {
+    $self->add_([$cookie]);
+  }
+  
+  method add_ : void ($cookies : Mojo::Cookie::Response[]) {
     
     my $size = $self->max_cookie_size;
     for my $cookie (@$cookies) {
       
       # Convert max age to expires
       my $age = $cookie->max_age;
-      if (Re->m("^\d+$", $age)) {
+      if (Re->m($age, "^\d+$")) {
         my $age_int = (int)$age;
         $cookie->set_expires($age <= 0 ? 0 : $age + Sys->time) ;
       }
       
       # Check cookie size
-      if (length($cookie->value // "") > $size) {
+      if (length $cookie->value > $size) {
         next;
       }
       
@@ -62,7 +76,7 @@ class Mojo::UserAgent::CookieJar {
       unless (length $path) {
         next;
       }
-      my $name = $cookie->name // "";
+      my $name = $cookie->name;
       unless (length $name) {
         next;
       }
@@ -109,9 +123,39 @@ class Mojo::UserAgent::CookieJar {
     return (Mojo::Cookie::Response[])$all_cookies_list->to_array;
   }
   
-  static method _compare : int ($cookie : Mojo::Cookie::Response, $path : string, $name : string, $domain : string) {
+  method collect : void ($tx : Mojo::Transaction::HTTP) {
     
-    return $cookie->path ne $path || $cookie->name ne $name || $cookie->domain ne $domain;
+    my $url = $tx->req->url;
+    for my $cookie (@{$tx->res->cookies}) {
+      
+      # Validate domain
+      my $host = Fn->lc($url->ihost);
+      unless ($cookie->domain) {
+        $cookie->set_domain($host);
+        $cookie->set_host_only(1);
+      }
+      my $domain = Fn->lc($cookie->domain);
+      if (my $cb = $self->ignore) {
+        if ($cb->($cookie)) {
+          next ;
+        }
+      }
+      
+      if ($host ne $domain && (!Re->m($host, "\Q.$domain\E$") || Re->m($host, "\.\d+$"))) {
+        next ;
+      }
+      
+      # Validate path
+      my $path = Mojo::Path->new($cookie->path // $url->path->to_dir->to_abs_string);
+      $path->set_trailing_slash(0);
+      unless (&_path($path, $path->to_abs_string)) {
+        next;
+      }
+      
+      $cookie->set_path($path->to_string);
+      
+      $self->add($cookie);
+    }
   }
   
 }
