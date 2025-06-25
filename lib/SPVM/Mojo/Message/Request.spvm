@@ -91,6 +91,22 @@ class Mojo::Message::Request extends Mojo::Message {
     return $cookies;
   }
   
+  method set_cookies : void ($cookies : Mojo::Cookie::Request[]) {
+    
+    my $headers = $self->headers;
+    
+    # Add cookies
+    my $cookies_string_list = StringList->new;
+    if (my $header_cookie_string = $headers->cookie) {
+      $cookies_string_list->push($header_cookie_string);
+    }
+    for my $cookie (@$cookies) {
+      $cookies_string_list->push($cookie->to_string);
+    }
+    
+    $headers->set_cookie(Fn->join("; ", $cookies_string_list->to_array));
+  }
+  
   method every_param : string[] ($name : string) { return $self->params->every_param($name); }
   
   method query_params : Mojo::Parameters () { return $self->url->query; }

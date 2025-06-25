@@ -16,8 +16,6 @@ class Mojo::UserAgent::CookieJar {
   }
   
   # Fields
-  has file : ro string;
-  
   has ignore : ro Mojo::UserAgent::CookieJar::Callback::Ignore;
   
   has max_cookie_size : ro int;
@@ -212,6 +210,17 @@ class Mojo::UserAgent::CookieJar {
     }
     
     return $found->to_array->(Mojo::Cookie::Request[]);
+  }
+  
+  method prepare : void ($tx : Mojo::Transaction::HTTP) {
+    
+    unless (@{$self->{jar}->keys}) {
+      return;
+    }
+    
+    my $req = $tx->req;
+    
+    $req->set_cookies($self->find($req->url));
   }
 
 }
