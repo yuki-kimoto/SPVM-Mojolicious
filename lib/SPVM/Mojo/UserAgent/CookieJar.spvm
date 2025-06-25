@@ -22,7 +22,7 @@ class Mojo::UserAgent::CookieJar {
   
   has max_cookie_size : ro int;
   
-  has jar : Hash;
+  has jar : Hash of List;
   
   # Class Methods
   static method new : Mojo::UserAgent::CookieJar () {
@@ -41,8 +41,8 @@ class Mojo::UserAgent::CookieJar {
     return $cookie->path ne $path || $cookie->name ne $name || $cookie->domain ne $domain;
   }
   
-  private static method _path : int ($path : Mojo::Path, $path_abs_string : string) {
-    return $path->to_string eq "/" || $path->to_string eq $path_abs_string || Fn->index($path_abs_string, $path->to_string . "/") == 0;
+  private static method _path : int ($path : string, $path_abs_string : string) {
+    return $path eq "/" || $path eq $path_abs_string || Fn->index($path_abs_string, "$path/") == 0;
   }
   
   # Instance Methods
@@ -148,7 +148,7 @@ class Mojo::UserAgent::CookieJar {
       # Validate path
       my $path = Mojo::Path->new($cookie->path // $url->path->to_dir->to_abs_string);
       $path->set_trailing_slash(0);
-      unless (&_path($path, $path->to_abs_string)) {
+      unless (&_path($path->to_string, $path->to_abs_string)) {
         next;
       }
       
@@ -161,6 +161,57 @@ class Mojo::UserAgent::CookieJar {
   method empty : void () {
     
     $self->{jar} = Hash->new;
+  }
+  
+  method find : Mojo::Cookie::Request[] ($url : Mojo::URL) {
+    
+    my $found = List->new(new Mojo::Cookie::Request[0]);
+    my $domain = my $host = Fn->lc($url->ihost);
+    my $path   = $url->path->to_abs_string;
+    
+    for (my $tmp = 0; 1 ; (Re->s(my $_ = [$domain], "^[^.]*\.*", ""), $domain = $_->[0])) {
+      
+      unless (length $domain) {
+        last;
+      }
+      
+      my $old = (List)$self->{jar}->get($domain);
+      unless ($old) {
+        next ;
+      }
+      
+      # Grab cookies
+      my $new = List->new(new Mojo::Cookie::Response[0]);
+      $self->{jar}->set($domain, $new);
+      for my $cookie (@{(Mojo::Cookie::Response[])$old->to_array}) {
+        if ($cookie->host_only && $host ne $cookie->domain) {
+          next;
+        }
+        
+        # Check if cookie has expired
+        my $expires = $cookie->expires;
+        if ($expires >= 0) {
+          if (Sys->time > $expires) {
+            next;
+          }
+        }
+        $new->push($cookie);
+        
+        # Taste cookie
+        if ($cookie->secure && $url->protocol ne "https") {
+          next;
+        }
+        unless (&_path($cookie->path, $path)) {
+          next;
+        }
+        my $name  = $cookie->name;
+        my $value = $cookie->value;
+        
+        $found->push((my $_ = Mojo::Cookie::Request->new, $_->set_name($name), $_->set_value($value), $_));
+      }
+    }
+    
+    return $found->to_array->(Mojo::Cookie::Request[]);
   }
 
 }
