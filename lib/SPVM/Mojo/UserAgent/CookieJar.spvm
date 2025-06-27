@@ -20,7 +20,7 @@ class Mojo::UserAgent::CookieJar {
   
   has max_cookie_size : ro int;
   
-  has jar : Hash of List;
+  has jar : Hash of List of Mojo::Cookie::Response;
   
   # Class Methods
   static method new : Mojo::UserAgent::CookieJar () {
@@ -79,7 +79,7 @@ class Mojo::UserAgent::CookieJar {
         next;
       }
       
-      my $jar_list = (List)$self->{jar}->get($domain);
+      my $jar_list = (List of Mojo::Cookie::Response)$self->{jar}->get($domain);
       
       unless ($jar_list) {
         $jar_list = List->new(new Mojo::Cookie::Response[0]);
@@ -114,7 +114,7 @@ class Mojo::UserAgent::CookieJar {
     my $all_cookies_list = List->new(new Mojo::Cookie::Response[0]);
     
     for my $key (@$keys) {
-      my $jar_list = (List)$jar->get($key);
+      my $jar_list = (List of Mojo::Cookie::Response)$jar->get($key);
       $all_cookies_list->push_($jar_list->to_array);
     }
     
@@ -173,7 +173,7 @@ class Mojo::UserAgent::CookieJar {
         last;
       }
       
-      my $old = (List)$self->{jar}->get($domain);
+      my $old = (List of Mojo::Cookie::Response)$self->{jar}->get($domain);
       unless ($old) {
         next ;
       }
