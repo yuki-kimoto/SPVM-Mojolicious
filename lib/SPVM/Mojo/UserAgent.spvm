@@ -70,7 +70,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     
     $self->{cookie_jar} = Mojo::UserAgent::CookieJar->new;
     
-    $self->{insecure} = length(my $_ = Sys->env("SPVM_MOJO_INSECURE")) ? (byte)$_ : 0;
+    $self->{insecure} = (byte)(length(my $_ = Sys->env("SPVM_MOJO_INSECURE")) ? (int)$_ : 0);
     
     $self->{max_redirects} = length(my $_ = Sys->env("SPVM_MOJO_MAX_REDIRECTS")) ? (int)$_ : 0;
     

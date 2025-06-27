@@ -18,6 +18,8 @@ class TestCase::Online {
     
     my $http = TestUtil::HTTP::Tiny->new;
     
+    my $ua = Mojo::UserAgent->new;
+    
     my $res = $http->get($url);
     
     my $content = $res->content;
