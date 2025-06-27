@@ -115,7 +115,7 @@ class Mojo::UserAgent::CookieJar {
     
     for my $key (@$keys) {
       my $jar_list = (List)$jar->get($key);
-      $all_cookies_list->push_array($jar_list->to_array);
+      $all_cookies_list->push_($jar_list->to_array);
     }
     
     return (Mojo::Cookie::Response[])$all_cookies_list->to_array;
