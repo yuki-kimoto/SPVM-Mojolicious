@@ -17,9 +17,10 @@ class Mojo::UserAgent::Transactor {
   use Mojo::Util;
   use Mojo::WebSocket;
   use Sys;
+  use Mojo::UserAgent::Transactor::Callback::Generator;
   
   # Fields
-  has compressed : byte;
+  has compressed : rw byte;
   
   has generators_h : Hash;
   
@@ -64,6 +65,57 @@ class Mojo::UserAgent::Transactor {
     $self->{generators_h}->set($name, $cb);
   }
 
+  method tx : Mojo::Transaction::HTTP ($method : string, $url : object of string|Mojo::URL, $options : object[] = undef) {
+    
+    my $options_h = Hash->new($options);
+    
+    my $generator = (object[])$options_h->get("generator");
+    
+    my $headers_options = (object[])$options_h->get("headers");
+    
+    my $body = $options_h->get_string("body");
+    
+    # Method and URL
+    my $tx  = Mojo::Transaction::HTTP->new;
+    my $req = $tx->req;
+    $req->set_method($method);
+    
+    if ($url isa Mojo::URL) {
+      $req->set_url((Mojo::URL)$url);
+    }
+    else {
+      if (Re->m($url, "^/|://")) {
+        $req->url->parse((string)$url);
+      }
+      else {
+        $req->url->parse("http://" . (string)$url);
+      }
+    }
+    
+    # Headers (we identify ourselves and accept gzip compression)
+    my $headers = $req->headers;
+    $headers->from_hash(Hash->new($headers_options));
+    unless ($headers->user_agent) {
+      $headers->set_user_agent($self->name);
+    }
+    if    (!$self->compressed)         { $tx->res->content->set_auto_decompress(0); }
+    elsif (!$headers->accept_encoding) { $headers->set_accept_encoding("gzip"); }
+    
+    # Generator
+    if ($generator) {
+      my $name = (string)$generator->[0];
+      my $args = (object[])$generator->[1];
+      
+      my $cb = (Mojo::UserAgent::Transactor::Callback::Generator)$self->{generators_h}->get("$name");
+      $cb->($self, $tx, $args);
+    }
+    
+    if ($body) {
+      $req->set_body($body);
+    }
+    
+    return $tx;
+  }
 }
 
 __END__

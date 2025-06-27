@@ -67,6 +67,8 @@ lib/SPVM/Mojo/UserAgent/Server.pm
 lib/SPVM/Mojo/UserAgent/Server.spvm
 lib/SPVM/Mojo/UserAgent/Transactor.pm
 lib/SPVM/Mojo/UserAgent/Transactor.spvm
+lib/SPVM/Mojo/UserAgent/Transactor/Callback/Generator.pm
+lib/SPVM/Mojo/UserAgent/Transactor/Callback/Generator.spvm
 lib/SPVM/Mojo/Util.pm
 lib/SPVM/Mojo/Util.spvm
 lib/SPVM/Mojo/WebSocket.pm
