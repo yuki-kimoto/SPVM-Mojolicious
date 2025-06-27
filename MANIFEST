@@ -63,8 +63,6 @@ lib/SPVM/Mojo/UserAgent/CookieJar/Callback/Ignore.pm
 lib/SPVM/Mojo/UserAgent/CookieJar/Callback/Ignore.spvm
 lib/SPVM/Mojo/UserAgent/Proxy.pm
 lib/SPVM/Mojo/UserAgent/Proxy.spvm
-lib/SPVM/Mojo/UserAgent/Server.pm
-lib/SPVM/Mojo/UserAgent/Server.spvm
 lib/SPVM/Mojo/UserAgent/Transactor.pm
 lib/SPVM/Mojo/UserAgent/Transactor.spvm
 lib/SPVM/Mojo/UserAgent/Transactor/Callback/Generator.pm

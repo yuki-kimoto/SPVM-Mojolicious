@@ -19,15 +19,33 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
   # Fields
   has max_response_size : rw int;
   
+  has connect_timeout : rw int;
+  
+  has inactivity_timeout : rw int;
+  
   has request_timeout : rw int;
   
-  has transactor : rw Mojo::UserAgent::Transactor;
+  has key : rw string;
   
-  has socket : IO::Socket;
+  has ca : rw string;
+  
+  has cert : rw string;
+  
+  has insecure : rw byte;
+  
+  has max_redirects : rw int;
+  
+  has socket_options : object[];
+  
+  has tls_options : object[];
+  
+  has transactor : rw Mojo::UserAgent::Transactor;
   
   has proxy : rw Mojo::UserAgent::Proxy;
   
   has cookie_jar : rw Mojo::UserAgent::CookieJar;
+  
+  has socket : IO::Socket;
   
   # Class Methods
   static method new : Mojo::UserAgent () {
@@ -36,11 +54,25 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     
     $self->{max_response_size} = -1;
     
+    $self->{connect_timeout} = length(my $_ = Sys->env("SPVM_MOJO_CONNECT_TIMEOUT")) ? (int)$_ : 0;
+    
+    $self->{inactivity_timeout} = length(my $_ = Sys->env("SPVM_MOJO_INACTIVITY_TIMEOUT")) ? (int)$_ : 0;
+    
     $self->{request_timeout} = length(my $_ = Sys->env("SPVM_MOJO_REQUEST_TIMEOUT")) ? (int)$_ : 0;
+    
+    $self->{key} = length(my $_ = Sys->env("SPVM_MOJO_KEY_FILE")) ? $_ : undef;
+    
+    $self->{ca} = length(my $_ = Sys->env("SPVM_MOJO_CA_FILE")) ? $_ : undef;
+    
+    $self->{cert} = length(my $_ = Sys->env("SPVM_CERT_FILE")) ? $_ : undef;
     
     $self->{proxy} = Mojo::UserAgent::Proxy->new;
     
     $self->{cookie_jar} = Mojo::UserAgent::CookieJar->new;
+    
+    $self->{insecure} = length(my $_ = Sys->env("SPVM_MOJO_INSECURE")) ? (byte)$_ : 0;
+    
+    $self->{max_redirects} = length(my $_ = Sys->env("SPVM_MOJO_MAX_REDIRECTS")) ? (int)$_ : 0;
     
     return $self;
   }
