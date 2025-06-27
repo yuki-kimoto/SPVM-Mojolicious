@@ -20,9 +20,9 @@ class Mojo::Transaction extends Mojo::EventEmitter {
   
   has remote_port : ro int;
   
-  has req : ro Mojo::Message::Request;
+  has req : rw Mojo::Message::Request;
   
-  has res : ro Mojo::Message::Response;
+  has res : rw Mojo::Message::Response;
   
   has completed : byte;
   
