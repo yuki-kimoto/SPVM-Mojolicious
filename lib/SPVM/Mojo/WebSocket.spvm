@@ -2,5 +2,5 @@
 # MIT License
 
 class Mojo::WebSocket {
-  version_from HTTP::Tiny;
+  version_from Mojolicious;
 }

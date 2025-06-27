@@ -158,7 +158,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     
     my $options_h = Hash->new($options);
     
-    my $headers = (HTTP::Tiny::Headers)$options_h->delete_or_default("headers", undef);
+    my $headers = (Mojo::Headers)$options_h->delete_or_default("headers", undef);
     
     my $request_timeout = $options_h->delete_or_default_double("request_timeout", $self->{request_timeout});
     
@@ -167,7 +167,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     }
     
     unless ($headers) {
-      $headers = HTTP::Tiny::Headers->new;
+      $headers = Mojo::Headers->new;
     }
     
     $url->set_port(80);
