@@ -16,6 +16,49 @@ class Mojo::UserAgent::Transactor {
   use Mojo::URL;
   use Mojo::Util;
   use Mojo::WebSocket;
+  use Sys;
+  
+  # Fields
+  has compressed : byte;
+  
+  has generators_h : Hash;
+  
+  has name : rw string;
+  
+  # Class Methods
+  static method new : Mojo::UserAgent::Transactor () {
+    
+    my $self = new Mojo::UserAgent::Transactor;
+    
+    my $compressed = (length (my $_ = Sys->env("SPVM_MOJO_GZIP")) ? (byte)$_ : 1);
+    
+    $self->{compressed} = $compressed;
+    
+    my $generators_h = Hash->new({
+      form => method : void () { &_form; },
+      json => method : void () { &_json; },
+      multipart => method : void () { &_multipart; },
+    });
+    
+    $self->{generators_h} = $generators_h;
+    
+    $self->{name} = "SPVM::Mojolicious";
+    
+    return $self;
+  }
+  
+  private static method _form : void () {
+    
+  }
+  
+  private static method _json : void () {
+    
+  }
+  
+  private static method _multipart : void () {
+    
+  }
+  
 }
 
 __END__
