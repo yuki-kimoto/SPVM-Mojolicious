@@ -15,6 +15,7 @@ class Mojo::UserAgent::Transactor {
   use Mojo::Transaction::WebSocket;
   use Mojo::URL;
   use Mojo::Util;
+  use Mojo::WebSocket;
 }
 
 __END__

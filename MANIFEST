@@ -69,6 +69,8 @@ lib/SPVM/Mojo/UserAgent/Transactor.pm
 lib/SPVM/Mojo/UserAgent/Transactor.spvm
 lib/SPVM/Mojo/Util.pm
 lib/SPVM/Mojo/Util.spvm
+lib/SPVM/Mojo/WebSocket.pm
+lib/SPVM/Mojo/WebSocket.spvm
 lib/SPVM/Mojolicious.pm
 lib/SPVM/Mojolicious.spvm
 LICENSE
