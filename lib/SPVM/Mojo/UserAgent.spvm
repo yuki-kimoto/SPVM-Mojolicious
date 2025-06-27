@@ -6,6 +6,8 @@ class Mojo::UserAgent {
   
   use Mojo::UserAgent::Proxy;
   use Mojo::UserAgent::CookieJar;
+  use Mojo::Transaction;
+  use Mojo::UserAgent::Transactor;
   
 }
 
