@@ -45,9 +45,75 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     return $self;
   }
   
+  method delete : Mojo::Transaction::HTTP ($url : object of string|Mojo::URL, $options : object[] = undef) {
+    
+    my $method = "DELETE";
+    
+    my $tx = $self->build_tx($method, $url, $options);
+    
+    $tx = $self->start($tx);
+    
+    return $tx;
+  }
+  
   method get : Mojo::Transaction::HTTP ($url : object of string|Mojo::URL, $options : object[] = undef) {
     
     my $method = "GET";
+    
+    my $tx = $self->build_tx($method, $url, $options);
+    
+    $tx = $self->start($tx);
+    
+    return $tx;
+  }
+  
+  method head : Mojo::Transaction::HTTP ($url : object of string|Mojo::URL, $options : object[] = undef) {
+    
+    my $method = "HEAD";
+    
+    my $tx = $self->build_tx($method, $url, $options);
+    
+    $tx = $self->start($tx);
+    
+    return $tx;
+  }
+  
+  method options : Mojo::Transaction::HTTP ($url : object of string|Mojo::URL, $options : object[] = undef) {
+    
+    my $method = "OPTIONS";
+    
+    my $tx = $self->build_tx($method, $url, $options);
+    
+    $tx = $self->start($tx);
+    
+    return $tx;
+  }
+  
+  method patch : Mojo::Transaction::HTTP ($url : object of string|Mojo::URL, $options : object[] = undef) {
+    
+    my $method = "PATCH";
+    
+    my $tx = $self->build_tx($method, $url, $options);
+    
+    $tx = $self->start($tx);
+    
+    return $tx;
+  }
+  
+  method post : Mojo::Transaction::HTTP ($url : object of string|Mojo::URL, $options : object[] = undef) {
+    
+    my $method = "POST";
+    
+    my $tx = $self->build_tx($method, $url, $options);
+    
+    $tx = $self->start($tx);
+    
+    return $tx;
+  }
+  
+  method put : Mojo::Transaction::HTTP ($url : object of string|Mojo::URL, $options : object[] = undef) {
+    
+    my $method = "PUT";
     
     my $tx = $self->build_tx($method, $url, $options);
     
