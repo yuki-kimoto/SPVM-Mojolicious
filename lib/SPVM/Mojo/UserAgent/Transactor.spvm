@@ -59,6 +59,11 @@ class Mojo::UserAgent::Transactor {
     
   }
   
+  method add_generator : void ($name : string, $cb : Callback) {
+    
+    $self->{generators_h}->set($name, $cb);
+  }
+
 }
 
 __END__
