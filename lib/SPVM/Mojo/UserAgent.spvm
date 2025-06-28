@@ -19,11 +19,11 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
   # Fields
   has max_response_size : rw int;
   
-  has connect_timeout : rw int;
+  has connect_timeout : rw double;
   
-  has inactivity_timeout : rw int;
+  has inactivity_timeout : rw double;
   
-  has request_timeout : rw int;
+  has request_timeout : rw double;
   
   has key : rw string;
   
@@ -54,11 +54,11 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     
     $self->{max_response_size} = -1;
     
-    $self->{connect_timeout} = length(my $_ = Sys->env("SPVM_MOJO_CONNECT_TIMEOUT")) ? (int)$_ : 0;
+    $self->{connect_timeout} = length(my $_ = Sys->env("SPVM_MOJO_CONNECT_TIMEOUT")) ? (double)$_ : 0.0;
     
-    $self->{inactivity_timeout} = length(my $_ = Sys->env("SPVM_MOJO_INACTIVITY_TIMEOUT")) ? (int)$_ : 0;
+    $self->{inactivity_timeout} = length(my $_ = Sys->env("SPVM_MOJO_INACTIVITY_TIMEOUT")) ? (double)$_ : 0.0;
     
-    $self->{request_timeout} = length(my $_ = Sys->env("SPVM_MOJO_REQUEST_TIMEOUT")) ? (int)$_ : 0;
+    $self->{request_timeout} = length(my $_ = Sys->env("SPVM_MOJO_REQUEST_TIMEOUT")) ? (double)$_ : 0.0;
     
     $self->{key} = length(my $_ = Sys->env("SPVM_MOJO_KEY_FILE")) ? $_ : undef;
     
@@ -73,6 +73,8 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     $self->{insecure} = (byte)(length(my $_ = Sys->env("SPVM_MOJO_INSECURE")) ? (int)$_ : 0);
     
     $self->{max_redirects} = length(my $_ = Sys->env("SPVM_MOJO_MAX_REDIRECTS")) ? (int)$_ : 0;
+    
+    $self->{transactor} = Mojo::UserAgent::Transactor->new;
     
     return $self;
   }
@@ -204,11 +206,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     
     $url->set_port(80);
     
-    my $request = Mojo::Message::Request->new({
-      method    => $method,
-      url => $url,
-      headers   => $headers,
-    });
+    my $request = $tx->req;
     
     $self->connect($request);
     
@@ -228,7 +226,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     my $host = $url->host;
     my $port = $url->port;
     
-    my $request_timeout = $self->{request_timeout};
+    my $connect_timeout = $self->{connect_timeout};
     
     my $socket = (IO::Socket)undef;
     
@@ -236,7 +234,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
       $socket = IO::Socket::INET->new({
         PeerAddr  => $host,
         PeerPort  => $port,
-        Timeout   => $request_timeout,
+        Timeout   => $connect_timeout,
       });
     }
     elsif ($scheme eq "https") {
@@ -244,7 +242,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
         $socket = IO::Socket::SSL->new({
           PeerAddr  => $host,
           PeerPort  => $port,
-          Timeout   => $request_timeout,
+          Timeout   => $connect_timeout,
         });
       }
       else {

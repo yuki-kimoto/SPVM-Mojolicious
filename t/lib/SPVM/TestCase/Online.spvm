@@ -20,15 +20,15 @@ class TestCase::Online {
     
     my $ua = Mojo::UserAgent->new;
     
-    my $res = $http->get($url);
+    my $res = $ua->get($url)->result;
     
-    my $content = $res->content;
+    my $content = $res->body;
     
     unless (Fn->contains($content, "www.google.com")) {
       return 0;
     }
     
-    unless ($res->status == 200 || $res->status == 301) {
+    unless ($res->code == 200 || $res->code == 301) {
       return 0;
     }
     

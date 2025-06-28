@@ -31,7 +31,7 @@ class Mojo::UserAgent::Transactor {
     
     my $self = new Mojo::UserAgent::Transactor;
     
-    my $compressed = (length (my $_ = Sys->env("SPVM_MOJO_GZIP")) ? (byte)$_ : 1);
+    my $compressed = (byte)(length (my $_ = Sys->env("SPVM_MOJO_GZIP")) ? (int)$_ : 1);
     
     $self->{compressed} = $compressed;
     
@@ -78,6 +78,7 @@ class Mojo::UserAgent::Transactor {
     # Method and URL
     my $tx  = Mojo::Transaction::HTTP->new;
     my $req = $tx->req;
+    
     $req->set_method($method);
     
     if ($url isa Mojo::URL) {
@@ -94,6 +95,7 @@ class Mojo::UserAgent::Transactor {
     
     # Headers (we identify ourselves and accept gzip compression)
     my $headers = $req->headers;
+    
     $headers->from_hash(Hash->new($headers_options));
     unless ($headers->user_agent) {
       $headers->set_user_agent($self->name);
