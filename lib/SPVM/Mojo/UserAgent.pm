@@ -6,11 +6,11 @@ package SPVM::Mojo::UserAgent;
 
 =head1 Name
 
-SPVM::Mojo::UserAgent - User Agent
+SPVM::Mojo::UserAgent - HTTP Client
 
 =head1 Description
 
-Mojo::UserAgent class in L<SPVM> has methods to do someting.
+Mojo::UserAgent class in L<SPVM> is a HTTP client.
 
 =head1 Usage
 
@@ -26,39 +26,6 @@ Mojo::UserAgent class in L<SPVM> has methods to do someting.
   
   my $code = $res->code;
   
-=head1 Super Class
-
-
-
-=head1 Interfaces
-
-
-
-=head1 Enumerations
-
-
-
-=head1 Fields
-
-
-
-=head1 Class Methods
-
-
-
-=head1 Instance Methods
-
-
-
-=head1 See Also
-
-
-
-
-=head1 Repository
-
-
-
 =head1 Author
 
 Yuki Kimoto C<kimoto.yuki@gmail.com>
