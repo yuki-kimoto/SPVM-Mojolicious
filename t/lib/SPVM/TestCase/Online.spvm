@@ -1,5 +1,4 @@
 class TestCase::Online {
-  use TestUtil::HTTP::Tiny;
   use Fn;
   use Go;
   use Array;
@@ -16,15 +15,13 @@ class TestCase::Online {
     
     my $url = "http://google.com";
     
-    my $http = TestUtil::HTTP::Tiny->new;
-    
     my $ua = Mojo::UserAgent->new;
     
     my $res = $ua->get($url)->result;
     
-    my $content = $res->body;
+    my $body = $res->body;
     
-    unless (Fn->contains($content, "www.google.com")) {
+    unless (Fn->contains($body, "www.google.com")) {
       return 0;
     }
     
@@ -42,25 +39,25 @@ class TestCase::Online {
     Go->go(method : void () {
       my $url = "http://google.com";
       
-      my $http = TestUtil::HTTP::Tiny->new;
+      my $ua = Mojo::UserAgent->new;
       
-      my $res = $http->get($url);
+      my $res = $ua->get($url)->result;
       
-      my $content = $res->content;
+      my $body = $res->body;
       
-      $RESULT->push(Fn->contains($content, "www.google.com"));
+      $RESULT->push(Fn->contains($body, "www.google.com"));
     });
     
     Go->go(method : void () {
       my $url = "http://google.com";
       
-      my $http = TestUtil::HTTP::Tiny->new;
+      my $ua = Mojo::UserAgent->new;
       
-      my $res = $http->get($url);
+      my $res = $ua->get($url)->result;
       
-      my $content = $res->content;
+      my $body = $res->body;
       
-      $RESULT->push(Fn->contains($content, "www.google.com"));
+      $RESULT->push(Fn->contains($body, "www.google.com"));
     });
     
     Go->gosched;

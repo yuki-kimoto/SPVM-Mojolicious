@@ -10,6 +10,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
   use Mojo::Transaction::HTTP;
   use Mojo::UserAgent::Transactor;
   use Sys;
+  use IO::Socket::INET;
   
   # Enumerations
   private enum {
