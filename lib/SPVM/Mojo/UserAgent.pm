@@ -6,7 +6,7 @@ package SPVM::Mojo::UserAgent;
 
 =head1 Name
 
-SPVM::Mojo::UserAgent - Short Description
+SPVM::Mojo::UserAgent - User Agent
 
 =head1 Description
 
@@ -15,11 +15,17 @@ Mojo::UserAgent class in L<SPVM> has methods to do someting.
 =head1 Usage
 
   use Mojo::UserAgent;
-
-=head1 Details
-
-
-
+  
+  my $url = "http://google.com";
+  
+  my $ua = Mojo::UserAgent->new;
+  
+  my $res = $ua->get($url)->result;
+  
+  my $body = $res->body;
+  
+  my $code = $res->code;
+  
 =head1 Super Class
 
 

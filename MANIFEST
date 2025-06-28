@@ -81,9 +81,5 @@ README.md
 t/basic.t
 t/lib/SPVM/TestCase/Mojolicious.spvm
 t/lib/SPVM/TestCase/Online.spvm
-t/lib/SPVM/TestUtil/HTTP/Tiny.spvm
-t/lib/SPVM/TestUtil/HTTP/Tiny/Daemon.spvm
-t/lib/SPVM/TestUtil/HTTP/Tiny/Handle.spvm
-t/lib/SPVM/TestUtil/HTTP/Tiny/Response.spvm
 t/online.t
 t/webapp/basic.pl
