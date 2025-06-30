@@ -9,6 +9,8 @@ class Mojo::Transaction::WebSocket extends Mojo::Transaction {
   
   has masked : rw byte;
   
+  has established : rw byte;
+  
   # Class Methods
   static method new : Mojo::Transaction::WebSocket () {
     
@@ -17,6 +19,30 @@ class Mojo::Transaction::WebSocket extends Mojo::Transaction {
     $self->SUPER::init;
     
     return $self;
+  }
+  
+  method with_protocols : string ($protos : string[]) {
+    
+    my $req_sec_websocket_protocols_string = $self->req->headers->sec_websocket_protocol;
+    
+    unless ($req_sec_websocket_protocols_string) {
+      return undef;
+    }
+    
+    my $req_sec_websocket_protocols = Fn->split(",", $req_sec_websocket_protocols_string);
+    
+    my $protos_h = Hash->new;
+    for my $req_sec_websocket_protocol (@$req_sec_websocket_protocols) {
+      $req_sec_websocket_protocol = Fn->trim($req_sec_websocket_protocol);
+      for my $proto (@$protos) {
+        if ($req_sec_websocket_protocol eq $proto) {
+          $self->res->headers->set_sec_websocket_protocol($proto);
+          return $proto;
+        }
+      }
+    }
+    
+    return undef;
   }
   
 }

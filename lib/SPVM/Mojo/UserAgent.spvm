@@ -331,7 +331,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     $self->start($new);
   }
   
-  method _finish : void ($tx_ : Mojo::Transaction) {
+  method _finish : void ($tx_ : Mojo::Transaction::HTTP) {
     
     if ($tx_->is_websocket) {
       my $_ = $self->transactor->endpoint($tx_);
@@ -340,7 +340,8 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
       my $port = (int)$_->[2];
       my $endpoint = "$proto:$host:$port";
       
-      return $self->_dequeue($endpoint);
+      $self->_dequeue($endpoint);
+      return;
     }
     else {
       my $tx = (Mojo::Transaction::HTTP)$tx_;

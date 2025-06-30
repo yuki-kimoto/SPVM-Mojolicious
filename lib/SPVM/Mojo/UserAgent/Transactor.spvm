@@ -194,7 +194,7 @@ class Mojo::UserAgent::Transactor {
     return $new;
   }
   
-  method endpoint : object[] ($tx : Mojo::Transaction) {
+  method endpoint : object[] ($tx : Mojo::Transaction::HTTP) {
     
     # Basic endpoint
     my $req   = $tx->req;
@@ -253,7 +253,7 @@ class Mojo::UserAgent::Transactor {
       return undef;
     }
     
-    $ws->established(1);
+    $ws->set_established(1);
     
     return $ws;
   }
