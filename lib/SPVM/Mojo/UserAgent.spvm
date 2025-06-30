@@ -11,10 +11,18 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
   use Mojo::UserAgent::Transactor;
   use Sys;
   use IO::Socket::INET;
+  use IO::Socket::UNIX;
   
   # Enumerations
   private enum {
     READ_BUFFER_SIZE = 4086,
+  }
+  
+  our $DEBUG : ro byte;
+  INIT {
+    if (length(my $_ = Sys->env("SPVM_MOJO_CLIENT_DEBUG"))) {
+      $DEBUG = (byte)$_;
+    }
   }
   
   # Fields
@@ -323,7 +331,47 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     $self->start($new);
   }
   
-  method _reuse : void ($tx : Mojo::Transaction::HTTP, $close : int) {
+  method _finish : void ($tx_ : Mojo::Transaction) {
+    
+    if ($tx_->is_websocket) {
+      my $_ = $self->transactor->endpoint($tx_);
+      my $proto = (string)$_->[0];
+      my $host = (string)$_->[1];
+      my $port = (int)$_->[2];
+      my $endpoint = "$proto:$host:$port";
+      
+      return $self->_dequeue($endpoint);
+    }
+    else {
+      my $tx = (Mojo::Transaction::HTTP)$tx_;
+      
+      # Premature connection close
+      $tx->closed;
+      my $res = $tx->res;
+      $res->finish;
+      
+      if ($res->code == 0) {
+        die "Premature connection close.";
+      }
+      
+      $self->cookie_jar->collect($tx);
+      
+      # Upgrade connection to WebSocket
+      if (my $ws_tx = $self->transactor->upgrade($tx)) {
+        $ws_tx->client_read($tx->res->content->leftovers);
+        return;
+      }
+      
+      # CONNECT requests always have a follow-up request
+      unless (Fn->uc($tx->req->method) eq "CONNECT") {
+        $self->_reuse($tx) ;
+      }
+      
+      $self->_redirect($tx);
+    }
+  }
+  
+  method _reuse : void ($tx : Mojo::Transaction::HTTP) {
     
     # Connection close
     my $max = $self->max_connections;
@@ -335,13 +383,164 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
       $keep_alive_sockets_list->shift;
     }
     
-    my $ret = $self->transactor->endpoint($tx);
-    my $proto = (string)$ret->[0];
-    my $host = (string)$ret->[1];
-    my $port = (int)$ret->[2];
+    my $_ = $self->transactor->endpoint($tx);
+    my $proto = (string)$_->[0];
+    my $host = (string)$_->[1];
+    my $port = (int)$_->[2];
     my $endpoint = "$proto:$host:$port";
     
     $keep_alive_sockets_list->push([(object)$endpoint, $tx->io_socket]);
+  }
+  
+  private method _connection : IO::Socket ($tx : Mojo::Transaction::HTTP) {
+    
+    # Reuse connection
+    my $_ = $self->transactor->endpoint($tx);
+    my $proto = (string)$_->[0];
+    my $host = (string)$_->[1];
+    my $port = (int)$_->[2];
+    my $endpoint = "$proto:$host:$port";
+    
+    my $io_socket = (IO::Socket)undef;
+    if ($io_socket = $self->_dequeue($endpoint)) {
+      if (&DEBUG) {
+        warn "-- Reusing connection ($proto://$host:$port)" ;
+      }
+      
+      unless ($tx->connection) {
+        $tx->set_kept_alive(1) ;
+      }
+      
+      unless ($io_socket isa IO::Socket::UNIX) {
+        my $io_socket_ip = (IO::Socket::IP)$io_socket;
+        $tx->set_local_address($io_socket_ip->sockhost);
+        $tx->set_local_port($io_socket_ip->sockport);
+        $tx->set_remote_address($io_socket_ip->peerhost);
+        $tx->set_remote_port($io_socket_ip->peerport);
+      }
+      
+      return $io_socket;
+    }
+    
+    # CONNECT request to proxy required
+    if ($io_socket = $self->_connect_proxy($tx)) {
+      return $io_socket;
+    }
+    
+    # New connection
+    unless ($proto eq "http" || $proto eq "https" || $proto eq "http+unix") {
+      die "Unsupported protocol: $proto";
+    }
+    
+    $io_socket = $self->_connect($tx);
+    
+    if (&DEBUG) {
+      warn "-- Connect ($proto://$host:$port)";
+    }
+    
+    return $io_socket;
+  }
+  
+  method _connect_proxy : IO::Socket ($old : Mojo::Transaction::HTTP, $io_socket : IO::Socket = undef) {
+
+=pod
+
+    # Start CONNECT request
+    return undef unless my $new = $self->transactor->proxy_connect($old);
+    my $id;
+    return $id = $self->_start(
+      ($loop, $new) => sub {
+        my ($self, $tx) = @_;
+
+        # Real transaction
+        $old->previous($tx)->req->via_proxy(0);
+        my $c = $self->{connections}{$id} = {cb => $cb, ioloop => $loop, tx => $old};
+
+        # CONNECT failed
+        return $self->_error($id, 'Proxy connection failed') if $tx->error || !$tx->res->is_success || !$tx->keep_alive;
+
+        # Start real transaction without TLS upgrade
+        return $self->_process($id) unless $tx->req->url->protocol eq 'https';
+
+        # TLS upgrade before starting the real transaction
+        my $handle = $loop->stream($id)->steal_handle;
+        $self->_remove($id);
+        $id = $self->_connect($loop, $old, $handle);
+        $self->{connections}{$id} = $c;
+      }
+    );
+
+=cut
+
+  }
+
+  method _connect : IO::Socket ($tx : Mojo::Transaction::HTTP, $io_socket : IO::Socket = undef)  {
+
+=pod
+
+    my $t = $self->transactor;
+    my ($proto, $host, $port) = $io_socket ? $t->endpoint($tx) : $t->peer($tx);
+
+    my %options = (timeout => $self->connect_timeout);
+    if   ($proto eq 'http+unix') { $options{path}             = $host }
+    else                         { @options{qw(address port)} = ($host, $port) }
+    $options{socket_options} = $self->socket_options;
+    $options{handle}         = $io_socket if $io_socket;
+
+    # SOCKS
+    if ($proto eq 'socks') {
+      @options{qw(socks_address socks_port)} = @options{qw(address port)};
+      ($proto, @options{qw(address port)}) = $t->endpoint($tx);
+      my $userinfo = $tx->req->via_proxy(0)->proxy->userinfo;
+      @options{qw(socks_user socks_pass)} = split /:/, $userinfo if $userinfo;
+    }
+
+    # TLS
+    if ($options{tls} = $proto eq 'https') {
+      map { $options{"tls_$_"} = $self->$_ } qw(ca cert key);
+      $options{tls_options} = $self->tls_options;
+      $options{tls_options}{SSL_verify_mode} = 0x00 if $self->insecure;
+    }
+
+    weaken $self;
+    my $id;
+    return $id = $loop->client(
+      %options => sub {
+        my ($loop, $err, $stream) = @_;
+
+        # Connection error
+        return unless $self;
+        return $self->_error($id, $err) if $err;
+
+        # Connection established
+        $stream->on(timeout => sub { $self->_error($id, 'Inactivity timeout') });
+        $stream->on(close   => sub { $self && $self->_finish($id, 1) });
+        $stream->on(error   => sub { $self && $self->_error($id, pop) });
+        $stream->on(read    => sub { $self->_read($id, pop) });
+        $self->_process($id);
+      }
+    );
+
+=cut
+
+  }
+
+  method _dequeue : IO::Socket ($endpoint : string)  {
+    
+    my $keep_alive_sockets_list = $self->{keep_alive_sockets_list};
+    
+    for (my $i = 0; $i < $keep_alive_sockets_list->length; $i++) {
+      my $keep_alive_socket = (object[])$keep_alive_sockets_list->get($i);
+      my $my_endpoint = (string)$keep_alive_socket->[0];
+      my $io_socket = (IO::Socket)$keep_alive_socket->[1];
+      
+      if ($endpoint eq $my_endpoint) {
+        $keep_alive_sockets_list->remove($i);
+        return $io_socket;
+      }
+    }
+    
+    return undef;
   }
   
 }
@@ -525,7 +724,7 @@ sub _connection {
   # Reuse connection
   my ($proto, $host, $port) = $self->transactor->endpoint($tx);
   my $id;
-  if ($id = $self->_dequeue($loop, "$proto:$host:$port", 1)) {
+  if ($id = $self->_dequeue($loop, "$proto:$host:$port")) {
     warn "-- Reusing connection $id ($proto://$host:$port)\n" if DEBUG;
     @{$self->{connections}{$id}}{qw(cb tx)} = ($cb, $tx);
     $tx->kept_alive(1) unless $tx->connection;
@@ -553,13 +752,13 @@ sub _dequeue {
   my ($found, @new);
   for my $queued (@$old) {
     push @new, $queued and next if $found || !grep { $_ eq $name } @$queued;
-
+    
     # Search for id/name and sort out corrupted connections if necessary
     next unless my $stream = $loop->stream($queued->[1]);
-    $test && $stream->is_readable ? $stream->close : ($found = $queued->[1]);
+    $stream->is_readable ? $stream->close : ($found = $queued->[1]);
   }
   @$old = @new;
-
+  
   return $found;
 }
 

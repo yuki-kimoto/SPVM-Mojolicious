@@ -10,15 +10,15 @@ class Mojo::Transaction extends Mojo::EventEmitter {
   use Hash;
   
   # Fields
-  has kept_alive : ro byte;
+  has kept_alive : rw byte;
   
-  has local_address : ro string;
+  has local_address : rw string;
   
-  has local_port : ro int;
+  has local_port : rw int;
   
-  has original_remote_address : ro string;
+  has original_remote_address : rw string;
   
-  has remote_port : ro int;
+  has remote_port : rw int;
   
   has req : rw Mojo::Message::Request;
   

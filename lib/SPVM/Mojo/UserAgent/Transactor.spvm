@@ -194,7 +194,7 @@ class Mojo::UserAgent::Transactor {
     return $new;
   }
   
-  method endpoint : object[] ($tx : Mojo::Transaction::HTTP) {
+  method endpoint : object[] ($tx : Mojo::Transaction) {
     
     # Basic endpoint
     my $req   = $tx->req;
@@ -235,6 +235,29 @@ class Mojo::UserAgent::Transactor {
     return [(object)$proto, $host, $port];
   }
   
+  method upgrade : Mojo::Transaction::WebSocket ($tx : Mojo::Transaction::HTTP) {
+    
+    my $code = $tx->res->code;
+    
+    unless ($tx->req->is_handshake && $code == 101) {
+      return undef;
+    }
+    
+    my $ws = Mojo::Transaction::WebSocket->new;
+    $ws->set_handshake($tx);
+    $ws->set_masked(1);
+    
+    my $challenge = Mojo::WebSocket->challenge($ws);
+    
+    unless ($challenge) {
+      return undef;
+    }
+    
+    $ws->established(1);
+    
+    return $ws;
+  }
+
 }
 
 __END__
