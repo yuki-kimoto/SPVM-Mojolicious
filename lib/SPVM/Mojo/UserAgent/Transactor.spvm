@@ -118,6 +118,82 @@ class Mojo::UserAgent::Transactor {
     
     return $tx;
   }
+  
+  method redirect : Mojo::Transaction::HTTP ($old : Mojo::Transaction::HTTP) {
+    
+    # Commonly used codes
+    my $res  = $old->res;
+    my $code = $res->code;
+    
+    unless (@{Fn->grep([$code : int] method : int ($_ : object) { return $_->(int) == $code; }, [(Int)301, 302, 303, 307, 308])}) {
+      return undef ;
+    }
+    
+    # CONNECT requests cannot be redirected
+    my $req = $old->req;
+    
+    if (Fn->uc($req->method) eq "CONNECT") {
+      return undef ;
+    }
+    
+    # Fix location without authority and/or scheme
+    my $location = $res->headers->header("Location");
+    unless (length $location) {
+      return undef;
+    }
+    
+    my $location_url = Mojo::URL->new($location);
+    unless ($location_url->is_abs) {
+      $location_url->set_base($req->url);
+      $location_url = $location_url->to_abs;
+    }
+    my $proto = $location_url->protocol;
+    if (($proto ne "http" && $proto ne "https") || !$location_url->host) {
+      return undef;
+    }
+    
+    # Clone request if necessary
+    my $new = Mojo::Transaction::HTTP->new;
+    if ($code == 307 || $code == 308) {
+      my $clone = $req->clone;
+      unless ($clone) {
+        return undef;
+      }
+      $new->set_req($clone);
+    }
+    else {
+      my $method = Fn->uc($req->method);
+      $method = $code == 303 || $method eq "POST" ? "GET" : $method;
+      
+      my $new_req = $new->req;
+      $new_req->set_method($method);
+      my $headers = $req->headers->clone;
+      $new_req->content->set_headers($headers);
+      
+      for my $_ (@{$headers->names}) {
+        if (Re->m($_, ["^content-", "i"])) {
+          $headers->remove($_) ;
+        }
+      }
+    }
+    
+    unless ($self->compressed) {
+      $new->res->content->set_auto_decompress(0);
+    }
+    
+    my $new_req = $new->req;
+    $new_req->set_url($location_url);
+    my $headers = $new_req->headers;
+    
+    for my $_ (@{["Authorization", "Cookie", "Host", "Referer"]}) {
+      $headers->remove($_) ;
+    }
+    
+    $new->set_previous($old);
+    
+    return $new;
+  }
+
 }
 
 __END__
