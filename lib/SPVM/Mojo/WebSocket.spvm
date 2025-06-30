@@ -32,6 +32,63 @@ class Mojo::WebSocket {
 
   }
 
+  static method parse_frame : object[] ($buffer_ref : string[], $max : int) {
+=pod
+    my ($buffer, $max) = @_;
+
+    # Head
+    return undef unless length $$buffer >= 2;
+    my ($first, $second) = unpack 'C2', $$buffer;
+
+    # FIN
+    my $fin = ($first & 0b10000000) == 0b10000000 ? 1 : 0;
+
+    # RSV1-3
+    my $rsv1 = ($first & 0b01000000) == 0b01000000 ? 1 : 0;
+    my $rsv2 = ($first & 0b00100000) == 0b00100000 ? 1 : 0;
+    my $rsv3 = ($first & 0b00010000) == 0b00010000 ? 1 : 0;
+
+    # Opcode
+    my $op = $first & 0b00001111;
+    warn "-- Parsing frame ($fin, $rsv1, $rsv2, $rsv3, $op)\n" if DEBUG;
+
+    # Small payload
+    my ($hlen, $len) = (2, $second & 0b01111111);
+    if ($len < 126) { warn "-- Small payload ($len)\n" if DEBUG }
+
+    # Extended payload (16-bit)
+    elsif ($len == 126) {
+      return undef unless length $$buffer > 4;
+      $hlen = 4;
+      $len  = unpack 'x2n', $$buffer;
+      warn "-- Extended 16-bit payload ($len)\n" if DEBUG;
+    }
+
+    # Extended payload (64-bit with 32-bit fallback)
+    elsif ($len == 127) {
+      return undef unless length $$buffer > 10;
+      $hlen = 10;
+      $len  = MODERN ? unpack('x2Q>', $$buffer) : unpack('x2x4N', $$buffer);
+      warn "-- Extended 64-bit payload ($len)\n" if DEBUG;
+    }
+
+    # Check message size
+    return 1 if $len > $max;
+
+    # Check if whole packet has arrived
+    $len += 4 if my $masked = $second & 0b10000000;
+    return undef if length $$buffer < ($hlen + $len);
+    substr $$buffer, 0, $hlen, '';
+
+    # Payload
+    my $payload = $len ? substr($$buffer, 0, $len, '') : '';
+    $payload = xor_encode($payload, substr($payload, 0, 4, '') x 128) if $masked;
+    warn dumper $payload if DEBUG;
+
+    return [$fin, $rsv1, $rsv2, $rsv3, $op, $payload];
+=cut
+
+  }
 }
 
 __END__

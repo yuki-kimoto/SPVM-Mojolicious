@@ -17,6 +17,10 @@ class Mojo::Transaction::WebSocket extends Mojo::Transaction {
   
   has write : string;
   
+  has read : string;
+  
+  has max_websocket_size : rw int;
+  
   # Class Methods
   static method new : Mojo::Transaction::WebSocket () {
     
@@ -27,6 +31,51 @@ class Mojo::Transaction::WebSocket extends Mojo::Transaction {
     return $self;
   }
   
+  
+  method server_read : void ($chunk : string) {
+    
+    $self->{read} //= "";
+    
+    $self->{read} .= $chunk;
+    
+    my $max = $self->max_websocket_size;
+    while (1) {
+      
+      my $frame = Mojo::WebSocket->parse_frame(my $_ = [$self->{read}], $max);
+      $self->{read} = $_->[0];
+      
+      unless ($frame) {
+        last;
+      }
+      
+      $self->finish(1009);
+      
+      unless ($frame) {
+        last;
+      }
+      
+      $self->parse_message($frame);
+    }
+    
+    $self->emit("resume");
+  }
+  
+  method finish : void ($num : int) {
+=pod
+    my $close   = $self->{close} = [@_];
+    my $payload = $close->[0] ? pack('n', $close->[0]) : '';
+    $payload .= encode 'UTF-8', $close->[1] if defined $close->[1];
+    $close->[0] //= 1005;
+    $self->send([1, 0, 0, 0, WS_CLOSE, $payload])->{closing} = 1;
+
+    return $self;
+=cut
+
+  }
+
+  method parse_message : void ($frame : object[]) {
+    
+  }
   
   method server_write : string () {
     
