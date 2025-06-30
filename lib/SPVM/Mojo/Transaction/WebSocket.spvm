@@ -11,6 +11,8 @@ class Mojo::Transaction::WebSocket extends Mojo::Transaction {
   
   has established : rw byte;
   
+  has compressed : rw byte;
+  
   # Class Methods
   static method new : Mojo::Transaction::WebSocket () {
     
@@ -19,6 +21,16 @@ class Mojo::Transaction::WebSocket extends Mojo::Transaction {
     $self->SUPER::init;
     
     return $self;
+  }
+  
+  
+  method with_compression : void () {
+    
+    # "permessage-deflate" extension
+    if (Re->m(($self->req->headers->sec_websocket_extensions // ""), "permessage-deflate")) {
+      $self->set_compressed(1);
+      $self->res->headers->set_sec_websocket_extensions("permessage-deflate");
+    }
   }
   
   method with_protocols : string ($protos : string[]) {
