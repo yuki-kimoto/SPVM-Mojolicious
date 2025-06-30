@@ -193,7 +193,48 @@ class Mojo::UserAgent::Transactor {
     
     return $new;
   }
-
+  
+  method endpoint : object[] ($tx : Mojo::Transaction::HTTP) {
+    
+    # Basic endpoint
+    my $req   = $tx->req;
+    my $url   = $req->url;
+    my $proto = $url->protocol // "http";
+    my $host  = $url->ihost;
+    my $port  = $url->port;
+    unless ($port > 0) {
+      $port = $proto eq "https" ? 443 : 80;
+    }
+    
+    # Proxy for normal HTTP requests
+    my $socks = 0;
+    if (my $proxy = $req->proxy) {
+      $socks = $proxy->protocol eq "socks";
+    }
+    
+    if ($proto eq "http" && !$req->is_handshake && !$socks) {
+      return &_proxy($tx, $proto, $host, $port) ;
+    }
+    
+    return [(object)$proto, $host, $port];
+  }
+  
+  private static method _proxy : object[] ($tx : Mojo::Transaction::HTTP, $proto : string, $host : string, $port : int) {
+    
+    my $req = $tx->req;
+    if ($req->via_proxy && (my $proxy = $req->proxy)) {
+      
+      my $proxy_port  = $proxy->port;
+      unless ($proxy_port > 0) {
+        $proxy_port = $proto eq "https" ? 443 : 80;
+      }
+      
+      return [(object)$proxy->protocol, $proxy->ihost, $proxy_port];
+    }
+    
+    return [(object)$proto, $host, $port];
+  }
+  
 }
 
 __END__
