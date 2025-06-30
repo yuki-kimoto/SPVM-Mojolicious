@@ -13,6 +13,10 @@ class Mojo::Transaction::WebSocket extends Mojo::Transaction {
   
   has compressed : rw byte;
   
+  has closing : byte;
+  
+  has write : string;
+  
   # Class Methods
   static method new : Mojo::Transaction::WebSocket () {
     
@@ -23,6 +27,24 @@ class Mojo::Transaction::WebSocket extends Mojo::Transaction {
     return $self;
   }
   
+  
+  method server_write : string () {
+    
+    $self->{write} //= "";
+    
+    unless (length $self->{write}) {
+      $self->emit("drain") ;
+    }
+    
+    if (!length $self->{write} && $self->{closing}) {
+      $self->completed;
+    }
+    
+    my $write = $self->{write};
+    $self->{write} = undef;
+    
+    return $write;
+  }
   
   method with_compression : void () {
     
