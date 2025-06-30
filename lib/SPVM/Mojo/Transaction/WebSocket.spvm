@@ -73,6 +73,31 @@ class Mojo::Transaction::WebSocket extends Mojo::Transaction {
 
   }
 
+  method protocol : string () { return $self->res->headers->sec_websocket_protocol; }
+  
+  method remote_address : string () { return $self->handshake->remote_address; }
+  method remote_port : int () { return $self->handshake->remote_port; }
+  method req : Mojo::Message::Request () { return $self->handshake->req; }
+  method res : Mojo::Message::Response () { return $self->handshake->res; }
+  
+  method resume : void () {
+    $self->handshake->resume;
+  }
+  
+  method send : void ($msg : string, $cb : Callback) {
+  
+=pod
+
+    my ($self, $msg, $cb) = @_;
+    $self->once(drain => $cb) if $cb;
+    $msg = $self->build_message($msg) unless ref $msg eq 'ARRAY';
+    $self->{write} .= Mojo::WebSocket::build_frame($self->masked, @$msg);
+    return $self->emit('resume');
+
+=cut
+
+  }
+  
   method parse_message : void ($frame : object[]) {
     
   }
