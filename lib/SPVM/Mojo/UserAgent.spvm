@@ -300,6 +300,21 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     return $res;
   }
   
+  private method _redirect : void ($old : Mojo::Transaction::HTTP) {
+    
+    my $new = $self->transactor->redirect($old);
+    
+    unless ($new) {
+      return;
+    }
+    
+    unless (@{$old->redirects} < $self->max_redirects) {
+      return;
+    }
+    
+    $self->start($new);
+  }
+  
 }
 
 __END__
