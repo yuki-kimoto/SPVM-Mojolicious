@@ -26,7 +26,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
   
   has request_timeout : rw double;
   
-  has max_connections : int;
+  has max_connections : rw int;
   
   has key : rw string;
   
@@ -49,6 +49,8 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
   has cookie_jar : rw Mojo::UserAgent::CookieJar;
   
   has socket : IO::Socket;
+  
+  has keep_alive_sockets_list : List of object[]; # endpoint and socket pairs 
   
   # Class Methods
   static method new : Mojo::UserAgent () {
@@ -80,6 +82,8 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     $self->{max_redirects} = length(my $_ = Sys->env("SPVM_MOJO_MAX_REDIRECTS")) ? (int)$_ : 0;
     
     $self->{transactor} = Mojo::UserAgent::Transactor->new;
+    
+    $self->{keep_alive_sockets_list} = List->new(new object[0]);
     
     return $self;
   }
@@ -317,6 +321,27 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     }
     
     $self->start($new);
+  }
+  
+  method _reuse : void ($tx : Mojo::Transaction::HTTP, $close : int) {
+    
+    # Connection close
+    my $max = $self->max_connections;
+    
+    # Keep connection alive
+    my $keep_alive_sockets_list = $self->{keep_alive_sockets_list};
+    
+    while ($keep_alive_sockets_list->length && $keep_alive_sockets_list->length >= $max) {
+      $keep_alive_sockets_list->shift;
+    }
+    
+    my $ret = $self->transactor->endpoint($tx);
+    my $proto = (string)$ret->[0];
+    my $host = (string)$ret->[1];
+    my $port = (int)$ret->[2];
+    my $endpoint = "$proto:$host:$port";
+    
+    $keep_alive_sockets_list->push([(object)$endpoint, $tx->io_socket]);
   }
   
 }
