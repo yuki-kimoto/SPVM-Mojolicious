@@ -18,6 +18,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     READ_BUFFER_SIZE = 4086,
   }
   
+  # Class Variables
   our $DEBUG : ro byte;
   INIT {
     if (length(my $_ = Sys->env("SPVM_MOJO_CLIENT_DEBUG"))) {
@@ -96,17 +97,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     return $self;
   }
   
-  method delete : Mojo::Transaction::HTTP ($url : object of string|Mojo::URL, $options : object[] = undef) {
-    
-    my $method = "DELETE";
-    
-    my $tx = $self->build_tx($method, $url, $options);
-    
-    $tx = $self->start($tx);
-    
-    return $tx;
-  }
-  
+  # Instance Methods
   method get : Mojo::Transaction::HTTP ($url : object of string|Mojo::URL, $options : object[] = undef) {
     
     my $method = "GET";
@@ -121,6 +112,17 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
   method head : Mojo::Transaction::HTTP ($url : object of string|Mojo::URL, $options : object[] = undef) {
     
     my $method = "HEAD";
+    
+    my $tx = $self->build_tx($method, $url, $options);
+    
+    $tx = $self->start($tx);
+    
+    return $tx;
+  }
+  
+  method delete : Mojo::Transaction::HTTP ($url : object of string|Mojo::URL, $options : object[] = undef) {
+    
+    my $method = "DELETE";
     
     my $tx = $self->build_tx($method, $url, $options);
     
@@ -393,7 +395,52 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     $keep_alive_sockets_list->push([(object)$endpoint, $tx->io_socket]);
   }
   
-  private method _connection : IO::Socket ($tx : Mojo::Transaction::HTTP) {
+  method _connect_proxy : Mojo::Transaction::HTTP ($old : Mojo::Transaction::HTTP) {
+    
+    # Start CONNECT request
+    my $new = $self->transactor->proxy_connect($old);
+    
+    unless ($new) {
+      return undef;
+    }
+    
+    my $tx = $self->start($new);
+    
+    # Real transaction
+    $old->set_previous($tx);
+    $old->req->set_via_proxy(0);
+    
+    # CONNECT failed
+    if (!$tx->res->is_success || !$tx->keep_alive) {
+      die "Proxy connection failed.";
+    }
+    
+    # Start real transaction without TLS upgrade
+    unless ($tx->req->url->protocol eq "https") {
+      $self->_process($tx);
+      return $tx;
+    }
+    
+    # TLS upgrade before starting the real transaction
+    $tx = $self->_connect($old);
+    
+    return $tx;
+  }
+  
+  method _process : void ($tx : Mojo::Transaction::HTTP) {
+    
+    my $io_socket = $tx->io_socket;
+    
+    unless ($io_socket isa IO::Socket::UNIX) {
+      my $io_socket_ip = (IO::Socket::IP)$io_socket;
+      $tx->set_local_address($io_socket_ip->sockhost);
+      $tx->set_local_port($io_socket_ip->sockport);
+      $tx->set_remote_address($io_socket_ip->peerhost);
+      $tx->set_remote_port($io_socket_ip->peerport);
+    }
+  }
+  
+  private method _connection : Mojo::Transaction::HTTP ($tx : Mojo::Transaction::HTTP) {
     
     # Reuse connection
     my $_ = $self->transactor->endpoint($tx);
@@ -412,20 +459,14 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
         $tx->set_kept_alive(1) ;
       }
       
-      unless ($io_socket isa IO::Socket::UNIX) {
-        my $io_socket_ip = (IO::Socket::IP)$io_socket;
-        $tx->set_local_address($io_socket_ip->sockhost);
-        $tx->set_local_port($io_socket_ip->sockport);
-        $tx->set_remote_address($io_socket_ip->peerhost);
-        $tx->set_remote_port($io_socket_ip->peerport);
-      }
+      $self->_process($tx);
       
-      return $io_socket;
+      return $tx;
     }
     
     # CONNECT request to proxy required
-    if ($io_socket = $self->_connect_proxy($tx)) {
-      return $io_socket;
+    if ($tx = $self->_connect_proxy($tx)) {
+      return $tx;
     }
     
     # New connection
@@ -433,49 +474,16 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
       die "Unsupported protocol: $proto";
     }
     
-    $io_socket = $self->_connect($tx);
+    $tx = $self->_connect($tx);
     
     if (&DEBUG) {
       warn "-- Connect ($proto://$host:$port)";
     }
     
-    return $io_socket;
+    return $tx;
   }
   
-  method _connect_proxy : IO::Socket ($old : Mojo::Transaction::HTTP, $io_socket : IO::Socket = undef) {
-
-=pod
-
-    # Start CONNECT request
-    return undef unless my $new = $self->transactor->proxy_connect($old);
-    my $id;
-    return $id = $self->_start(
-      ($loop, $new) => sub {
-        my ($self, $tx) = @_;
-
-        # Real transaction
-        $old->previous($tx)->req->via_proxy(0);
-        my $c = $self->{connections}{$id} = {cb => $cb, ioloop => $loop, tx => $old};
-
-        # CONNECT failed
-        return $self->_error($id, 'Proxy connection failed') if $tx->error || !$tx->res->is_success || !$tx->keep_alive;
-
-        # Start real transaction without TLS upgrade
-        return $self->_process($id) unless $tx->req->url->protocol eq 'https';
-
-        # TLS upgrade before starting the real transaction
-        my $handle = $loop->stream($id)->steal_handle;
-        $self->_remove($id);
-        $id = $self->_connect($loop, $old, $handle);
-        $self->{connections}{$id} = $c;
-      }
-    );
-
-=cut
-
-  }
-
-  method _connect : IO::Socket ($tx : Mojo::Transaction::HTTP, $io_socket : IO::Socket = undef)  {
+  method _connect : Mojo::Transaction::HTTP ($tx : Mojo::Transaction::HTTP, $io_socket : IO::Socket = undef)  {
 
 =pod
 
