@@ -331,10 +331,19 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     $self->start($new);
   }
   
-  method _finish : void ($tx_ : Mojo::Transaction::HTTP) {
+  method _finish : void ($tx : Mojo::Transaction::HTTP) {
     
-    if ($tx_->is_websocket) {
-      my $_ = $self->transactor->endpoint($tx_);
+    # Premature connection close
+    $tx->closed;
+    my $res = $tx->res;
+    $res->finish;
+    
+    if ($res->code == 0) {
+      die "Premature connection close.";
+    }
+    
+    if ($tx->is_websocket) {
+      my $_ = $self->transactor->endpoint($tx);
       my $proto = (string)$_->[0];
       my $host = (string)$_->[1];
       my $port = (int)$_->[2];
@@ -343,33 +352,20 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
       $self->_dequeue($endpoint);
       return;
     }
-    else {
-      my $tx = (Mojo::Transaction::HTTP)$tx_;
-      
-      # Premature connection close
-      $tx->closed;
-      my $res = $tx->res;
-      $res->finish;
-      
-      if ($res->code == 0) {
-        die "Premature connection close.";
-      }
-      
-      $self->cookie_jar->collect($tx);
-      
-      # Upgrade connection to WebSocket
-      if (my $ws_tx = $self->transactor->upgrade($tx)) {
-        $ws_tx->client_read($tx->res->content->leftovers);
-        return;
-      }
-      
-      # CONNECT requests always have a follow-up request
-      unless (Fn->uc($tx->req->method) eq "CONNECT") {
-        $self->_reuse($tx) ;
-      }
-      
-      $self->_redirect($tx);
+    $self->cookie_jar->collect($tx);
+    
+    # Upgrade connection to WebSocket
+    if (my $ws_tx = $self->transactor->upgrade($tx)) {
+      $ws_tx->client_read($tx->res->content->leftovers);
+      return;
     }
+    
+    # CONNECT requests always have a follow-up request
+    unless (Fn->uc($tx->req->method) eq "CONNECT") {
+      $self->_reuse($tx) ;
+    }
+    
+    $self->_redirect($tx);
   }
   
   method _reuse : void ($tx : Mojo::Transaction::HTTP) {
