@@ -71,6 +71,8 @@ lib/SPVM/Mojo/Util.pm
 lib/SPVM/Mojo/Util.spvm
 lib/SPVM/Mojo/WebSocket.pm
 lib/SPVM/Mojo/WebSocket.spvm
+lib/SPVM/Mojo/WebSocket/Frame.pm
+lib/SPVM/Mojo/WebSocket/Frame.spvm
 lib/SPVM/Mojolicious.pm
 lib/SPVM/Mojolicious.spvm
 LICENSE

@@ -5,6 +5,7 @@ class Mojo::WebSocket {
   version_from Mojolicious;
   
   use Mojo::Transaction::WebSocket;
+  use Mojo::WebSocket::Frame;
   
   enum {
     WS_CONTINUATION = 0x0,
@@ -15,7 +16,7 @@ class Mojo::WebSocket {
     WS_PONG = 0xa,
   }
   
-  static method build_frame : string  ($masked : int, $fin : int, $rsv1 : int, $rsv2 : int, $rsv3 :int, $op : int, $payload : string) {
+  static method build_frame : string  ($frame : Mojo::WebSocket::Frame) {
 
 =pod
 
