@@ -21,6 +21,10 @@ class Mojo::Transaction::WebSocket extends Mojo::Transaction {
   
   has max_websocket_size : rw int;
   
+  has close_code : int;
+  
+  has close_reason : string;
+  
   # Class Methods
   static method new : Mojo::Transaction::WebSocket () {
     
@@ -31,6 +35,41 @@ class Mojo::Transaction::WebSocket extends Mojo::Transaction {
     return $self;
   }
   
+  # Instance Methods
+  method client_read : void ($chunk : string) { $self->server_read($chunk); }
+  method client_write : string () { return $self->server_write; }
+  
+  method closed : void () {
+    
+    $self->completed;
+    
+    my $code = (my $_ = $self->{close_code}) > 0 ? $_ : 1006;
+    
+    my $reason = $self->{close_reason};
+    
+    $self->emit(finish => $code, $reason);
+  }
+  
+  method connection : int () { return $self->handshake->connection; }
+  
+  method finish : void ($code : int = 0, $reason : string = undef) {
+    
+    my $payload = $code ? Fn->pack("n", [(object)$code]) : "";
+    
+    if ($reason) {
+      $payload .= $reason;
+    }
+    
+    $self->send([(object)1, 0, 0, 0, Mojo::WebSocket->WS_CLOSE, $payload]);
+    
+    $self->{closing} = 1;
+  }
+  
+  method is_websocket : int () { return 1; }
+  
+  method kept_alive : int () { $self->handshake->kept_alive; }
+  method local_address : string () { return $self->handshake->local_address; }
+  method local_port : int () { return $self->handshake->local_port; }
   
   method server_read : void ($chunk : string) {
     
@@ -60,19 +99,6 @@ class Mojo::Transaction::WebSocket extends Mojo::Transaction {
     $self->emit("resume");
   }
   
-  method finish : void ($num : int) {
-=pod
-    my $close   = $self->{close} = [@_];
-    my $payload = $close->[0] ? pack('n', $close->[0]) : '';
-    $payload .= encode 'UTF-8', $close->[1] if defined $close->[1];
-    $close->[0] //= 1005;
-    $self->send([1, 0, 0, 0, WS_CLOSE, $payload])->{closing} = 1;
-
-    return $self;
-=cut
-
-  }
-
   method protocol : string () { return $self->res->headers->sec_websocket_protocol; }
   
   method remote_address : string () { return $self->handshake->remote_address; }
@@ -84,7 +110,7 @@ class Mojo::Transaction::WebSocket extends Mojo::Transaction {
     $self->handshake->resume;
   }
   
-  method send : void ($msg : string, $cb : Callback) {
+  method send : void ($msg : object[], $cb : Callback = undef) {
   
 =pod
 

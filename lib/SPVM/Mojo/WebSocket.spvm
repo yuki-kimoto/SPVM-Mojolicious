@@ -6,6 +6,15 @@ class Mojo::WebSocket {
   
   use Mojo::Transaction::WebSocket;
   
+  enum {
+    WS_CONTINUATION = 0x0,
+    WS_TEXT = 0x1,
+    WS_BINARY = 0x2,
+    WS_CLOSE = 0x8,
+    WS_PING = 0x9,
+    WS_PONG = 0xa,
+  }
+  
   static method challenge : string ($tx : Mojo::Transaction::WebSocket) {
 
 =pod
