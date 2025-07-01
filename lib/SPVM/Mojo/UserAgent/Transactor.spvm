@@ -119,6 +119,41 @@ class Mojo::UserAgent::Transactor {
     return $tx;
   }
   
+  method proxy_connect : Mojo::Transaction::HTTP ($old : Mojo::Transaction::HTTP) {
+   
+    # Already a CONNECT request
+    my $req = $old->req;
+    if (Fn->uc($req->method) eq "CONNECT") {
+      return undef ;
+    }
+    
+    # No proxy
+    my $proxy = $req->proxy;
+    unless ($proxy && $req->via_proxy) {
+      return undef;
+    }
+    if ($proxy->protocol eq "socks") {
+      return undef;
+    }
+    
+    # WebSocket and/or HTTPS
+    my $url = $req->url;
+    unless ($req->is_handshake || $url->protocol eq "https") {
+      return undef ;
+    }
+    
+    # CONNECT request (expect a bad response)
+    my $new_url = $url->clone;
+    $new_url->set_userinfo(undef);
+    my $new = $self->tx(CONNECT => $new_url);
+    $new->req->set_proxy($proxy);
+    my $new_res_content = $new->res->content;
+    $new_res_content->set_auto_relax(0);
+    $new_res_content->headers->set_connection("keep-alive");
+    
+    return $new;
+  }
+  
   method redirect : Mojo::Transaction::HTTP ($old : Mojo::Transaction::HTTP) {
     
     # Commonly used codes
