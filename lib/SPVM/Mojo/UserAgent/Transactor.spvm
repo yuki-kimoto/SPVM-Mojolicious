@@ -194,7 +194,7 @@ class Mojo::UserAgent::Transactor {
     return $new;
   }
   
-  method endpoint : object[] ($tx : Mojo::Transaction::HTTP) {
+  method endpoint : object[] ($tx : Mojo::Transaction) {
     
     # Basic endpoint
     my $req   = $tx->req;
@@ -219,7 +219,7 @@ class Mojo::UserAgent::Transactor {
     return [(object)$proto, $host, $port];
   }
   
-  private static method _proxy : object[] ($tx : Mojo::Transaction::HTTP, $proto : string, $host : string, $port : int) {
+  private static method _proxy : object[] ($tx : Mojo::Transaction, $proto : string, $host : string, $port : int) {
     
     my $req = $tx->req;
     if ($req->via_proxy && (my $proxy = $req->proxy)) {

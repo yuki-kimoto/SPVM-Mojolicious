@@ -331,7 +331,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     $self->start($new);
   }
   
-  method _finish : void ($tx : Mojo::Transaction::HTTP) {
+  method _finish : void ($tx : Mojo::Transaction) {
     
     # Premature connection close
     $tx->closed;
@@ -352,20 +352,24 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
       $self->_dequeue($endpoint);
       return;
     }
-    $self->cookie_jar->collect($tx);
-    
-    # Upgrade connection to WebSocket
-    if (my $ws_tx = $self->transactor->upgrade($tx)) {
-      $ws_tx->client_read($tx->res->content->leftovers);
-      return;
+    else {
+      my $tx_ = (Mojo::Transaction::HTTP)$tx;
+      
+      $self->cookie_jar->collect($tx_);
+      
+      # Upgrade connection to WebSocket
+      if (my $ws_tx = $self->transactor->upgrade($tx_)) {
+        $ws_tx->client_read($tx_->res->content->leftovers);
+        return;
+      }
+      
+      # CONNECT requests always have a follow-up request
+      unless (Fn->uc($tx_->req->method) eq "CONNECT") {
+        $self->_reuse($tx_) ;
+      }
+      
+      $self->_redirect($tx_);
     }
-    
-    # CONNECT requests always have a follow-up request
-    unless (Fn->uc($tx->req->method) eq "CONNECT") {
-      $self->_reuse($tx) ;
-    }
-    
-    $self->_redirect($tx);
   }
   
   method _reuse : void ($tx : Mojo::Transaction::HTTP) {
