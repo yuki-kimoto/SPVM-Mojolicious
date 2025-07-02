@@ -231,6 +231,8 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     
     $self->read_response($tx);
     
+    $self->finish($tx);
+    
     return $tx;
   }
   
@@ -426,8 +428,6 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     }
     
     $tx->set_res($res);
-    
-    $self->_finish($tx);
   }
   
   private method _redirect : void ($old : Mojo::Transaction::HTTP) {
@@ -445,7 +445,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     $self->start($new);
   }
   
-  method _finish : void ($tx : Mojo::Transaction) {
+  method finish : void ($tx : Mojo::Transaction) {
     
     # Premature connection close
     $tx->closed;
