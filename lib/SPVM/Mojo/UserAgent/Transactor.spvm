@@ -292,7 +292,17 @@ class Mojo::UserAgent::Transactor {
     
     return $ws;
   }
-
+  
+  method peer : object[] ($tx : Mojo::Transaction::HTTP) {
+    
+    my $_ = $self->endpoint($tx);
+    my $proto = (string)$_->[0];
+    my $host = (string)$_->[1];
+    my $port = (int)$_->[2];
+    
+    return &_proxy($tx, $proto, $host, $port);
+  }
+  
 }
 
 __END__

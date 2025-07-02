@@ -47,9 +47,9 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
   
   has max_redirects : rw int;
   
-  has socket_options : object[];
+  has socket_options : rw object[];
   
-  has tls_options : object[];
+  has tls_options : rw object[];
   
   has transactor : rw Mojo::UserAgent::Transactor;
   
@@ -57,7 +57,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
   
   has cookie_jar : rw Mojo::UserAgent::CookieJar;
   
-  has socket : IO::Socket;
+  has handle : IO::Socket;
   
   has keep_alive_sockets_list : List of object[]; # endpoint and socket pairs 
   
@@ -272,12 +272,12 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
       die "The scheme $scheme is not supported.";
     }
     
-    $self->{socket} = $socket;
+    $self->{handle} = $socket;
   }
   
   private method write_request : void ($req : Mojo::Message::Request) {
     
-    my $socket = $self->{socket};
+    my $socket = $self->{handle};
     
     my $start_line = $req->build_start_line;
     
@@ -294,7 +294,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     
     my $res = Mojo::Message::Response->new;
     
-    my $handle = $self->{socket};
+    my $handle = $self->{handle};
     
     while (1) {
       my $chunk = (mutable string)new_string_len &READ_BUFFER_SIZE;
@@ -392,7 +392,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     my $port = (int)$_->[2];
     my $endpoint = "$proto:$host:$port";
     
-    $keep_alive_sockets_list->push([(object)$endpoint, $tx->io_socket]);
+    $keep_alive_sockets_list->push([(object)$endpoint, $tx->handle]);
   }
   
   method _connect_proxy : Mojo::Transaction::HTTP ($old : Mojo::Transaction::HTTP) {
@@ -422,21 +422,21 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     }
     
     # TLS upgrade before starting the real transaction
-    $tx = $self->_connect($old);
+    $tx = $self->connect_v2($old);
     
     return $tx;
   }
   
   method _process : void ($tx : Mojo::Transaction::HTTP) {
     
-    my $io_socket = $tx->io_socket;
+    my $handle = $tx->handle;
     
-    unless ($io_socket isa IO::Socket::UNIX) {
-      my $io_socket_ip = (IO::Socket::IP)$io_socket;
-      $tx->set_local_address($io_socket_ip->sockhost);
-      $tx->set_local_port($io_socket_ip->sockport);
-      $tx->set_remote_address($io_socket_ip->peerhost);
-      $tx->set_remote_port($io_socket_ip->peerport);
+    unless ($handle isa IO::Socket::UNIX) {
+      my $handle_ip = (IO::Socket::IP)$handle;
+      $tx->set_local_address($handle_ip->sockhost);
+      $tx->set_local_port($handle_ip->sockport);
+      $tx->set_remote_address($handle_ip->peerhost);
+      $tx->set_remote_port($handle_ip->peerport);
     }
   }
   
@@ -449,8 +449,8 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     my $port = (int)$_->[2];
     my $endpoint = "$proto:$host:$port";
     
-    my $io_socket = (IO::Socket)undef;
-    if ($io_socket = $self->_dequeue($endpoint)) {
+    my $handle = (IO::Socket)undef;
+    if ($handle = $self->_dequeue($endpoint)) {
       if (&DEBUG) {
         warn "-- Reusing connection ($proto://$host:$port)" ;
       }
@@ -474,7 +474,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
       die "Unsupported protocol: $proto";
     }
     
-    $tx = $self->_connect($tx);
+    $tx = $self->connect_v2($tx);
     
     if (&DEBUG) {
       warn "-- Connect ($proto://$host:$port)";
@@ -483,57 +483,123 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     return $tx;
   }
   
-  method _connect : Mojo::Transaction::HTTP ($tx : Mojo::Transaction::HTTP, $io_socket : IO::Socket = undef)  {
-
-=pod
-
+  method connect_v2 : Mojo::Transaction::HTTP ($tx : Mojo::Transaction::HTTP)  {
+    
     my $t = $self->transactor;
-    my ($proto, $host, $port) = $io_socket ? $t->endpoint($tx) : $t->peer($tx);
+    my $_ = $t->peer($tx);
+    my $proto = (string)$_->[0];
+    my $host = (string)$_->[1];
+    my $port = (int)$_->[2];
+    
+    my $options_h = Hash->new;
+    $options_h->set(timeout => $self->connect_timeout);
+    
+    if ($proto eq "http+unix") { $options_h->set(path => $host); }
+    else {
+      $options_h->set(address => $host);
+      $options_h->set(port => $port);
+    }
+    $options_h->set(socket_options => $self->socket_options);
 
-    my %options = (timeout => $self->connect_timeout);
-    if   ($proto eq 'http+unix') { $options{path}             = $host }
-    else                         { @options{qw(address port)} = ($host, $port) }
-    $options{socket_options} = $self->socket_options;
-    $options{handle}         = $io_socket if $io_socket;
+=pod TODO
 
     # SOCKS
-    if ($proto eq 'socks') {
-      @options{qw(socks_address socks_port)} = @options{qw(address port)};
-      ($proto, @options{qw(address port)}) = $t->endpoint($tx);
-      my $userinfo = $tx->req->via_proxy(0)->proxy->userinfo;
-      @options{qw(socks_user socks_pass)} = split /:/, $userinfo if $userinfo;
-    }
-
-    # TLS
-    if ($options{tls} = $proto eq 'https') {
-      map { $options{"tls_$_"} = $self->$_ } qw(ca cert key);
-      $options{tls_options} = $self->tls_options;
-      $options{tls_options}{SSL_verify_mode} = 0x00 if $self->insecure;
-    }
-
-    weaken $self;
-    my $id;
-    return $id = $loop->client(
-      %options => sub {
-        my ($loop, $err, $stream) = @_;
-
-        # Connection error
-        return unless $self;
-        return $self->_error($id, $err) if $err;
-
-        # Connection established
-        $stream->on(timeout => sub { $self->_error($id, 'Inactivity timeout') });
-        $stream->on(close   => sub { $self && $self->_finish($id, 1) });
-        $stream->on(error   => sub { $self && $self->_error($id, pop) });
-        $stream->on(read    => sub { $self->_read($id, pop) });
-        $self->_process($id);
+    if ($proto eq "socks") {
+      $options_h->set(socks_address => $options_h->get_string("address"));
+      $options_h->set(socks_port => $options_h->get_int("socks_port"));
+      
+      my $_ = $t->endpoint($tx);
+      my $proto = (string)$_->[0];
+      my $host = (string)$_->[1];
+      my $port = (int)$_->[2];
+      
+      $options_h->set(address => $host);
+      $options_h->set(port => $port);
+      
+      my $tx_req = $tx->req;
+      $tx_req->set_via_proxy(0);
+      my $userinfo = $tx_req->proxy->userinf;
+      
+      if ($userinfo) {
+        my $_ = Fn->split(":", $userinfo);
+        my $socks_user = $_->[0];
+        my $socks_pass = $_->[1];
+        
+        $options_h->set(socks_user => $socks_user);
+        $options_h->set(socks_pass => $socks_pass);
       }
-    );
+    }
 
 =cut
 
+    # TLS
+    my $tls = $proto eq "https";
+    
+    my $path = $options_h->get_string("path");
+    
+    # UNIX domain socket
+    my $handle = (IO::Socket)undef;
+    if ($path) {
+      $options_h->set(Peer => $path);
+      
+      $handle = (IO::Socket)IO::Socket::UNIX->new($options_h->to_array);
+    }
+    
+    # IP socket
+    else {
+      $options_h->set(PeerAddr => $options_h->get_string("socks_address") // $options_h->get_string("address"));
+      $options_h->set(PeerPort => &_port($options_h));
+      
+      my $socket_options = (object[])$options_h->get("socket_options");
+      for (my $i = 0; $i < @$socket_options; $i += 2) {
+        my $key = (string)$socket_options->[$i];
+        my $value = $socket_options->[$i + 1];
+        $options_h->set($key => $value);
+      }
+      
+      if ($tls) {
+        $options_h->set(tls => $tls);
+        $options_h->set(tls_ca => $self->ca);
+        $options_h->set(tls_cert => $self->cert);
+        $options_h->set(tls_key => $self->key);
+        
+        $options_h->set(tls_options => $self->tls_options);
+        if ($self->insecure) {
+          my $tls_options = (object[])$options_h->get("tls_options") // new object[0];;
+          $tls_options = Fn->merge_options($tls_options, [(object)0x00]);
+          $options_h->set(tls_options => $tls_options);
+        }
+        
+        $handle = (IO::Socket)IO::Socket::SSL->new($options_h->to_array);
+      }
+      else {
+        $handle = (IO::Socket)IO::Socket::IP->new($options_h->to_array);
+      }
+    }
+    
+    $self->{handle} = $handle;
+    
+    return $tx;
   }
-
+  
+  static method _port : int ($options_h : Hash) {
+    
+    my $port = 0;
+    
+    if ($options_h->exists("socks_port")) {
+      $port = $options_h->get_int("socks_port");
+    }
+    elsif ($options_h->exists("port")) {
+      $port = $options_h->get_int("port");
+    }
+    else {
+      my $tsl = $options_h->get_or_default_int("tls", 0);
+      $port = $tsl ? 443 : 80;
+    }
+    
+    return $port;
+  }
+  
   method _dequeue : IO::Socket ($endpoint : string)  {
     
     my $keep_alive_sockets_list = $self->{keep_alive_sockets_list};
@@ -541,11 +607,11 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     for (my $i = 0; $i < $keep_alive_sockets_list->length; $i++) {
       my $keep_alive_socket = (object[])$keep_alive_sockets_list->get($i);
       my $my_endpoint = (string)$keep_alive_socket->[0];
-      my $io_socket = (IO::Socket)$keep_alive_socket->[1];
+      my $handle = (IO::Socket)$keep_alive_socket->[1];
       
       if ($endpoint eq $my_endpoint) {
         $keep_alive_sockets_list->remove($i);
-        return $io_socket;
+        return $handle;
       }
     }
     
@@ -1550,5 +1616,388 @@ C<STDERR>.
 =head1 SEE ALSO
 
 L<Mojolicious>, L<Mojolicious::Guides>, L<https://mojolicious.org>.
+
+=cut
+
+
+
+
+
+
+
+
+
+package Mojo::IOLoop::Client;
+use Mojo::Base 'Mojo::EventEmitter';
+
+use Errno qw(EINPROGRESS);
+use IO::Socket::IP;
+use IO::Socket::UNIX;
+use Mojo::IOLoop;
+use Mojo::IOLoop::TLS;
+use Scalar::Util qw(weaken);
+use Socket       qw(IPPROTO_TCP SOCK_STREAM TCP_NODELAY);
+
+# Non-blocking name resolution requires Net::DNS::Native
+use constant NNR => $ENV{MOJO_NO_NNR} ? 0 : !!eval { require Net::DNS::Native; Net::DNS::Native->VERSION('0.15'); 1 };
+my $NDN;
+
+# SOCKS support requires IO::Socket::Socks
+use constant SOCKS => $ENV{MOJO_NO_SOCKS}
+  ? 0
+  : !!eval { require IO::Socket::Socks; IO::Socket::Socks->VERSION('0.64'); 1 };
+use constant READ  => SOCKS ? IO::Socket::Socks::SOCKS_WANT_READ()  : 0;
+use constant WRITE => SOCKS ? IO::Socket::Socks::SOCKS_WANT_WRITE() : 0;
+
+has reactor => sub { Mojo::IOLoop->singleton->reactor }, weak => 1;
+
+sub DESTROY { shift->_cleanup }
+
+sub can_nnr   {NNR}
+sub can_socks {SOCKS}
+
+sub connect {
+  my ($self, $args) = (shift, ref $_[0] ? $_[0] : {@_});
+
+  # Timeout
+  weaken $self;
+  my $reactor = $self->reactor;
+  $self->{timer} = $reactor->timer($args->{timeout} || 10, sub { $self->emit(error => 'Connect timeout') });
+
+  # Blocking name resolution
+  $_ && s/[[\]]//g for @$args{qw(address socks_address)};
+  my $address = $args->{socks_address} || ($args->{address} ||= '127.0.0.1');
+  return $reactor->next_tick(sub { $self && $self->_connect($args) }) if !NNR || $args->{handle} || $args->{path};
+
+  # Non-blocking name resolution
+  $NDN //= Net::DNS::Native->new(pool => 5, extra_thread => 1);
+  my $handle = $self->{dns}
+    = $NDN->getaddrinfo($address, _port($args), {protocol => IPPROTO_TCP, socktype => SOCK_STREAM});
+  $reactor->io(
+    $handle => sub {
+      my $reactor = shift;
+
+      $reactor->remove($self->{dns});
+      my ($err, @res) = $NDN->get_result(delete $self->{dns});
+      return $self->emit(error => "Can't resolve: $err") if $err;
+
+      $args->{addr_info} = \@res;
+      $self->_connect($args);
+    }
+  )->watch($handle, 1, 0);
+}
+
+sub _cleanup {
+  my $self = shift;
+  $NDN->timedout($self->{dns}) if $NDN && $self->{dns};
+  return $self unless my $reactor = $self->reactor;
+  $self->{$_} && $reactor->remove(delete $self->{$_}) for qw(dns timer handle);
+  return $self;
+}
+
+sub _connect {
+  my ($self, $args) = @_;
+
+  my $path   = $args->{path};
+  my $handle = $self->{handle} = $args->{handle};
+
+  unless ($handle) {
+    my $class   = $path ? 'IO::Socket::UNIX' : 'IO::Socket::IP';
+    my %options = (Blocking => 0);
+
+    # UNIX domain socket
+    if ($path) { $options{Peer} = $path }
+
+    # IP socket
+    else {
+      if (my $info = $args->{addr_info}) { $options{PeerAddrInfo} = $info }
+      else {
+        $options{PeerAddr} = $args->{socks_address} || $args->{address};
+        $options{PeerPort} = _port($args);
+      }
+      @options{keys %{$args->{socket_options}}} = values %{$args->{socket_options}} if $args->{socket_options};
+    }
+
+    return $self->emit(error => "Can't connect: $@") unless $self->{handle} = $handle = $class->new(%options);
+  }
+  $handle->blocking(0);
+
+  $path ? $self->_try_socks($args) : $self->_wait('_ready', $handle, $args);
+}
+
+sub _port { $_[0]{socks_port} || $_[0]{port} || ($_[0]{tls} ? 443 : 80) }
+
+sub _ready {
+  my ($self, $args) = @_;
+
+  # Socket changes in between attempts and needs to be re-added for epoll/kqueue
+  my $handle = $self->{handle};
+  unless ($handle->connect) {
+    return $self->emit(error => $!) unless $! == EINPROGRESS;
+    $self->reactor->remove($handle);
+    return $self->_wait('_ready', $handle, $args);
+  }
+
+  return $self->emit(error => $! || 'Not connected') unless $handle->connected;
+
+  # Disable Nagle's algorithm
+  setsockopt $handle, IPPROTO_TCP, TCP_NODELAY, 1;
+
+  $self->_try_socks($args);
+}
+
+sub _socks {
+  my ($self, $args) = @_;
+
+  # Connected
+  my $handle = $self->{handle};
+  return $self->_try_tls($args) if $handle->ready;
+
+  # Switch between reading and writing
+  my $err = $IO::Socket::Socks::SOCKS_ERROR;
+  if    ($err == READ)  { $self->reactor->watch($handle, 1, 0) }
+  elsif ($err == WRITE) { $self->reactor->watch($handle, 1, 1) }
+  else                  { $self->emit(error => $err) }
+}
+
+sub _try_socks {
+  my ($self, $args) = @_;
+
+  my $handle = $self->{handle};
+  return $self->_try_tls($args)                                                     unless $args->{socks_address};
+  return $self->emit(error => 'IO::Socket::Socks 0.64+ required for SOCKS support') unless SOCKS;
+
+  my %options = (ConnectAddr => $args->{address}, ConnectPort => $args->{port});
+  @options{qw(AuthType Username Password)} = ('userpass', @$args{qw(socks_user socks_pass)}) if $args->{socks_user};
+  my $reactor = $self->reactor;
+  $reactor->remove($handle);
+  return $self->emit(error => 'SOCKS upgrade failed') unless IO::Socket::Socks->start_SOCKS($handle, %options);
+
+  $self->_wait('_socks', $handle, $args);
+}
+
+sub _try_tls {
+  my ($self, $args) = @_;
+
+  my $handle = $self->{handle};
+  return $self->_cleanup->emit(connect => $handle) unless $args->{tls};
+  my $reactor = $self->reactor;
+  $reactor->remove($handle);
+
+  # Start TLS handshake
+  weaken $self;
+  my $tls = Mojo::IOLoop::TLS->new($handle)->reactor($self->reactor);
+  $tls->on(upgrade => sub { $self->_cleanup->emit(connect => pop) });
+  $tls->on(error   => sub { $self->emit(error => pop) });
+  $tls->negotiate(%$args);
+}
+
+sub _wait {
+  my ($self, $next, $handle, $args) = @_;
+  weaken $self;
+  $self->reactor->io($handle => sub { $self->$next($args) })->watch($handle, 0, 1);
+}
+
+1;
+
+=encoding utf8
+
+=head1 NAME
+
+Mojo::IOLoop::Client - Non-blocking TCP/IP and UNIX domain socket client
+
+=head1 SYNOPSIS
+
+  use Mojo::IOLoop::Client;
+
+  # Create socket connection
+  my $client = Mojo::IOLoop::Client->new;
+  $client->on(connect => sub ($client, $handle) {...});
+  $client->on(error => sub ($client, $err) {...});
+  $client->connect(address => 'example.com', port => 80);
+
+  # Start reactor if necessary
+  $client->reactor->start unless $client->reactor->is_running;
+
+=head1 DESCRIPTION
+
+L<Mojo::IOLoop::Client> opens TCP/IP and UNIX domain socket connections for L<Mojo::IOLoop>.
+
+=head1 EVENTS
+
+L<Mojo::IOLoop::Client> inherits all events from L<Mojo::EventEmitter> and can emit the following new ones.
+
+=head2 connect
+
+  $client->on(connect => sub ($client, $handle) {...});
+
+Emitted once the connection is established.
+
+=head2 error
+
+  $client->on(error => sub ($client, $err) {...});
+
+Emitted if an error occurs on the connection, fatal if unhandled.
+
+=head1 ATTRIBUTES
+
+L<Mojo::IOLoop::Client> implements the following attributes.
+
+=head2 reactor
+
+  my $reactor = $client->reactor;
+  $client     = $client->reactor(Mojo::Reactor::Poll->new);
+
+Low-level event reactor, defaults to the C<reactor> attribute value of the global L<Mojo::IOLoop> singleton. Note that
+this attribute is weakened.
+
+=head1 METHODS
+
+L<Mojo::IOLoop::Client> inherits all methods from L<Mojo::EventEmitter> and implements the following new ones.
+
+=head2 can_nnr
+
+  my $bool = Mojo::IOLoop::Client->can_nnr;
+
+True if L<Net::DNS::Native> 0.15+ is installed and non-blocking name resolution support enabled.
+
+=head2 can_socks
+
+  my $bool = Mojo::IOLoop::Client->can_socks;
+
+True if L<IO::Socket::SOCKS> 0.64+ is installed and SOCKS5 support enabled.
+
+=head2 connect
+
+  $client->connect(address => '127.0.0.1', port => 3000);
+  $client->connect({address => '127.0.0.1', port => 3000});
+
+Open a socket connection to a remote host. Note that non-blocking name resolution depends on L<Net::DNS::Native>
+(0.15+), SOCKS5 support on L<IO::Socket::Socks> (0.64), and TLS support on L<IO::Socket::SSL> (2.009+).
+
+These options are currently available:
+
+=over 2
+
+=item address
+
+  address => 'mojolicious.org'
+
+Address or host name of the peer to connect to, defaults to C<127.0.0.1>.
+
+=item handle
+
+  handle => $handle
+
+Use an already prepared L<IO::Socket::IP> object.
+
+=item path
+
+  path => '/tmp/myapp.sock'
+
+Path of UNIX domain socket to connect to.
+
+=item port
+
+  port => 80
+
+Port to connect to, defaults to C<80> or C<443> with C<tls> option.
+
+=item socket_options
+
+  socket_options => {LocalAddr => '127.0.0.1'}
+
+Additional options for L<IO::Socket::IP> when opening new connections.
+
+=item socks_address
+
+  socks_address => '127.0.0.1'
+
+Address or host name of SOCKS5 proxy server to use for connection.
+
+=item socks_pass
+
+  socks_pass => 'secr3t'
+
+Password to use for SOCKS5 authentication.
+
+=item socks_port
+
+  socks_port => 9050
+
+Port of SOCKS5 proxy server to use for connection.
+
+=item socks_user
+
+  socks_user => 'sri'
+
+Username to use for SOCKS5 authentication.
+
+=item timeout
+
+  timeout => 15
+
+Maximum amount of time in seconds establishing connection may take before getting canceled, defaults to C<10>.
+
+=item tls
+
+  tls => 1
+
+Enable TLS.
+
+=item tls_ca
+
+  tls_ca => '/etc/tls/ca.crt'
+
+Path to TLS certificate authority file.
+
+=item tls_cert
+
+  tls_cert => '/etc/tls/client.crt'
+
+Path to the TLS certificate file.
+
+=item tls_key
+
+  tls_key => '/etc/tls/client.key'
+
+Path to the TLS key file.
+
+=item tls_options
+
+  tls_options => {SSL_alpn_protocols => ['foo', 'bar'], SSL_verify_mode => 0x00}
+
+Additional options for L<IO::Socket::SSL>.
+
+=back
+
+=head1 SEE ALSO
+
+L<Mojolicious>, L<Mojolicious::Guides>, L<https://mojolicious.org>.
+
+=cut
+
+=pod
+
+sub client {
+  my ($self, $cb) = (_instance(shift), pop);
+
+  my $id     = $self->_id;
+  my $client = $self->{out}{$id}{client} = Mojo::IOLoop::Client->new(reactor => $self->reactor);
+
+  weaken $self;
+  $client->on(
+    connect => sub {
+      delete $self->{out}{$id}{client};
+      my $stream = Mojo::IOLoop::Stream->new(pop);
+      $self->_stream($stream => $id);
+      $self->$cb(undef, $stream);
+    }
+  );
+  $client->on(error => sub { $self->_remove($id); $self->$cb(pop, undef) });
+  $client->connect(@_);
+
+  return $id;
+}
 
 =cut

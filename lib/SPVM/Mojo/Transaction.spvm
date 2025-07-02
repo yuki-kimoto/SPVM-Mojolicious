@@ -28,7 +28,7 @@ class Mojo::Transaction extends Mojo::EventEmitter {
   
   has connection : ro int;
   
-  has io_socket : rw IO::Socket;
+  has handle : rw IO::Socket;
   
   # Class Methods
   static method new : Mojo::Transaction () {
