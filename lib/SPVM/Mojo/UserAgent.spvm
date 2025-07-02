@@ -440,28 +440,31 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     }
   }
   
-  private method _connection : Mojo::Transaction::HTTP ($tx : Mojo::Transaction::HTTP) {
-    
-    # Reuse connection
-    my $_ = $self->transactor->endpoint($tx);
-    my $proto = (string)$_->[0];
-    my $host = (string)$_->[1];
-    my $port = (int)$_->[2];
-    my $endpoint = "$proto:$host:$port";
+  method connect_v2 : Mojo::Transaction::HTTP ($tx : Mojo::Transaction::HTTP)  {
     
     my $handle = (IO::Socket)undef;
-    if ($handle = $self->_dequeue($endpoint)) {
-      if (&DEBUG) {
-        warn "-- Reusing connection ($proto://$host:$port)" ;
+    
+    # Reuse connection
+    {
+      my $_ = $self->transactor->endpoint($tx);
+      my $proto = (string)$_->[0];
+      my $host = (string)$_->[1];
+      my $port = (int)$_->[2];
+      my $endpoint = "$proto:$host:$port";
+      
+      if ($handle = $self->_dequeue($endpoint)) {
+        if (&DEBUG) {
+          warn "-- Reusing connection ($proto://$host:$port)" ;
+        }
+        
+        unless ($tx->connection) {
+          $tx->set_kept_alive(1) ;
+        }
+        
+        $self->_process($tx);
+        
+        return $tx;
       }
-      
-      unless ($tx->connection) {
-        $tx->set_kept_alive(1) ;
-      }
-      
-      $self->_process($tx);
-      
-      return $tx;
     }
     
     # CONNECT request to proxy required
@@ -469,27 +472,15 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
       return $tx;
     }
     
-    # New connection
-    unless ($proto eq "http" || $proto eq "https" || $proto eq "http+unix") {
-      die "Unsupported protocol: $proto";
-    }
-    
-    $tx = $self->connect_v2($tx);
-    
-    if (&DEBUG) {
-      warn "-- Connect ($proto://$host:$port)";
-    }
-    
-    return $tx;
-  }
-  
-  method connect_v2 : Mojo::Transaction::HTTP ($tx : Mojo::Transaction::HTTP)  {
-    
     my $t = $self->transactor;
     my $_ = $t->peer($tx);
     my $proto = (string)$_->[0];
     my $host = (string)$_->[1];
     my $port = (int)$_->[2];
+    
+    unless ($proto eq "http" || $proto eq "https" || $proto eq "http+unix") {
+      die "Unsupported protocol: $proto";
+    }
     
     my $options_h = Hash->new;
     $options_h->set(timeout => $self->connect_timeout);
@@ -538,7 +529,6 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     my $path = $options_h->get_string("path");
     
     # UNIX domain socket
-    my $handle = (IO::Socket)undef;
     if ($path) {
       $options_h->set(Peer => $path);
       
@@ -578,6 +568,10 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     }
     
     $self->{handle} = $handle;
+    
+    if (&DEBUG) {
+      warn "-- Connect ($proto://$host:$port)";
+    }
     
     return $tx;
   }
