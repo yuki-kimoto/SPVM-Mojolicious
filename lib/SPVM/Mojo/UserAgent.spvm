@@ -225,20 +225,18 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     
     $url->set_port(80);
     
-    my $request = $tx->req;
+    $self->connect($tx);
     
-    $self->connect($request);
+    $self->write_request($tx);
     
-    $self->write_request($request);
-    
-    my $response = $self->read_response;
-    
-    $tx->set_res($response);
+    $self->read_response($tx);
     
     return $tx;
   }
   
-  private method connect : void ($req : Mojo::Message::Request) {
+  private method connect : void ($tx : Mojo::Transaction::HTTP) {
+    
+    my $req = $tx->req;
     
     my $url = $req->url;
     my $scheme = $url->scheme;
@@ -275,7 +273,9 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     $self->{handle} = $socket;
   }
   
-  private method write_request : void ($req : Mojo::Message::Request) {
+  private method write_request : void ($tx : Mojo::Transaction::HTTP) {
+    
+    my $req = $tx->req;
     
     my $socket = $self->{handle};
     
@@ -290,7 +290,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     $socket->write("\r\n");
   }
   
-  private method read_response : Mojo::Message::Response () {
+  private method read_response : void ($tx : Mojo::Transaction::HTTP) {
     
     my $res = Mojo::Message::Response->new;
     
@@ -315,7 +315,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
       }
     }
     
-    return $res;
+    $tx->set_res($res);
   }
   
   private method _redirect : void ($old : Mojo::Transaction::HTTP) {
