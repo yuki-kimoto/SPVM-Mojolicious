@@ -426,6 +426,8 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     }
     
     $tx->set_res($res);
+    
+    $self->_finish($tx);
   }
   
   private method _redirect : void ($old : Mojo::Transaction::HTTP) {

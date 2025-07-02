@@ -261,6 +261,8 @@ class Mojo::Transaction::HTTP extends Mojo::Transaction {
     return $chunk;
   }
   
+  method is_websocket : int () { return 0; }
+  
 }
 
 __END__
