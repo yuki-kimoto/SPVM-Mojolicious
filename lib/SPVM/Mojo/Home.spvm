@@ -28,16 +28,20 @@ class Mojo::Home extends Mojo::File {
       $home_path = FindBin->Bin;
     }
     
-    my $home = Mojo::File->new($home_path)->to_abs->to_string;
+    my $home = Mojo::File->new($home_path)->to_abs;
     
-    # copy_fields $self, $home, Mojo::File;
+    copy_fields $self, $home, Mojo::File;
   }
   
   method rel_file : Mojo::File ($rel_path : string) {
     
     my $path = $self->{path};
     
-    my $child = $self->child(Fn->split("/", $rel_path));
+    my $child_file = $self->child(Fn->split("/", $rel_path));
+    
+    my $child = Mojo::Home->new;
+    
+    copy_fields $child, $child_file, Mojo::File;
     
     return $child;
   }
