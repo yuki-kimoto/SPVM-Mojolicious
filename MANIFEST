@@ -35,6 +35,8 @@ lib/SPVM/Mojo/File.pm
 lib/SPVM/Mojo/File.spvm
 lib/SPVM/Mojo/Headers.pm
 lib/SPVM/Mojo/Headers.spvm
+lib/SPVM/Mojo/Home.pm
+lib/SPVM/Mojo/Home.spvm
 lib/SPVM/Mojo/Message.pm
 lib/SPVM/Mojo/Message.spvm
 lib/SPVM/Mojo/Message/Request.pm
