@@ -61,6 +61,7 @@ WriteMakefile(
     'SPVM::Digest::SHA' => '0.065',
     'SPVM::MIME::Base64' => '1.003',
     'SPVM::JSON' => '1.002',
+    'SPVM::FindBin' => '0.035',
   },
   TEST_REQUIRES => {
     
