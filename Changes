@@ -1,4 +1,6 @@
 0.003 2025-07-05
+  [Changes]
+    Working on many classes.
   [Requirement Changes]
     * Require SPVM 0.990077.
     * Require SPVM::FindBin 0.035.
