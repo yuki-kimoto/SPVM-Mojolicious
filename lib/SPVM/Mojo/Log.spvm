@@ -11,24 +11,31 @@ class Mojo::Log extends Mojo::EventEmitter {
   use IO::File;
   
   # Fields
-  has format : Mojo::Log::Callback::Format;
+  has format : rw Mojo::Log::Callback::Format;
   
-  has handle : IO::File;
+  has handle : wo IO::File;
   
   method handle : IO::File () {
     
     my $path = $self->path;
     
-    # STDERR
-    unless ($path) {
-      return IO::File->new_from_fd(Sys->fileno(Sys->STDERR), ">>");
+    my $handle = $self->{handle};
+    
+    unless ($handle) {
+      if ($path) {
+        $handle = Mojo::File->new($path)->open(">>");
+      }
+      else {
+        $handle = IO::File->new_from_fd(Sys->fileno(Sys->STDERR), ">>");
+      }
+      
+      $self->{handle} = $handle;
     }
     
-    # File
-    return Mojo::File->new($path)->open(">>");
+    return $handle;
   }
   
-  has history : Mojo::Log::Line[];
+  has history : List of Mojo::Log::Line;
   
   has level : rw string;
   
@@ -38,6 +45,23 @@ class Mojo::Log extends Mojo::EventEmitter {
   
   has short : rw byte;
   
+  # Class Method
+  static method new : Mojo::Log () {
+    
+    my $self = new Mojo::Log;
+    
+    $self->{history} = List->new(new Mojo::Log::Line[0]);
+    
+    $self->{level} = "trace";
+    
+    $self->{max_history_size} = 10;
+    
+    if (length (my $_ = Sys->env("MOJO_LOG_SHORT"))) {
+      $self->{short} = (byte)$_;
+    }
+    
+    return $self;
+  }
 }
 
 __END__
