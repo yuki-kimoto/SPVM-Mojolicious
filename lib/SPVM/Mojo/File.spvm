@@ -81,6 +81,15 @@ class Mojo::File {
     return $string;
   }
   
+  method open : IO::File ($mode : string) {
+    
+    my $handle = IO::File->new;
+    
+    $handle->open($self->to_string, $mode);
+    
+    return $handle;
+  }
+
 }
 
 __END__

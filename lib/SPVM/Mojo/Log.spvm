@@ -8,21 +8,35 @@ class Mojo::Log extends Mojo::EventEmitter {
   use Time::HiRes;
   use Mojo::Log::Callback::Format;
   use Mojo::Log::Line;
+  use IO::File;
   
   # Fields
   has format : Mojo::Log::Callback::Format;
   
-  has handle : object of IO::File|Mojo::File;
+  has handle : IO::File;
+  
+  method handle : IO::File () {
+    
+    my $path = $self->path;
+    
+    # STDERR
+    unless ($path) {
+      return IO::File->new_from_fd(Sys->fileno(Sys->STDERR), ">>");
+    }
+    
+    # File
+    return Mojo::File->new($path)->open(">>");
+  }
   
   has history : Mojo::Log::Line[];
   
-  has level : string;
+  has level : rw string;
   
-  has max_history_size : int;
+  has max_history_size : rw int;
   
-  has path : string;
+  has path : rw string;
   
-  has short : byte;
+  has short : rw byte;
   
 }
 
