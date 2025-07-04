@@ -1,6 +1,7 @@
 class TestCase::Mojolicious {
   use Mojolicious;
   use Mojo::Home;
+  use Mojo::Log;
   
   static method test : int () {
     
