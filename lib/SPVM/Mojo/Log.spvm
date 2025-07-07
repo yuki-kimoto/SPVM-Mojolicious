@@ -204,6 +204,25 @@ class Mojo::Log extends Mojo::EventEmitter {
     $self->append($self->format->($time, $level, $message));
   }
   
+  private method _default : string ($time : double, $level : string, $message : string) {
+    
+    my $tm = Sys->localtime((long)$time);
+    
+    my $fp = 0;
+    my $_ = Fn->split(".", $time);
+    if (@$_ > 1) {
+      $fp = (int)$_->[1];
+    }
+    my $sec_with_fp = (double)($tm->tm_sec . ".$fp");
+    
+    my $time_formatted = Fn->sprintf("%04d-%02d-%02d %02d:%02d:%08.5f", [(object)($tm->tm_year + 1900), $tm->tm_mon + 1, $tm->tm_mday, $tm->tm_hour, $tm->tm_min,
+      $sec_with_fp]);
+    
+    my $default_message = "[$time_formatted] [" . Sys->process_id . "] [$level] $message\n";
+    
+    return $default_message;
+  }
+  
   private method _short : string ($time : double, $level : string, $message : string) {
     
     my $magic = "<" . $MAGIC->get_int("$level") . ">";
