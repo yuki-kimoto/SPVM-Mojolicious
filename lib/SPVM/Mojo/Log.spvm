@@ -9,17 +9,18 @@ class Mojo::Log extends Mojo::EventEmitter {
   use Mojo::Log::Callback::Format;
   use Mojo::Log::Line;
   use IO::File;
+  use Sys::IO::Constant as IOC;
   
   # Class Variables
   
   # Supported log levels
-  our $LEVEL : Hash;
+  our $LEVEL : Hash of Int;
   INIT {
     $LEVEL = Hash->new({trace => 1, debug => 2, info => 3, warn => 4, error => 5, fatal => 6});
   }
   
   # Systemd magic numbers
-  our $MAGIC : Hash;
+  our $MAGIC : Hash of Int;
   INIT {
     $MAGIC = Hash->new({trace => 7, debug => 6, info => 5, warn => 4, error => 3, fatal => 2});
   }
@@ -76,6 +77,23 @@ class Mojo::Log extends Mojo::EventEmitter {
     
     return $self;
   }
+  
+  # Instance Methods
+  method append : void ($msg : string) {
+    
+    my $handle = $self->handle;
+    
+    unless ($handle) {
+      return ;
+    }
+    
+    Sys->flock($handle->fileno, IOC->LOCK_EX);
+    
+    $handle->print($msg);
+    
+    Sys->flock($handle->fileno, IOC->LOCK_UN);
+  }
+
 }
 
 __END__
