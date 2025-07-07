@@ -51,11 +51,15 @@ class Mojo::Log extends Mojo::EventEmitter {
     return $handle;
   }
   
-  has history : List of Mojo::Log::Line;
+  has history_list : List of Mojo::Log::Line;
+  
+  method history : Mojo::Log::Line[] () {
+    return $self->{history_list}->to_array->(Mojo::Log::Line[]);
+  }
   
   has level : rw string;
   
-  has max_history_size : rw int;
+  has max_history_list_size : rw int;
   
   has path : rw string;
   
@@ -72,11 +76,11 @@ class Mojo::Log extends Mojo::EventEmitter {
     
     my $self = new Mojo::Log;
     
-    $self->{history} = List->new(new Mojo::Log::Line[0]);
+    $self->{history_list} = List->new(new Mojo::Log::Line[0]);
     
     $self->{level} = "trace";
     
-    $self->{max_history_size} = 10;
+    $self->{max_history_list_size} = 10;
     
     if (length (my $_ = Sys->env("MOJO_LOG_SHORT"))) {
       $self->{short} = (byte)$_;
@@ -100,9 +104,6 @@ class Mojo::Log extends Mojo::EventEmitter {
     
     Sys->flock($handle->fileno, IOC->LOCK_UN);
   }
-  
-  # TODO
-  # method capture;
   
   method context : Mojo::Log ($context : string) {
     
@@ -169,8 +170,8 @@ class Mojo::Log extends Mojo::EventEmitter {
   
   private method _message : void ($level : string, $message : string)  {
     
-    my $max     = $self->max_history_size;
-    my $history = $self->{history};
+    my $max     = $self->max_history_list_size;
+    my $history_list = $self->{history_list};
     
     my $line = Mojo::Log::Line->new;
     my $time = Sys->time;
@@ -178,10 +179,10 @@ class Mojo::Log extends Mojo::EventEmitter {
     $line->{level} = $level;
     $line->{message} = $message;
     
-    $history->push($line);
+    $history_list->push($line);
     
-    while ($history->length > $max) {
-      $history->shift;
+    while ($history_list->length > $max) {
+      $history_list->shift;
     }
     
     $self->append($self->format->($time, $level, $message));
@@ -196,7 +197,10 @@ class Mojo::Log extends Mojo::EventEmitter {
     
     return $short_message;
   }
-
+  
+  # TODO
+  # method capture;
+  
 }
 
 __END__
