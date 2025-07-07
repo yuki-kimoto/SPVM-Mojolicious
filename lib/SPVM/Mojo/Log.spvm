@@ -67,6 +67,7 @@ class Mojo::Log extends Mojo::EventEmitter {
   
   has capturing : byte;
   
+  # Undocumented Fields
   has parent : Mojo::Log;
   
   has context : string;
@@ -188,7 +189,7 @@ class Mojo::Log extends Mojo::EventEmitter {
     my $history_list = $self->{history_list};
     
     my $line = Mojo::Log::Line->new;
-    my $time = Sys->time;
+    my $time = (double)Sys->time;
     $line->{time} = $time;
     $line->{level} = $level;
     $line->{message} = $message;
@@ -202,7 +203,7 @@ class Mojo::Log extends Mojo::EventEmitter {
     $self->append($self->format->($time, $level, $message));
   }
   
-  private method _short : string ($time : long, $level : string, $message : string) {
+  private method _short : string ($time : double, $level : string, $message : string) {
     
     my $magic = "<" . $MAGIC->get_int("$level") . ">";
     my $short = Fn->substr($level, 0, 1);
