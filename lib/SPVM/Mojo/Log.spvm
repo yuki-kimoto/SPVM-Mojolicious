@@ -11,6 +11,7 @@ class Mojo::Log extends Mojo::EventEmitter {
   use IO::File;
   use Sys::IO::Constant as IOC;
   use Mojo::Log::Callback::Message;
+  use Time::HiRes;
   
   # Class Variables
   
@@ -189,7 +190,7 @@ class Mojo::Log extends Mojo::EventEmitter {
     my $history_list = $self->{history_list};
     
     my $line = Mojo::Log::Line->new;
-    my $time = (double)Sys->time;
+    my $time = Time::HiRes->time;
     $line->{time} = $time;
     $line->{level} = $level;
     $line->{message} = $message;
