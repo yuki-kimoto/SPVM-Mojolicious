@@ -86,7 +86,7 @@ class Mojo::Log extends Mojo::EventEmitter {
   }
   
   # Instance Methods
-  method append : void ($msg : string) {
+  method append : void ($message : string) {
     
     my $handle = $self->handle;
     
@@ -96,7 +96,7 @@ class Mojo::Log extends Mojo::EventEmitter {
     
     Sys->flock($handle->fileno, IOC->LOCK_EX);
     
-    $handle->print($msg);
+    $handle->print($message);
     
     Sys->flock($handle->fileno, IOC->LOCK_UN);
   }
@@ -114,31 +114,31 @@ class Mojo::Log extends Mojo::EventEmitter {
     return $content;
   }
   
-  method debug : void ($msg : object of string|Mojo::Log::Callback::Message) {
+  method debug : void ($message : object of string|Mojo::Log::Callback::Message) {
     
     if (2 >= $LEVEL->get_int($self->level)) {
-      $self->_log($msg, "debug");
+      $self->_log($message, "debug");
     }
   }
   
-  method error : void ($msg : object of string|Mojo::Log::Callback::Message) {
+  method error : void ($message : object of string|Mojo::Log::Callback::Message) {
     
     if (5 >= $LEVEL->get_int($self->level)) {
-      $self->_log($msg, "error");
+      $self->_log($message, "error");
     }
   }
   
-  method fatal : void ($msg : object of string|Mojo::Log::Callback::Message) {
+  method fatal : void ($message : object of string|Mojo::Log::Callback::Message) {
     
     if (6 >= $LEVEL->get_int($self->level)) {
-      $self->_log($msg, "fatal");
+      $self->_log($message, "fatal");
     }
   }
   
-  method info : void ($msg : object of string|Mojo::Log::Callback::Message) {
+  method info : void ($message : object of string|Mojo::Log::Callback::Message) {
     
     if (3 >= $LEVEL->get_int($self->level)) {
-      $self->_log($msg, "info");
+      $self->_log($message, "info");
     }
   }
   
@@ -146,24 +146,44 @@ class Mojo::Log extends Mojo::EventEmitter {
     return $LEVEL->get_int($level) >= $LEVEL->get_int($self->level);
   }
   
-  method _log : void ($msg : object of string|Mojo::Log::Callback::Message, $level : string) {
+  method _log : void ($message : object of string|Mojo::Log::Callback::Message, $level : string) {
     
-    my $msg_ : string;
-    if ($msg isa string) {
-      $msg_ = (string)$msg;
+    my $message_ : string;
+    if ($message isa string) {
+      $message_ = (string)$message;
     }
-    elsif ($msg isa Mojo::Log::Callback::Message) {
-      $msg_ = $msg->(Mojo::Log::Callback::Message)->();
+    elsif ($message isa Mojo::Log::Callback::Message) {
+      $message_ = $message->(Mojo::Log::Callback::Message)->();
     }
     else {
-      die "The message \$msg must be a string or a Mojo::Log::Callback::Message object.";
+      die "The message \$message must be a string or a Mojo::Log::Callback::Message object.";
     }
     
     if (my $context = $self->{context}) {
-      $msg_ .= " $context";
+      $message_ .= " $context";
     }
     
-    ($self->{parent} // $self)->emit("message", $level, $msg_);
+    ($self->{parent} // $self)->emit("message", $level, $message_);
+  }
+  
+  private method _message : void ($level : string, $message : string)  {
+    
+    my $max     = $self->max_history_size;
+    my $history = $self->{history};
+    
+    my $line = Mojo::Log::Line->new;
+    my $time = Sys->time;
+    $line->{time} = $time;
+    $line->{level} = $level;
+    $line->{message} = $message;
+    
+    $history->push($line);
+    
+    while ($history->length > $max) {
+      $history->shift;
+    }
+    
+    $self->append($self->format->($time, $level, $message));
   }
   
 }
