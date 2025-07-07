@@ -143,6 +143,20 @@ class Mojo::Log extends Mojo::EventEmitter {
     }
   }
   
+  method trace : void ($message : object of string|Mojo::Log::Callback::Message) {
+    
+    if (1 >= $LEVEL->get_int($self->level)) {
+      $self->_log($message, "trace");
+    }
+  }
+  
+  method warn : void ($message : object of string|Mojo::Log::Callback::Message) {
+    
+    if (4 >= $LEVEL->get_int($self->level)) {
+      $self->_log($message, "warn");
+    }
+  }
+  
   method is_level : int ($level : string) {
     return $LEVEL->get_int($level) >= $LEVEL->get_int($self->level);
   }
