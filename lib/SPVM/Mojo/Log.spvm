@@ -10,6 +10,7 @@ class Mojo::Log extends Mojo::EventEmitter {
   use Mojo::Log::Line;
   use IO::File;
   use Sys::IO::Constant as IOC;
+  use Mojo::Log::Callback::Message;
   
   # Class Variables
   
@@ -64,7 +65,7 @@ class Mojo::Log extends Mojo::EventEmitter {
   
   has parent : Mojo::Log;
   
-  has context : string[];
+  has context : string;
   
   # Class Method
   static method new : Mojo::Log () {
@@ -103,7 +104,7 @@ class Mojo::Log extends Mojo::EventEmitter {
   # TODO
   # method capture;
   
-  method context : Mojo::Log ($context : string[]) {
+  method context : Mojo::Log ($context : string) {
     
     my $content = Mojo::Log->new;
     $content->{parent} = $self;
@@ -111,6 +112,26 @@ class Mojo::Log extends Mojo::EventEmitter {
     $content->{level} = $self->{level};
     
     return $content;
+  }
+  
+  method _log : void ($msg : object of string|Mojo::Log::Callback::Message, $level : int) {
+    
+    my $msg_ : string;
+    if ($msg isa string) {
+      $msg_ = (string)$msg;
+    }
+    elsif ($msg isa Mojo::Log::Callback::Message) {
+      $msg_ = $msg->(Mojo::Log::Callback::Message)->();
+    }
+    else {
+      die "The message \$msg must be a string or a Mojo::Log::Callback::Message object.";
+    }
+    
+    if (my $context = $self->{context}) {
+      $msg_ .= " $context";
+    }
+    
+    ($self->{parent} // $self)->emit("message", $level, $msg_);
   }
 
 }
