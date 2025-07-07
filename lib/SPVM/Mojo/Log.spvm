@@ -10,6 +10,20 @@ class Mojo::Log extends Mojo::EventEmitter {
   use Mojo::Log::Line;
   use IO::File;
   
+  # Class Variables
+  
+  # Supported log levels
+  our $LEVEL : Hash;
+  INIT {
+    $LEVEL = Hash->new({trace => 1, debug => 2, info => 3, warn => 4, error => 5, fatal => 6});
+  }
+  
+  # Systemd magic numbers
+  our $MAGIC : Hash;
+  INIT {
+    $MAGIC = Hash->new({trace => 7, debug => 6, info => 5, warn => 4, error => 3, fatal => 2});
+  }
+  
   # Fields
   has format : rw Mojo::Log::Callback::Format;
   
