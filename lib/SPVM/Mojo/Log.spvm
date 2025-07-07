@@ -146,7 +146,8 @@ class Mojo::Log extends Mojo::EventEmitter {
     return $LEVEL->get_int($level) >= $LEVEL->get_int($self->level);
   }
   
-  method _log : void ($message : object of string|Mojo::Log::Callback::Message, $level : string) {
+  # Private Instance Methods
+  private method _log : void ($message : object of string|Mojo::Log::Callback::Message, $level : string) {
     
     my $message_ : string;
     if ($message isa string) {
@@ -186,6 +187,16 @@ class Mojo::Log extends Mojo::EventEmitter {
     $self->append($self->format->($time, $level, $message));
   }
   
+  private method _short : string ($time : long, $level : string, $message : string) {
+    
+    my $magic = "<" . $MAGIC->get_int("$level") . ">";
+    my $short = Fn->substr($level, 0, 1);
+    
+    my $short_message = "${magic}[" . Sys->process_id . "] [$short] $message\n";
+    
+    return $short_message;
+  }
+
 }
 
 __END__
