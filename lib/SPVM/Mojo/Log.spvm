@@ -60,6 +60,12 @@ class Mojo::Log extends Mojo::EventEmitter {
   
   has short : rw byte;
   
+  has capturing : byte;
+  
+  has parent : Mojo::Log;
+  
+  has context : string[];
+  
   # Class Method
   static method new : Mojo::Log () {
     
@@ -92,6 +98,19 @@ class Mojo::Log extends Mojo::EventEmitter {
     $handle->print($msg);
     
     Sys->flock($handle->fileno, IOC->LOCK_UN);
+  }
+  
+  # TODO
+  # method capture;
+  
+  method context : Mojo::Log ($context : string[]) {
+    
+    my $content = Mojo::Log->new;
+    $content->{parent} = $self;
+    $content->{context} = $context;
+    $content->{level} = $self->{level};
+    
+    return $content;
   }
 
 }
