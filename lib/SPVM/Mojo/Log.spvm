@@ -28,7 +28,23 @@ class Mojo::Log extends Mojo::EventEmitter {
   }
   
   # Fields
-  has format : rw Mojo::Log::Callback::Format;
+  has format : wo Mojo::Log::Callback::Format;
+  
+  method format : Mojo::Log::Callback::Format () {
+    
+    my $format = $self->{format};
+    
+    unless ($format) {
+      $format = [$this : Mojo::Log = $self] method : string ($time : double, $level : string, $message : string) {
+        return $this->_default($time, $level, $message);
+      };
+      $self->{format} = $format;
+    }
+    
+    return $format;
+    
+    
+  }
   
   has handle : wo IO::File;
   
