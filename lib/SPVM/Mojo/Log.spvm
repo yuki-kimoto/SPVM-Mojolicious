@@ -114,7 +114,39 @@ class Mojo::Log extends Mojo::EventEmitter {
     return $content;
   }
   
-  method _log : void ($msg : object of string|Mojo::Log::Callback::Message, $level : int) {
+  method debug : void ($msg : object of string|Mojo::Log::Callback::Message) {
+    
+    if (2 >= $LEVEL->get_int($self->level)) {
+      $self->_log($msg, "debug");
+    }
+  }
+  
+  method error : void ($msg : object of string|Mojo::Log::Callback::Message) {
+    
+    if (5 >= $LEVEL->get_int($self->level)) {
+      $self->_log($msg, "error");
+    }
+  }
+  
+  method fatal : void ($msg : object of string|Mojo::Log::Callback::Message) {
+    
+    if (6 >= $LEVEL->get_int($self->level)) {
+      $self->_log($msg, "fatal");
+    }
+  }
+  
+  method info : void ($msg : object of string|Mojo::Log::Callback::Message) {
+    
+    if (3 >= $LEVEL->get_int($self->level)) {
+      $self->_log($msg, "info");
+    }
+  }
+  
+  method is_level : int ($level : string) {
+    return $LEVEL->get_int($level) >= $LEVEL->get_int($self->level);
+  }
+  
+  method _log : void ($msg : object of string|Mojo::Log::Callback::Message, $level : string) {
     
     my $msg_ : string;
     if ($msg isa string) {
@@ -133,7 +165,7 @@ class Mojo::Log extends Mojo::EventEmitter {
     
     ($self->{parent} // $self)->emit("message", $level, $msg_);
   }
-
+  
 }
 
 __END__
