@@ -221,7 +221,11 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     
     unless ($headers) {
       $headers = Mojo::Headers->new;
+      $tx->req->content->set_headers($headers);
     }
+    
+    # TODO: remove this in the future
+    $headers->set_connection("close");
     
     $url->set_port(80);
     
