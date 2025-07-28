@@ -473,7 +473,8 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     else {
       my $tx_ = (Mojo::Transaction::HTTP)$tx;
       
-      $self->cookie_jar->collect($tx_);
+      # Disable collecting the cookies temporalily
+      # $self->cookie_jar->collect($tx_);
       
       # Upgrade connection to WebSocket
       if (my $ws_tx = $self->transactor->upgrade($tx_)) {

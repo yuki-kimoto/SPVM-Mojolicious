@@ -17,6 +17,8 @@ class TestCase::Online {
     
     my $ua = Mojo::UserAgent->new;
     
+    $ua->set_max_redirects(20);
+    
     my $res = $ua->get($url)->result;
     
     my $body = $res->body;
