@@ -225,9 +225,6 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
       $tx->req->content->set_headers($headers);
     }
     
-    # TODO: remove this in the future
-    $headers->set_connection("close");
-    
     $tx = $self->connect($tx);
     
     $self->write_request($tx);
@@ -252,6 +249,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
       my $endpoint = "$proto:$host:$port";
       
       if ($handle = $self->_dequeue($endpoint)) {
+        
         if (&DEBUG) {
           warn "-- Reusing connection ($proto://$host:$port)" ;
         }
@@ -374,7 +372,6 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
   }
   
   private method read_response : void ($tx : Mojo::Transaction::HTTP) {
-    
     my $res = Mojo::Message::Response->new;
     
     my $handle = $self->{handle};
@@ -423,6 +420,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     # Premature connection close
     $tx->closed;
     my $res = $tx->res;
+    
     $res->finish;
     
     if ($res->code == 0) {

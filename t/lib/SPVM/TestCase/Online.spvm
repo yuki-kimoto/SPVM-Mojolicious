@@ -11,6 +11,33 @@ class TestCase::Online {
   
   our $RESULT : IntList;
   
+  static method test_keep_alive_no_redirect : int () {
+    
+    my $ua = Mojo::UserAgent->new;
+    
+    {
+      my $url = "http://google.com";
+      
+      my $res = $ua->get($url)->result;
+      
+      unless ($res->code == 301) {
+        return 0;
+      }
+    }
+    
+    {
+      my $url = "http://google.com";
+      
+      my $res = $ua->get($url)->result;
+      
+      unless ($res->code == 301) {
+        return 0;
+      }
+    }
+    
+    return 1;
+  }
+  
   static method test_https_tiny : int () {
     
     my $url = "https://google.com";
