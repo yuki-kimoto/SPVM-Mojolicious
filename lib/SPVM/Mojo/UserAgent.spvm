@@ -58,8 +58,6 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
   
   has cookie_jar : rw Mojo::UserAgent::CookieJar;
   
-  has handle : IO::Socket;
-  
   has keep_alive_sockets_list : List of object[]; # endpoint and socket pairs 
   
   # Class Methods
@@ -347,7 +345,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
       }
     }
     
-    $self->{handle} = $handle;
+    $tx->set_handle($handle);
     
     if (&DEBUG) {
       warn "-- Connect ($proto://$host:$port)";
@@ -360,24 +358,24 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     
     my $req = $tx->req;
     
-    my $socket = $self->{handle};
+    my $handle = $tx->handle;
     
     my $start_line = $req->build_start_line;
     
-    $socket->write($start_line);
+    $handle->write($start_line);
     
     my $header_lines = $req->build_headers;
     
-    $socket->write($header_lines);
+    $handle->write($header_lines);
     
-    $socket->write("\r\n");
+    $handle->write("\r\n");
   }
   
   private method read_response : void ($tx : Mojo::Transaction::HTTP) {
     
     my $res = Mojo::Message::Response->new;
     
-    my $handle = $self->{handle};
+    my $handle = $tx->handle;
     
     while (1) {
       my $chunk = (mutable string)new_string_len &READ_BUFFER_SIZE;
