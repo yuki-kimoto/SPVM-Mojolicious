@@ -12,6 +12,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
   use Sys;
   use IO::Socket::INET;
   use IO::Socket::UNIX;
+  use IO::Socket::SSL;
   
   # Enumerations
   private enum {
@@ -368,12 +369,13 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
           $options_h->set(tls_options => $tls_options);
         }
         
-        if (require IO::Socket::SSL) {
-          $handle = (IO::Socket)IO::Socket::SSL->new($options_h->to_array);
-        }
-        else {
-          die "IO::Socket::SSL is not installed.";
-        }
+        $options_h->delete("tls_options");
+        $options_h->delete("tls");
+        $options_h->delete("tls_ca");
+        $options_h->delete("tls_cert");
+        $options_h->delete("tls_key");
+        
+        $handle = (IO::Socket)IO::Socket::SSL->new($options_h->to_array);
       }
       else {
         $handle = (IO::Socket)IO::Socket::IP->new($options_h->to_array);
