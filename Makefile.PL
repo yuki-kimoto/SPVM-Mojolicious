@@ -63,6 +63,7 @@ WriteMakefile(
     'SPVM::JSON' => '1.002',
     'SPVM::FindBin' => '0.035',
     'SPVM::Time::HiRes' => '0.005',
+    'SPVM::IO::Socket::SSL' => '0.010',
   },
   TEST_REQUIRES => {
     
