@@ -228,8 +228,6 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     # TODO: remove this in the future
     $headers->set_connection("close");
     
-    $url->set_port(80);
-    
     $tx = $self->connect($tx);
     
     $self->write_request($tx);

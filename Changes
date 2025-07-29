@@ -1,7 +1,9 @@
 0.005 2025-07-29
   [Requirement Changes]
     * Require SPVM::IO::Socket::SSL 0.010.
-  
+  [Changes]
+    * Support SSL.
+    
 0.004 2025-07-29
   [Changes]
     * Support the redirect feature.
