@@ -3,6 +3,7 @@
     * Require SPVM::IO::Socket::SSL 0.010.
   [Changes]
     * Support SSL.
+    * Remove SOCKS logic.
     
 0.004 2025-07-29
   [Changes]
