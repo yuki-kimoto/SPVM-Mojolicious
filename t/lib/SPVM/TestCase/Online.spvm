@@ -21,13 +21,13 @@ class TestCase::Online {
     
     my $res = $ua->get($url)->result;
     
-    my $body = $res->body;
-    
-    unless (Fn->contains($body, "www.google.com")) {
+    unless ($res->code == 200) {
       return 0;
     }
     
-    unless ($res->code == 200 || $res->code == 301) {
+    my $body = $res->body;
+    
+    unless (Fn->contains($body, "google")) {
       return 0;
     }
     

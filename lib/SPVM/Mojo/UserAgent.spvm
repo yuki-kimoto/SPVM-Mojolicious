@@ -235,7 +235,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     
     $self->read_response($tx);
     
-    $self->finish($tx);
+    $tx = $self->finish($tx);
     
     return $tx;
   }
@@ -434,22 +434,24 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     $tx->set_res($res);
   }
   
-  private method _redirect : void ($old : Mojo::Transaction::HTTP) {
+  private method _redirect : Mojo::Transaction::HTTP ($old : Mojo::Transaction::HTTP) {
     
     my $new = $self->transactor->redirect($old);
     
     unless ($new) {
-      return;
+      return $old;
     }
     
     unless (@{$old->redirects} < $self->max_redirects) {
-      return;
+      return $old;
     }
     
     $self->start($new);
+    
+    return $new;
   }
   
-  method finish : void ($tx : Mojo::Transaction) {
+  method finish : Mojo::Transaction::HTTP ($tx : Mojo::Transaction) {
     
     # Premature connection close
     $tx->closed;
@@ -468,9 +470,10 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
       my $endpoint = "$proto:$host:$port";
       
       $self->_dequeue($endpoint);
-      return;
+      return undef;
     }
     else {
+      
       my $tx_ = (Mojo::Transaction::HTTP)$tx;
       
       # Disable collecting the cookies temporalily
@@ -479,7 +482,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
       # Upgrade connection to WebSocket
       if (my $ws_tx = $self->transactor->upgrade($tx_)) {
         $ws_tx->client_read($tx_->res->content->leftovers);
-        return;
+        return undef;
       }
       
       # CONNECT requests always have a follow-up request
@@ -487,7 +490,9 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
         $self->_reuse($tx_) ;
       }
       
-      $self->_redirect($tx_);
+      $tx_ = $self->_redirect($tx_);
+      
+      return $tx_;
     }
   }
   
