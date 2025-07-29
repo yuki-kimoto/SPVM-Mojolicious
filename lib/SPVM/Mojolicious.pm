@@ -1,6 +1,6 @@
 package SPVM::Mojolicious;
 
-our $VERSION = "0.004";
+our $VERSION = "0.005";
 
 1;
 
