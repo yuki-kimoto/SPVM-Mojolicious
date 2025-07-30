@@ -186,8 +186,11 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     $self->emit(prepare => $tx);
     my $url = $tx->req->url;
     
-    $self->proxy->prepare($tx);
-    $self->cookie_jar->prepare($tx);
+    # TODO
+    # $self->proxy->prepare($tx);
+    
+    # TODO
+    # $self->cookie_jar->prepare($tx);
     
     my $max = $self->max_response_size;
     if ($max >= 0) {
@@ -478,6 +481,8 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     my $host = (string)$_->[1];
     my $port = (int)$_->[2];
     my $endpoint = "$proto:$host:$port";
+    
+    $self->_dequeue($endpoint);
     
     $keep_alive_sockets_list->push([(object)$endpoint, $self->{handle}]);
   }
