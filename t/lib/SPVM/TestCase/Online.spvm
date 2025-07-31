@@ -11,6 +11,27 @@ class TestCase::Online {
   
   our $RESULT : IntList;
   
+  static method one_get_request : int () {
+    
+    my $ua = Mojo::UserAgent->new;
+    
+    {
+      my $url = "http://www.google.com";
+      
+      my $res = $ua->get($url)->result;
+      
+      unless ($res->code == 200) {
+        return 0;
+      }
+      
+      unless (Fn->contains($res->body, "<")) {
+        return 0;
+      }
+    }
+    
+    return 1;
+  }
+  
   static method test_keep_alive_no_redirect : int () {
     
     my $ua = Mojo::UserAgent->new;
