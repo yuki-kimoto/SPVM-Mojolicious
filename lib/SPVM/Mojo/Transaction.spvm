@@ -28,6 +28,9 @@ class Mojo::Transaction extends Mojo::EventEmitter {
   
   has connection : ro int;
   
+  # The handle is stored in a transaction object instead that Mojolicious stores it in a user agent object.
+  has handle : rw IO::Socket;
+  
   # Class Methods
   static method new : Mojo::Transaction () {
     
