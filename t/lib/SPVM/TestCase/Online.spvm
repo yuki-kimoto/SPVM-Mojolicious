@@ -11,6 +11,49 @@ class TestCase::Online {
   
   our $RESULT : IntList;
   
+  static method multi_get_request_http1_0 : int () {
+    
+    my $ua = Mojo::UserAgent->new;
+    
+    {
+      my $url = "http://www.google.com";
+      
+      my $res = $ua->get($url)->result;
+      
+      unless ($res->code == 200) {
+        return 0;
+      }
+      
+      unless (Fn->contains($res->body, "<html")) {
+        return 0;
+      }
+      
+      unless (Fn->contains($res->body, "</html>")) {
+        return 0;
+      }
+    }
+    
+    {
+      my $url = "http://www.google.com";
+      
+      my $res = $ua->get($url)->result;
+      
+      unless ($res->code == 200) {
+        return 0;
+      }
+      
+      unless (Fn->contains($res->body, "<html")) {
+        return 0;
+      }
+      
+      unless (Fn->contains($res->body, "</html>")) {
+        return 0;
+      }
+    }
+    
+    return 1;
+  }
+  
   static method one_get_request_http1_0 : int () {
     
     my $ua = Mojo::UserAgent->new;

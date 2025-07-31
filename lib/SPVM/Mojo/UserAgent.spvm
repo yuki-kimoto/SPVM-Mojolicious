@@ -242,7 +242,9 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
   method connect : Mojo::Transaction::HTTP ($tx : Mojo::Transaction::HTTP)  {
     
     my $handle = (IO::Socket)undef;
-    
+
+=pod TODO Kepp-Alive
+
     # Reuse connection
     {
       my $_ = $self->transactor->endpoint($tx);
@@ -252,7 +254,6 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
       my $endpoint = "$proto:$host:$port";
       
       if ($handle = $self->_dequeue($endpoint)) {
-        
         if (&DEBUG) {
           warn "-- Reusing connection ($proto://$host:$port)" ;
         }
@@ -266,7 +267,9 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
         return $tx;
       }
     }
-    
+
+=cut
+
     # CONNECT request to proxy required
     if (my $connect_tx = $self->_connect_proxy($tx)) {
       return $connect_tx;
