@@ -11,7 +11,7 @@ class TestCase::Online {
   
   our $RESULT : IntList;
   
-  static method one_get_request : int () {
+  static method one_get_request_http1_0 : int () {
     
     my $ua = Mojo::UserAgent->new;
     

@@ -13,7 +13,7 @@ my $api = SPVM::api();
 
 my $start_memory_blocks_count = $api->get_memory_blocks_count();
 
-ok(SPVM::TestCase::Online->one_get_request);
+ok(SPVM::TestCase::Online->one_get_request_http1_0);
 
 # ok(SPVM::TestCase::Online->one_get_request_https);
 
