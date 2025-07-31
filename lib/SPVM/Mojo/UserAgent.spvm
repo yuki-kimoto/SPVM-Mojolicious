@@ -253,8 +253,6 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
       
       if ($handle = $self->_dequeue($endpoint)) {
         
-        $self->{handle} = $handle;
-        
         if (&DEBUG) {
           warn "-- Reusing connection ($proto://$host:$port)" ;
         }
