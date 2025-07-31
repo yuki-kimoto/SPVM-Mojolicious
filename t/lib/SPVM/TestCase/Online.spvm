@@ -33,6 +33,28 @@ class TestCase::Online {
     return 1;
   }
   
+  static method one_get_request_https : int () {
+    
+    my $ua = Mojo::UserAgent->new;
+    
+    {
+      my $url = "https://www.google.com";
+      
+      my $res = $ua->get($url)->result;
+      
+      unless ($res->code == 200) {
+        return 0;
+      }
+      
+      unless (Fn->contains($res->body, "<html")) {
+        return 0;
+      }
+      
+    }
+    
+    return 1;
+  }
+  
   static method test_keep_alive_no_redirect : int () {
     
     my $ua = Mojo::UserAgent->new;
