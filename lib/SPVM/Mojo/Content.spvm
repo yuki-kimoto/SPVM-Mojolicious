@@ -6,6 +6,9 @@ class Mojo::Content extends Mojo::EventEmitter {
   
   allow Mojo::Transaction::HTTP;
   
+  # TODO: This is not needed for HTTP/1.1
+  allow Mojo::Message;
+  
   use Native::MethodCall;
   
   # Class Variables
@@ -276,7 +279,6 @@ class Mojo::Content extends Mojo::EventEmitter {
         $self->{state} = "finished";
       }
     }
-    
     # Not chunked, pass through to second buffer
     else {
       $self->{real_size} += length $self->{pre_buffer};
@@ -329,7 +331,8 @@ class Mojo::Content extends Mojo::EventEmitter {
       $self->{size} += length $chunk;
     }
     
-    if ($len <= $self->progress) {
+    # TODO: $len >= 0 is not needed in HTTP/1.1
+    if ($len > 0 && $len <= $self->progress) {
       $self->{state} = "finished";
     }
     

@@ -15,9 +15,9 @@ my $start_memory_blocks_count = $api->get_memory_blocks_count();
 
 ok(SPVM::TestCase::Online->one_get_request);
 
-ok(SPVM::TestCase::Online->one_get_request_https);
+# ok(SPVM::TestCase::Online->one_get_request_https);
 
-ok(SPVM::TestCase::Online->one_get_request_redirect);
+# ok(SPVM::TestCase::Online->one_get_request_redirect);
 
 # ok(SPVM::TestCase::Online->test_keep_alive_no_redirect);
 

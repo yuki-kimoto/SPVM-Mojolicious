@@ -28,6 +28,9 @@ class TestCase::Online {
         return 0;
       }
       
+      unless (Fn->contains($res->body, "</html>")) {
+        return 0;
+      }
     }
     
     return 1;

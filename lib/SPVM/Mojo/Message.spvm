@@ -37,8 +37,6 @@ class Mojo::Message extends Mojo::EventEmitter {
   
   has version : ro string;
   
-  has error : ro Hash;
-  
   # Undocumented Fields
   has state : string;
   
@@ -66,7 +64,8 @@ class Mojo::Message extends Mojo::EventEmitter {
     
     my $options_h = Hash->new($options);
     
-    $self->{version} //= "1.1";
+    # TODO : 1.1
+    $self->{version} //= "1.0";
     
     if ($self->{max_message_size} < 0) {
       $self->{max_message_size} = 16777216;
@@ -103,11 +102,11 @@ class Mojo::Message extends Mojo::EventEmitter {
     if ($content->is_multipart) {
       my $content = Mojo::Content::Single->new;
       $self->{content} = $content;
-      my $asset = Mojo::Asset::Memory->new;
-      $asset->add_chunk($body);
-      $content->set_asset($asset);
     }
     
+    my $asset = Mojo::Asset::Memory->new;
+    $asset->add_chunk($body);
+    $content->(Mojo::Content::Single)->set_asset($asset);
   }
   
   method body_params : Mojo::Parameters () {
@@ -166,13 +165,6 @@ class Mojo::Message extends Mojo::EventEmitter {
   
   method cookies : Mojo::Cookie[] () { die "Not implemented."; }
   
-  method set_error : void ($error : Hash) {
-    
-    $self->{error} = $error;
-    
-    $self->finish;
-  }
-  
   method every_cookie : Mojo::Cookie[] ($name : string) {
     return (Mojo::Cookie[])$self->_cache("cookies", 1, $name);
   }
@@ -189,7 +181,12 @@ class Mojo::Message extends Mojo::EventEmitter {
     
     unless ($self->{finished}) {
       
+      # This is not needed for HTTP/1.1
+      $self->set_body($self->content->{buffer});
+      $self->content->{buffer} = "";
+      
       $self->emit("finish");
+      
       $self->{finished}++;
     }
   }
@@ -266,17 +263,12 @@ class Mojo::Message extends Mojo::EventEmitter {
   
   method parse : void ($chunk : string) {
     
-    if ($self->{error}) {
-      return;
-    }
-    
     $self->{raw_size} += length $chunk;
     
     $self->{buffer} .= $chunk;
     
     # Start-line
     unless ($self->{state}) {
-      
       # Check start-line size
       my $len = Fn->index($self->{buffer}, "\x0a");
       if ($len < 0) {
@@ -298,7 +290,7 @@ class Mojo::Message extends Mojo::EventEmitter {
     my $state = $self->{state} // "";
     if ($state eq "content" || $state eq "finished") {
       my $buffer = $self->{buffer};
-      $self->{buffer} = undef;
+      $self->{buffer} = "";
       my $content = $self->content;
       $content->parse($buffer);
       $self->{content} = $content;
@@ -306,7 +298,7 @@ class Mojo::Message extends Mojo::EventEmitter {
     
     # Check message size
     my $max = $self->max_message_size;
-    if ($max && $max < $self->{raw_size}) {
+    if ($max > -1 && $max < $self->{raw_size}) {
       $self->_limit("Maximum message size exceeded");
       return;
     }
@@ -332,7 +324,7 @@ class Mojo::Message extends Mojo::EventEmitter {
   
   method _limit : void ($message : string) {
     ++$self->{limit};
-    $self->set_error(Hash->new({message => $message}));
+    die $message;
   }
   
   method save_to : void ($path : string) {
