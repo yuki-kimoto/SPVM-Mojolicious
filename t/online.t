@@ -17,6 +17,8 @@ ok(SPVM::TestCase::Online->one_get_request);
 
 ok(SPVM::TestCase::Online->one_get_request_https);
 
+ok(SPVM::TestCase::Online->one_get_request_redirect);
+
 # ok(SPVM::TestCase::Online->test_keep_alive_no_redirect);
 
 # ok(SPVM::TestCase::Online->test_https_tiny);
