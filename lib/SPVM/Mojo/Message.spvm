@@ -33,7 +33,22 @@ class Mojo::Message extends Mojo::EventEmitter {
     return $self->{max_line_size};
   }
   
-  has max_message_size : ro int;
+  has max_message_size : wo int;
+  
+  method max_message_size : int () {
+    
+    if ($self->{max_message_size} < 0) {
+      my $env_max_message_size = length(my $_ = Sys->env("SPVM_MOJO_MAX_MESSAGE_SIZE")) ? (int)$_ : -1;
+      
+      $self->{max_message_size} = $env_max_message_size;
+      
+      if ($self->{max_message_size} < 0) {
+        $self->{max_message_size} = 16777216;
+      }
+    }
+    
+    return $self->{max_message_size};
+  }
   
   has version : ro string;
   
@@ -68,9 +83,7 @@ class Mojo::Message extends Mojo::EventEmitter {
     
     $self->{version} //= "1.1";
     
-    if ($self->{max_message_size} < 0) {
-      $self->{max_message_size} = 16777216;
-    }
+    $self->{max_message_size} = -1;
     
     if ($options_h->exists("max_line_size")) {
       $self->{max_line_size} = $options_h->get_int("max_line_size");
@@ -306,7 +319,7 @@ class Mojo::Message extends Mojo::EventEmitter {
     
     # Check message size
     my $max = $self->max_message_size;
-    if ($max && $max < $self->{raw_size}) {
+    if ($max != 0 && $max < $self->{raw_size}) {
       $self->_limit("Maximum message size exceeded");
       return;
     }
