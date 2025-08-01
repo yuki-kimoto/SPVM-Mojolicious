@@ -37,6 +37,14 @@ Cookie value.
 
 =head1 Instance Methods
 
+=head2 parse
+
+C<method parse : L<Mojo::Cookie|SPVM::Mojo::Cookie>[] ($string : string);>
+
+Parses the string $string into the array of L<Mojo::Cookie|SPVM::Mojo::Cookie> objects, and returns it.
+
+Meant to be overloaded in a child class.
+
 =head2 to_string
 
 C<method to_string : string ();>

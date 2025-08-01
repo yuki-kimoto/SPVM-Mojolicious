@@ -14,7 +14,8 @@ class Mojo::Cookie::Request extends Mojo::Cookie {
     return $self;
   }
   
-  static method parse : Mojo::Cookie::Request[] ($string : string) {
+  # Instance Methods
+  method parse : Mojo::Cookie::Request[] ($string : string) {
     
     my $cookies = List->new(new Mojo::Cookie::Request[0]);
     
@@ -41,7 +42,6 @@ class Mojo::Cookie::Request extends Mojo::Cookie {
     return $cookies->to_array->(Mojo::Cookie::Request[]);
   }
   
-  # Instance Methods
   method to_string : string () {
     
     my $name = $self->name;

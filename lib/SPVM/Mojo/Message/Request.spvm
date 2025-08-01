@@ -90,7 +90,7 @@ class Mojo::Message::Request extends Mojo::Message {
     
     my $cookie_header = $headers->cookie;
     
-    my $cookies = Mojo::Cookie::Request->parse($cookie_header);
+    my $cookies = Mojo::Cookie::Request->new->parse($cookie_header);
     
     return $cookies;
   }

@@ -10,6 +10,8 @@ class Mojo::Cookie {
   has value : rw string;
   
   # Instance Methods
+  method parse : Mojo::Cookie[] ($string : string) { die "Not implemented."; }
+  
   method to_string : string () { die "Not implemented."; }
   
 }

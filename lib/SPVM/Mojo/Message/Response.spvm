@@ -111,7 +111,7 @@ class Mojo::Message::Response extends Mojo::Message {
     # Parse cookies
     my $headers = $self->headers;
     
-    return Mojo::Cookie::Response->parse($headers->get_set_cookie);
+    return Mojo::Cookie::Response->new->parse($headers->get_set_cookie);
   }
   
   method default_message : string ($code : int = -1) {

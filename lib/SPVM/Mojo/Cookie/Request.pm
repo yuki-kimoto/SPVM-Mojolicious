@@ -34,17 +34,17 @@ C<static method new : L<Mojo::Cookie::Request|SPVM::Mojo::Cookie::Request> ();>
 
 Creates a new L<Mojo::Cookie::Request|SPVM::Mojo::Cookie::Request> object, and returns it.
 
+=head1 Instance Methods
+
 =head2 parse
 
-C<static method parse : L<Mojo::Cookie::Request|SPVM::Mojo::Cookie::Request>[] ($string : string);>
+C<method parse : L<Mojo::Cookie::Request|SPVM::Mojo::Cookie::Request>[] ($string : string);>
 
 Parses the string $string into the array of L<Mojo::Cookie::Request|SPVM::Mojo::Cookie::Request> objects, and returns it.
 
 Examples:
 
-  my $cookies = Mojo::Cookie::Request->parse("f=b; g=a");
-
-=head1 Instance Methods
+  my $cookies = Mojo::Cookie::Request->new->parse("f=b; g=a");
 
 =head2 to_string
 

@@ -90,13 +90,13 @@ Creates a new L<Mojo::Cookie::Response|SPVM::Mojo::Cookie::Response> object, and
 
 =head2 parse
 
-C<static method parse : L<Mojo::Cookie::Response|SPVM::Mojo::Cookie::Response>[] ($string : string);>
+C<method parse : L<Mojo::Cookie::Response|SPVM::Mojo::Cookie::Response>[] ($string : string);>
 
 Parses the string $string into the array of L<Mojo::Cookie::Response|SPVM::Mojo::Cookie::Response> objects, and returns it.
 
 Examples:
 
-  my $cookies = Mojo::Cookie::Response->parse("f=b; path=/");
+  my $cookies = Mojo::Cookie::Response->new->parse("f=b; path=/");
 
 =head2 to_string
 
