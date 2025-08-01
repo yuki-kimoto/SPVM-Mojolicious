@@ -196,7 +196,7 @@ class Mojo::Headers {
   
   method leftovers : string () {
     my $buffer = $self->{buffer};
-    $self->{buffer} = undef;
+    $self->{buffer} = StringBuffer->new;
     return $buffer->to_string;
   }
   

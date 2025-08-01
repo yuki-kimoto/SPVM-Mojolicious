@@ -494,13 +494,14 @@ class Mojo::Content extends Mojo::EventEmitter {
     }
     
     while (my $len = length $self->{pre_buffer}) {
-      
       # Start new chunk (ignore the chunk extension)
       unless ($self->{chunk_len}) {
         
         my $pre_buffer_ref = [$self->{pre_buffer}];
+        
         my $_ = Re->s($pre_buffer_ref, "^(?:\x0d?\x0a)?([0-9a-fA-F]+).*\x0a", "");
         $self->{pre_buffer} = $pre_buffer_ref->[0];
+        
         unless ($_) {
           last;
         }
@@ -519,7 +520,8 @@ class Mojo::Content extends Mojo::EventEmitter {
         $len = $self->{chunk_len};
       }
       
-      $self->{buffer} .= Fn->substr($self->{pre_buffer}, 0, $len, "");
+      $self->{buffer} .= Fn->substr(my $_ = [$self->{pre_buffer}], 0, $len, "");
+      $self->{pre_buffer} = $_->[0];
       $self->{real_size} += $len;
       $self->{chunk_len} -= $len;
     }
@@ -547,6 +549,7 @@ class Mojo::Content extends Mojo::EventEmitter {
     unless ($headers->is_finished) {
       return;
     }
+    
     $self->{chunk_state} = "finished";
     
     # Take care of leftover and replace Transfer-Encoding with Content-Length

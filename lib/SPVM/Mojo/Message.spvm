@@ -44,11 +44,15 @@ class Mojo::Message extends Mojo::EventEmitter {
       $self->{max_message_size} = $env_max_message_size;
       
       if ($self->{max_message_size} < 0) {
-        $self->{max_message_size} = 16777216;
+        $self->{max_message_size} = $self->MAX_MESSAGE_SIZE_DEFAULT;
       }
     }
     
     return $self->{max_message_size};
+  }
+  
+  protected method MAX_MESSAGE_SIZE_DEFAULT : int () {
+    return 16777216;
   }
   
   has version : ro string;
@@ -307,7 +311,7 @@ class Mojo::Message extends Mojo::EventEmitter {
     my $state = $self->{state} // "";
     if ($state eq "content" || $state eq "finished") {
       my $buffer = $self->{buffer};
-      $self->{buffer} = undef;
+      $self->{buffer} = "";
       my $content = $self->content;
       $content->parse($buffer);
       $self->{content} = $content;
@@ -342,6 +346,7 @@ class Mojo::Message extends Mojo::EventEmitter {
   method _limit : void ($message : string) {
     ++$self->{limit};
     $self->set_error(Hash->new({message => $message}));
+    die $message;
   }
   
   method save_to : void ($path : string) {

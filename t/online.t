@@ -21,11 +21,11 @@ ok(SPVM::TestCase::Online->one_get_request_redirect);
 
 # ok(SPVM::TestCase::Online->test_keep_alive_no_redirect);
 
-# ok(SPVM::TestCase::Online->test_https_tiny);
+ok(SPVM::TestCase::Online->test_https_tiny);
 
-# ok(SPVM::TestCase::Online->test_http_tiny);
+ok(SPVM::TestCase::Online->test_http_tiny);
 
-# ok(SPVM::TestCase::Online->go_http_tiny);
+ok(SPVM::TestCase::Online->go_http_tiny);
 
 SPVM::Fn->destroy_runtime_permanent_vars;
 

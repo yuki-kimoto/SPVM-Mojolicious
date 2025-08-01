@@ -82,9 +82,9 @@ class Mojo::Message::Response extends Mojo::Message {
   
   has message : rw string;
   
-  has max_message_size : rw int;
-  
-  method max_message_size_default : int () { return 2147483647; }
+  protected method MAX_MESSAGE_SIZE_DEFAULT : int () {
+    return 2147483647;
+  }
   
   # Undocumented Fields
   has start_buffer : string;
@@ -101,8 +101,6 @@ class Mojo::Message::Response extends Mojo::Message {
     $self->{content} = Mojo::Content::Single->new;
     
     $self->content->set_headers(Mojo::Headers->new);
-    
-    $self->{max_message_size} = -1;
     
     return $self;
   }
@@ -141,6 +139,7 @@ class Mojo::Message::Response extends Mojo::Message {
     my $_ = Re->m($start_line, "^\s*HTTP/(\d\.\d)\s+(\d\d\d)\s*(.+)?$");
     unless ($_) {
       $self->set_error(Hash->new({message => "Bad response start-line"}));
+      die "Bad response start-line";
       return 0;
     }
     
