@@ -223,6 +223,17 @@ class Mojo::Asset::File extends Mojo::Asset {
     $self->set_cleanup(0);
   }
   
+  method mtime : long () {
+    
+    my $handle = $self->handle;
+    
+    my $stat = Sys->fstat($handle->fileno);
+    
+    my $mtime = $stat->mtime;
+    
+    return $mtime;
+  }
+  
   method size : long () {
     
     my $handle = $self->handle;

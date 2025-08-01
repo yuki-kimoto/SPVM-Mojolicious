@@ -9,10 +9,12 @@ class Mojo::Asset {
   
   has start_range : rw long;
   
+  method mtime : long () { die "Not implemented."; }
+  
+  method set_mtime : void ($mtime : long) { die "Not implemented."; }
+  
   # Instance Methods
-  protected method init : void ($options : object[] = undef) {
-    
-    $self->{start_range} = -1;
+  protected method init : void () {
     
     $self->{end_range} = -1;
   }
@@ -30,10 +32,6 @@ class Mojo::Asset {
   }
   
   method move_to : void ($file : string) { die "Not implemented."; }
-  
-  method mtime : long () { die "Not implemented."; }
-  
-  method set_mtime : void ($mtime : long) { die "Not implemented."; }
   
   method size : long () { die "Not implemented."; }
   
