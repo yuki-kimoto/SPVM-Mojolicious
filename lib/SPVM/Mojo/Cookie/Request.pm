@@ -13,8 +13,8 @@ SPVM::Mojo::Cookie::Request - HTTP request cookie
   use Mojo::Cookie::Request;
   
   my $cookie = Mojo::Cookie::Request->new;
-  $cookie->set_name('foo');
-  $cookie->set_value('bar');
+  $cookie->set_name("foo");
+  $cookie->set_value("bar");
   say $cookie->to_string;
 
 =head1 Description

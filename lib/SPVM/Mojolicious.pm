@@ -24,6 +24,8 @@ This framework is still in early development: there is no documentation yet and 
 
 =item * L<Mojo::Cookie::Request|SPVM::Mojo::Cookie::Request>
 
+=item * L<Mojo::Cookie::Response|SPVM::Mojo::Cookie::Response>
+
 =back
 
 =head1 Porting
