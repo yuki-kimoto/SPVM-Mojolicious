@@ -14,12 +14,12 @@ class Mojo::Asset::Memory extends Mojo::Asset {
   
   method max_memory_size : int () {
     
-    if ($self->{max_memory_size} < 0) {
+    unless ($self->{max_memory_size} > -1) {
       my $env_max_memory_size = length(my $_ = Sys->env("SPVM_MOJO_MAX_MEMORY_SIZE")) ? (int)$_ : -1;
       
       $self->{max_memory_size} = $env_max_memory_size;
       
-      if ($self->{max_memory_size} < 0) {
+      unless ($self->{max_memory_size} < -1) {
         $self->{max_memory_size} = 262144;
       }
     }
@@ -31,7 +31,7 @@ class Mojo::Asset::Memory extends Mojo::Asset {
   
   method mtime : long () {
     
-    if ($self->{mtime} < 0) {
+    unless ($self->{mtime} > -1) {
       $self->{mtime} = CommandInfo->BASETIME;
     }
     
