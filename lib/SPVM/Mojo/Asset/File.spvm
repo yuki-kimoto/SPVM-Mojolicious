@@ -11,20 +11,29 @@ class Mojo::Asset::File extends Mojo::Asset {
   use Sys;
   
   # Fields
-  has cleanup : ro byte;
+  has cleanup : wo byte;
   
-  has path : ro string;
+  method cleanup : byte () {
+    
+    if ($self->{cleanup} < 0) {
+      return 0;
+    }
+    
+    return $self->{cleanup};
+  }
   
-  has handle : ro IO::File;
+  has path : rw string;
   
-  has tmpdir : string;
+  has handle : rw IO::File;
+  
+  has tmpdir : rw string;
   
   # Class Methods
-  static method new : Mojo::Asset::File ($options : object[] = undef) {
+  static method new : Mojo::Asset::File () {
     
     my $self = new Mojo::Asset::File;
     
-    $self->init($options);
+    $self->init;
     
     return $self;
   }
@@ -36,12 +45,7 @@ class Mojo::Asset::File extends Mojo::Asset {
     
     my $options_h = Hash->new($options);
     
-    if ($options_h->exists("cleanup")) {
-      $self->{cleanup} = (byte)$options_h->get_int("cleanup");
-    }
-    else {
-      $self->{cleanup} = 1;
-    }
+    $self->{cleanup} = -1;
     
     my $path = $options_h->get_or_default_string("path", undef);
     my $handle = (IO::File)undef;
