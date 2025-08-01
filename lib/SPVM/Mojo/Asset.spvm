@@ -9,6 +9,8 @@ class Mojo::Asset {
   
   has start_range : rw long;
   
+  has mtime : long;
+  
   method mtime : long () { die "Not implemented."; }
   
   method set_mtime : void ($mtime : long) { die "Not implemented."; }

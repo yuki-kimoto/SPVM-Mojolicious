@@ -27,8 +27,6 @@ class Mojo::Asset::Memory extends Mojo::Asset {
     return $self->{max_memory_size};
   }
   
-  has mtime : wo long;
-  
   method mtime : long () {
     
     unless ($self->{mtime} > -1) {
