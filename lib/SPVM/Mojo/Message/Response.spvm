@@ -2,7 +2,7 @@
 # MIT License
 
 class Mojo::Message::Response extends Mojo::Message {
-  version_from Mojo;
+  version_from Mojolicious;
   
   use Mojo::Cookie::Response;
   use Mojo::Date;

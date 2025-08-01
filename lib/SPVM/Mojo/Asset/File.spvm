@@ -2,7 +2,7 @@
 # MIT License
 
 class Mojo::Asset::File extends Mojo::Asset {
-  version_from Mojo;
+  version_from Mojolicious;
   
   use Sys::IO::Constant as IOC;
   use File::Spec;

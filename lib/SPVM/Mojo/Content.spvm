@@ -2,7 +2,7 @@
 # MIT License
 
 class Mojo::Content extends Mojo::EventEmitter {
-  version_from Mojo;
+  version_from Mojolicious;
   
   allow Mojo::Transaction::HTTP;
   

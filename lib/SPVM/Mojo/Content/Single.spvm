@@ -2,7 +2,7 @@
 # MIT License
 
 class Mojo::Content::Single extends Mojo::Content {
-  version_from Mojo;
+  version_from Mojolicious;
   
   allow Mojo::Content::MultiPart;
   

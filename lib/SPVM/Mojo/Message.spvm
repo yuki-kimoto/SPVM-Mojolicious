@@ -3,7 +3,7 @@
 
 class Mojo::Message extends Mojo::EventEmitter {
   
-  version_from Mojo;
+  version_from Mojolicious;
   
   use Hash;
   use Mojo::Headers;

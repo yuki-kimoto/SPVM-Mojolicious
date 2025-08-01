@@ -2,7 +2,7 @@
 # MIT License
 
 class Mojo::Cookie::Response extends Mojo::Cookie {
-  version_from Mojo;
+  version_from Mojolicious;
   
   use Mojo::Util;
   

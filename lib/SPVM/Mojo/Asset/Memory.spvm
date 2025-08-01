@@ -2,7 +2,7 @@
 # MIT License
 
 class Mojo::Asset::Memory extends Mojo::Asset {
-  version_from Mojo;
+  version_from Mojolicious;
   
   use Mojo::Asset::File;
   use IO;
@@ -30,7 +30,7 @@ class Mojo::Asset::Memory extends Mojo::Asset {
   }
   
   # Instance Methods
-  protected method init : void ($options : object[] = undef) {
+  protected method init : void () {
     
     $self->SUPER::init;
     

@@ -2,7 +2,7 @@
 # MIT License
 
 class Mojo::Upload {
-  version_from Mojo;
+  version_from Mojolicious;
   
   # Fields
   has asset : ro Mojo::Asset;

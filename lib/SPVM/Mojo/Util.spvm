@@ -2,7 +2,7 @@
 # MIT License
 
 class Mojo::Util {
-  version_from Mojo;
+  version_from Mojolicious;
   
   use Re;
   use Hash;

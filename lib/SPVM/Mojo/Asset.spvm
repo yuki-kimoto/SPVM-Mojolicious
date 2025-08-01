@@ -2,7 +2,7 @@
 # MIT License
 
 class Mojo::Asset {
-  version_from Mojo;
+  version_from Mojolicious;
   
   # Fields
   has end_range : rw long;
