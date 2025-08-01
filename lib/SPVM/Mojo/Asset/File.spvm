@@ -13,7 +13,7 @@ class Mojo::Asset::File extends Mojo::Asset {
   # Fields
   has cleanup : wo byte;
   
-  method cleanup : byte () {
+  method cleanup : int () {
     
     if ($self->{cleanup} < 0) {
       return 0;
