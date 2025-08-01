@@ -8,37 +8,35 @@ class Mojo::Asset::Memory extends Mojo::Asset {
   use IO;
   
   # Fields
-  has auto_upgrade : ro byte;
+  has auto_upgrade : rw byte;
   
-  has max_memory_size : ro int;
+  has max_memory_size : rw int;
   
   has mtime : rw long;
   
+  # Undocumented Fields
   has content_buffer : StringBuffer;
   
   has frozen : byte;
   
   # Class Methods
-  static method new : Mojo::Asset::Memory ($options : object[] = undef) {
+  static method new : Mojo::Asset::Memory () {
     
     my $self = new Mojo::Asset::Memory;
     
-    $self->init($options);
+    $self->init;
     
     return $self;
   }
   
-  method init : void ($options : object[] = undef) {
+  # Instance Methods
+  protected method init : void ($options : object[] = undef) {
     
     $self->SUPER::init;
     
-    my $options_h = Hash->new($options);
+    $self->{max_memory_size} = 262144;
     
-    $self->{auto_upgrade} = (byte)$options_h->get_or_default_int("auto_upgrade", 0);
-    
-    $self->{max_memory_size} = $options_h->get_or_default_int("max_memory_size", 262144);
-    
-    $self->{mtime} = $options_h->get_or_default_long("mtime", CommandInfo->BASETIME);
+    $self->{mtime} = CommandInfo->BASETIME;
     
     $self->{content_buffer} = StringBuffer->new;
     

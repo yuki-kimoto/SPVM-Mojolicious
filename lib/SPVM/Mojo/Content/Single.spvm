@@ -25,7 +25,10 @@ class Mojo::Content::Single extends Mojo::Content {
     
     $self->{auto_upgrade} = 1;
     
-    $self->{asset} = Mojo::Asset::Memory->new({auto_upgrade => 1});
+    my $asset = Mojo::Asset::Memory->new;
+    $asset->set_auto_upgrade(1);
+    $self->{asset} = $asset;
+    
     
     $self->init($options);
     
