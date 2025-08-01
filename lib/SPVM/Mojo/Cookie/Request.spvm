@@ -6,6 +6,7 @@ class Mojo::Cookie::Request extends Mojo::Cookie {
   
   use Mojo::Util;
   
+  # Class Methods
   static method new : Mojo::Cookie::Request () {
     
     my $self = new Mojo::Cookie::Request;
@@ -13,11 +14,11 @@ class Mojo::Cookie::Request extends Mojo::Cookie {
     return $self;
   }
   
-  static method parse : Mojo::Cookie::Request[] ($str : string) {
+  static method parse : Mojo::Cookie::Request[] ($string : string) {
     
     my $cookies = List->new(new Mojo::Cookie::Request[0]);
     
-    my $tree = Mojo::Util->split_header($str // "");
+    my $tree = Mojo::Util->split_header($string // "");
     
     my $pairs = StringList->new;
     for my $pair (@$tree) {
@@ -40,6 +41,7 @@ class Mojo::Cookie::Request extends Mojo::Cookie {
     return $cookies->to_array->(Mojo::Cookie::Request[]);
   }
   
+  # Instance Methods
   method to_string : string () {
     
     my $name = $self->name;

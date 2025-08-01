@@ -9,6 +9,7 @@ class Mojo::Cookie {
   
   has value : rw string;
   
+  # Instance Methods
   method to_string : string () { die "Not implemented."; }
   
 }

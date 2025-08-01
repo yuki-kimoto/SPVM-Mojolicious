@@ -22,6 +22,8 @@ This framework is still in early development: there is no documentation yet and 
 
 =item * L<Mojo::UserAgent|SPVM::Mojo::UserAgent>
 
+=item * L<Mojo::Cookie::Request|SPVM::Mojo::Cookie::Request>
+
 =back
 
 =head1 Porting
