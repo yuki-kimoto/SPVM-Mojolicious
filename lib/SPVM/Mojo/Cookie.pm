@@ -53,6 +53,16 @@ Renders the cookie to a string and returns it.
 
 Meant to be overloaded in a child class.
 
+=head1 Well Known Child Classes
+
+=over 2
+
+=item * L<Mojo::Cookie::Request|SPVM::Mojo::Cookie::Request>
+
+=item * L<Mojo::Cookie::Response|SPVM::Mojo::Cookie::Response>
+
+=back
+
 =head1 See Also
 
 L<SPVM::Mojolicious>
