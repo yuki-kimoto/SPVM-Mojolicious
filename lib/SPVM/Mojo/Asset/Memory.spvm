@@ -2,7 +2,7 @@
 # MIT License
 
 class Mojo::Asset::Memory extends Mojo::Asset {
-  version_from Mojolicious;
+  version_from Mojo;
   
   use Mojo::Asset::File;
   use IO;
@@ -10,9 +10,33 @@ class Mojo::Asset::Memory extends Mojo::Asset {
   # Fields
   has auto_upgrade : rw byte;
   
-  has max_memory_size : rw int;
+  has max_memory_size : wo int;
   
-  has mtime : rw long;
+  method max_memory_size : int () {
+    
+    if ($self->{max_memory_size} < 0) {
+      my $env_max_memory_size = length(my $_ = Sys->env("SPVM_MOJO_MAX_MEMORY_SIZE")) ? (int)$_ : -1;
+      
+      $self->{max_memory_size} = $env_max_memory_size;
+      
+      if ($self->{max_memory_size} < 0) {
+        $self->{max_memory_size} = 262144;
+      }
+    }
+    
+    return $self->{max_memory_size};
+  }
+  
+  has mtime : wo long;
+  
+  method mtime : long () {
+    
+    if ($self->{mtime} < 0) {
+      $self->{mtime} = CommandInfo->BASETIME;
+    }
+    
+    return $self->{mtime};
+  }
   
   # Undocumented Fields
   has content_buffer : StringBuffer;
@@ -34,9 +58,9 @@ class Mojo::Asset::Memory extends Mojo::Asset {
     
     $self->SUPER::init;
     
-    $self->{max_memory_size} = 262144;
+    $self->{max_memory_size} = -1;
     
-    $self->{mtime} = CommandInfo->BASETIME;
+    $self->{mtime} = -1;
     
     $self->{content_buffer} = StringBuffer->new;
     
