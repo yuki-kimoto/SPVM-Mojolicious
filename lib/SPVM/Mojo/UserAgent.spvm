@@ -259,9 +259,9 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
           $tx->set_kept_alive(1) ;
         }
         
-        $self->_process($tx);
-        
         $tx->set_handle($handle);
+        
+        $self->_process($tx);
         
         return $tx;
       }
