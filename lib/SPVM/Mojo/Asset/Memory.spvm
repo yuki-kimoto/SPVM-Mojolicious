@@ -79,8 +79,7 @@ class Mojo::Asset::Memory extends Mojo::Asset {
     if ($self->auto_upgrade && ($self->size + length $chunk) > $self->max_memory_size) {
       my $file = Mojo::Asset::File->new;
       
-      # TODO
-      # $self->emit(upgrade => $file);
+      $self->emit(upgrade => $file);
       
       $self->{frozen} = 1;
       
