@@ -152,7 +152,7 @@ class TestCase::Online {
     return 1;
   }
   
-  static method go_http_tiny : int () {
+  static method go : int () {
     
     $RESULT = IntList->new;
     
@@ -180,9 +180,23 @@ class TestCase::Online {
       $RESULT->push(Fn->contains($body, "www.google.com"));
     });
     
+    Go->go(method : void () {
+      my $url = "https://google.com";
+      
+      my $ua = Mojo::UserAgent->new;
+      
+      $ua->set_max_redirects(20);
+      
+      my $res = $ua->get($url)->result;
+      
+      my $body = $res->body;
+      
+      $RESULT->push(Fn->contains($body, "</html>"));
+    });
+    
     Go->gosched;
     
-    unless (Array->equals_int($RESULT->to_array, [1, 1])) {
+    unless (Array->equals_int($RESULT->to_array, [1, 1, 1])) {
       return 0;
     }
     
