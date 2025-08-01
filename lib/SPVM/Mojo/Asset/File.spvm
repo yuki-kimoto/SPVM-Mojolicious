@@ -24,31 +24,12 @@ class Mojo::Asset::File extends Mojo::Asset {
   
   has path : rw string;
   
-  has handle : rw IO::File;
+  has handle : wo IO::File;
   
-  has tmpdir : rw string;
-  
-  # Class Methods
-  static method new : Mojo::Asset::File () {
+  method handle : IO::File () {
     
-    my $self = new Mojo::Asset::File;
-    
-    $self->init;
-    
-    return $self;
-  }
-  
-  # Instance Methods
-  method init : void ($options : object[] = undef) {
-    
-    $self->SUPER::init;
-    
-    my $options_h = Hash->new($options);
-    
-    $self->{cleanup} = -1;
-    
-    my $path = $options_h->get_or_default_string("path", undef);
     my $handle = (IO::File)undef;
+    my $path = $self->path;
     if ($path) {
       if (Sys->e($path)) {
         $handle = IO->open("<", $path);
@@ -56,8 +37,6 @@ class Mojo::Asset::File extends Mojo::Asset {
       else {
         $handle = IO->open("+>>", $path);
       }
-      
-      $self->{path} = $path;
     }
     else {
       $self->{tmpdir} = File::Spec->tmpdir;
@@ -73,11 +52,32 @@ class Mojo::Asset::File extends Mojo::Asset {
     
     $self->{handle} = $handle;
     
+    return $self->{handle};
+  }
+  
+  has tmpdir : rw string;
+  
+  # Class Methods
+  static method new : Mojo::Asset::File () {
+    
+    my $self = new Mojo::Asset::File;
+    
+    $self->init;
+    
+    return $self;
+  }
+  
+  # Instance Methods
+  protected method init : void () {
+    
+    $self->SUPER::init;
+    
+    $self->{cleanup} = -1;
   }
   
   method add_chunk : Mojo::Asset::File ($chunk : string) {
     
-    my $handle = $self->{handle};
+    my $handle = $self->handle;
     
     $handle->write($chunk);
     
@@ -86,7 +86,7 @@ class Mojo::Asset::File extends Mojo::Asset {
   
   method contains : int ($string : string) {
     
-    my $handle = $self->{handle};
+    my $handle = $self->handle;
     
     my $start_range = $self->{start_range};
     
@@ -154,7 +154,7 @@ class Mojo::Asset::File extends Mojo::Asset {
       $offset += $start_range;
     }
     
-    my $handle = $self->{handle};
+    my $handle = $self->handle;
     
     $handle->seek($offset, IOC->SEEK_SET);
     
@@ -192,7 +192,7 @@ class Mojo::Asset::File extends Mojo::Asset {
   
   method move_to : void ($file : string) {
     
-    my $handle = $self->{handle};
+    my $handle = $self->handle;
     
     $handle->close;
     $self->{handle} = undef;
@@ -201,12 +201,13 @@ class Mojo::Asset::File extends Mojo::Asset {
     
     File::Copy->move($path, $file);
     
-    $self->init({path => $file, cleanup => 0});
+    $self->set_path($file);
+    $self->set_cleanup(0);
   }
   
   method size : long () {
     
-    my $handle = $self->{handle};
+    my $handle = $self->handle;
     
     my $fd = $handle->fileno;
     
@@ -219,7 +220,7 @@ class Mojo::Asset::File extends Mojo::Asset {
   
   method slurp : string () {
     
-    my $handle = $self->{handle};
+    my $handle = $self->handle;
     
     $handle->seek(0, IOC->SEEK_SET);
     
