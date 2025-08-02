@@ -164,7 +164,11 @@ class Mojo::Asset::File extends Mojo::Asset {
     return -1;
   }
   
-  method get_chunk : string ($offset : long, $max : int = 131072) {
+  method get_chunk : string ($offset : long, $max : int = -1) {
+    
+    unless ($max > -1) {
+      $max = 131072;
+    }
     
     my $start_range = $self->{start_range};
     
