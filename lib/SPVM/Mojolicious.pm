@@ -30,6 +30,8 @@ This framework is still in early development: there is no documentation yet and 
 
 =item * L<Mojo::Cookie::Response|SPVM::Mojo::Cookie::Response>
 
+=item * L<Mojo::Path|SPVM::Mojo::Path>
+
 =back
 
 =head1 Porting

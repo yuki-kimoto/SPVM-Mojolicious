@@ -8,17 +8,30 @@ class Mojo::Path {
   use Re;
   
   # Fields
-  has path : rw string;
-  
   has parts : rw string[]
     get {
-      $self->_parse;
-      return $self->{parts_list}->to_array;
+      return $self->parts_list->to_array;
     }
     
     set {
-      $self->_parse;
+      unless ($_) {
+        die "The parts argument must be defined.";
+      }
       $self->{parts_list} = StringList->new($_);
+    }
+  ;
+  
+  has parts_list : rw StringList
+    get {
+      $self->_parse;
+      return $self->{parts_list};
+    }
+    
+    set {
+      unless ($_) {
+        die "The parts_list argument must be defined.";
+      }
+      $self->{parts_list} = $_;
     }
   ;
   
@@ -47,7 +60,7 @@ class Mojo::Path {
   ;
   
   # Undocumented Fields
-  has parts_list : StringList;
+  has path : string;
   
   # Class Methods
   static method new : Mojo::Path ($path_string : string = undef) {
@@ -61,6 +74,7 @@ class Mojo::Path {
     return $self;
   }
   
+  # Instance Methods
   method canonicalize : void () {
     
     $self->_parse;
@@ -125,24 +139,6 @@ class Mojo::Path {
     }
     
     return $abs_path;
-  }
-  
-  private method _parse : void (){
-    
-    my $parts_list = $self->{parts_list};
-    
-    unless ($parts_list) {
-      my $path_url_encoded = $self->{path};
-      $self->{path} = undef;
-      unless ($path_url_encoded) {
-        $path_url_encoded = "";
-      }
-      my $path = Mojo::Util->url_unescape($path_url_encoded);
-      $self->{leading_slash} = (byte)!!Re->s($path, "^/", "");
-      $self->{trailing_slash} = (byte)!!Re->s($path, "/$", "");
-      $self->{parts_list} = StringList->new(Fn->split("/", $path, -1));
-    }
-    
   }
   
   method contains : int ($string : string) {
@@ -244,4 +240,23 @@ class Mojo::Path {
     
     return $clone;
   }
+  
+  private method _parse : void (){
+    
+    my $parts_list = $self->{parts_list};
+    
+    unless ($parts_list) {
+      my $path_url_encoded = $self->{path};
+      $self->{path} = undef;
+      unless ($path_url_encoded) {
+        $path_url_encoded = "";
+      }
+      my $path = Mojo::Util->url_unescape($path_url_encoded);
+      $self->{leading_slash} = (byte)!!Re->s($path, "^/", "");
+      $self->{trailing_slash} = (byte)!!Re->s($path, "/$", "");
+      $self->{parts_list} = StringList->new(Fn->split("/", $path, -1));
+    }
+    
+  }
+  
 }
