@@ -1,6 +1,11 @@
 0.008 2025-08-05
   [Requirement Changes]
     * Require SPVM 0.990078.
+  [Changes]
+    * Improve Mojo::Parameters.
+  [Document Changes]
+    * Add the documents for Mojo::Path class.
+    * Add the documents for Mojo::Parameters class.
 0.007 2025-08-02
   [Changes]
     * Improve asset classes.

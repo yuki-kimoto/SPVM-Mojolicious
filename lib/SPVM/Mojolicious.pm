@@ -32,6 +32,8 @@ This framework is still in early development: there is no documentation yet and 
 
 =item * L<Mojo::Path|SPVM::Mojo::Path>
 
+=item * L<Mojo::Parameters|SPVM::Mojo::Parameters>
+
 =back
 
 =head1 Porting

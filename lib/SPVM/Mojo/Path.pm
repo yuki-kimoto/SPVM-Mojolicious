@@ -41,7 +41,7 @@ This is a virtual field. The value is got from and stored to L</"parts_list">.
 
 =head2 parts_list
 
-C<has parts_list : rw StringList;>
+C<has parts_list : rw L<StringList|SPVM::StringList>;>
 
 The path parts. Note that this method will normalize the path and that C<%2F> will be treated as C</> for security
 reasons.

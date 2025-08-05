@@ -17,7 +17,7 @@ class Mojo::Path {
       unless ($_) {
         die "The parts argument must be defined.";
       }
-      $self->{parts_list} = StringList->new($_);
+      $self->set_parts_list(StringList->new($_));
     }
   ;
   
@@ -32,6 +32,7 @@ class Mojo::Path {
         die "The parts_list argument must be defined.";
       }
       $self->{parts_list} = $_;
+      $self->{path} = undef;
     }
   ;
   
