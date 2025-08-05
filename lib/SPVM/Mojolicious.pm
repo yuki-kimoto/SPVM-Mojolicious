@@ -6,15 +6,17 @@ our $VERSION = "0.007";
 
 =head1 Name
 
-SPVM::Mojolicious - Web Frame Work
+SPVM::Mojolicious - Real-time web framework
 
 =head1 Description
 
-Mojolicious in L<SPVM> is a web frame work.
+This framewark is a Perl's L<Mojolicious> porting to L<SPVM>.
 
 B<WARNINGS:>
 
 This framework is still in early development: there is no documentation yet and method names, functionality and implementations change frequently and without warning.
+
+Most tests are not written.
 
 =head1 Classes
 
