@@ -8,13 +8,46 @@ class Mojo::Path {
   use Re;
   
   # Fields
-  has path : string;
+  has path : rw string;
   
+  has parts : rw string[]
+    get {
+      $self->_parse;
+      return $self->{parts_list}->to_array;
+    }
+    
+    set {
+      $self->_parse;
+      $self->{parts_list} = StringList->new($_);
+    }
+  ;
+  
+  has leading_slash : rw byte
+    get {
+      $self->_parse;
+      return $self->{leading_slash};
+    }
+    
+    set {
+      $self->_parse;
+      $self->{leading_slash} = (byte)$_;
+    }
+  ;
+  
+  has trailing_slash : rw byte
+    get {
+      $self->_parse;
+      return $self->{trailing_slash};
+    }
+    
+    set {
+      $self->_parse;
+      $self->{trailing_slash} = (byte)$_;
+    }
+  ;
+  
+  # Undocumented Fields
   has parts_list : StringList;
-  
-  has leading_slash : byte;
-  
-  has trailing_slash : byte;
   
   # Class Methods
   static method new : Mojo::Path ($path_string : string = undef) {
@@ -92,36 +125,6 @@ class Mojo::Path {
     }
     
     return $abs_path;
-  }
-  
-  method leading_slash : int () {
-    $self->_parse;
-    return $self->{leading_slash};
-  }
-  
-  method set_leading_slash : void ($bool : int) {
-    $self->_parse;
-    $self->{leading_slash} = (byte)$bool;
-  }
-  
-  method trailing_slash : int () {
-    $self->_parse;
-    return $self->{trailing_slash};
-  }
-  
-  method set_trailing_slash : void ($bool : int) {
-    $self->_parse;
-    $self->{trailing_slash} = (byte)$bool;
-  }
-  
-  method parts : string[] () {
-    $self->_parse;
-    return $self->{parts_list}->to_array;
-  }
-  
-  method set_parts : void ($parts : string[]) {
-    $self->_parse;
-    $self->{parts_list} = StringList->new($parts);
   }
   
   private method _parse : void (){
