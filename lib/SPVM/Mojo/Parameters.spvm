@@ -11,7 +11,34 @@ class Mojo::Parameters {
   # Fields
   has string : string;
   
-  has pairs_list : StringList;
+  has pairs : rw string[]
+    get {
+      return $self->pairs_list->to_array;
+    }
+    
+    set {
+      unless ($_) {
+        die "The pairs argument must be defined.";
+      }
+      
+      $self->set_pairs_list(StringList->new($_));
+    }
+  ;
+  
+  has pairs_list : rw StringList
+    get {
+      $self->_parse;
+      return $self->{pairs_list};
+    }
+    
+    set {
+      unless ($_) {
+        die "The pairs_list argument must be defined.";
+      }
+      $self->{pairs_list} = $_;
+      $self->{string} = undef;
+    }
+  ;
   
   # Class Methods
   static method new : Mojo::Parameters ($string : string = undef) {
@@ -149,13 +176,6 @@ class Mojo::Parameters {
     return $keys;
   }
   
-  method pairs : string[] () {
-    
-    $self->_parse;
-    
-    return $self->{pairs_list}->to_array;
-  }
-  
   method _parse : void () {
     
     my $string = $self->{string};
@@ -193,18 +213,6 @@ class Mojo::Parameters {
     
   }
   
-  method set_pairs : void ($pairs : string[])  {
-    
-    unless ($pairs) {
-      die "The paris \$pairs must be defined.";
-    }
-    
-    $self->{pairs_list} = StringList->new($pairs);
-    
-    $self->{string} = undef;
-    
-  }
-
   method param : string ($name : string) {
     
     my $every_param = $self->every_param($name);
