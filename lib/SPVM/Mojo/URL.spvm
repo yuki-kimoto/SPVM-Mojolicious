@@ -10,15 +10,17 @@ class Mojo::URL {
   use Mojo::Util;
   
   # Fields
+  has base : rw Mojo::URL;
+  
   has fragment : rw string;
-  
-  has scheme : rw string;
-  
-  has userinfo : rw string;
   
   has host : rw string;
   
   has port : rw int;
+  
+  has scheme : rw string;
+  
+  has userinfo : rw string;
   
   has path : rw Mojo::Path
     
@@ -53,10 +55,6 @@ class Mojo::URL {
     }
   ;
   
-  has auth : rw string;
-  
-  has base : rw Mojo::URL;
-  
   has query : rw Mojo::Parameters
     get {
       
@@ -67,7 +65,7 @@ class Mojo::URL {
       return $self->{query};
     }
     
-    set ($query_value : object of object[]|Hash|Mojo::Parameters)  {
+    set ($query_value : object of object[]|Mojo::Parameters)  {
       
       unless ($query_value) {
         die "The query \$query_value must be defined.";
@@ -281,9 +279,9 @@ class Mojo::URL {
     return $path_query;
   }
   
-  method set_path_query : void ($pq : string) {
+  method set_path_query : void ($pass_query : string) {
     
-    if (my $match = Re->m($pq, "^([^?#]*)(?:\?([^#]*))?")) {
+    if (my $match = Re->m($pass_query, "^([^?#]*)(?:\?([^#]*))?")) {
       if ($match->cap2) {
         $self->set_path(Mojo::Path->new($match->cap1));
         $self->set_query(Mojo::Parameters->new($match->cap2));
