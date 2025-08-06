@@ -1,6 +1,6 @@
 0.008 2025-08-05
   [Requirement Changes]
-    * Require SPVM 0.990078.
+    * Require SPVM 0.990080.
   [Changes]
     * Improve Mojo::Parameters.
   [Document Changes]
