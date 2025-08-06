@@ -6,7 +6,6 @@ class Mojo::URL {
   
   use StringBuffer;
   use Re;
-  use Mojo::URL;
   use Mojo::Parameters;
   use Mojo::Util;
   
@@ -21,7 +20,38 @@ class Mojo::URL {
   
   has port : rw int;
   
-  has path : Mojo::Path;
+  has path : rw Mojo::Path
+    
+    get {
+      
+      unless ($self->{path}) {
+        $self->{path} = Mojo::Path->new;
+      }
+      
+      my $path = $self->{path};
+      
+      return $path;
+    }
+    
+    set ($path : object of string|Mojo::Path) {
+      
+      unless ($path) {
+        die "The path \$path must be defined.";
+      }
+      
+      if ($path isa Mojo::Path) {
+        $self->{path} = (Mojo::Path)$path;
+      }
+      else {
+        unless ($self->{path}) {
+          $self->{path} = Mojo::Path->new;
+        }
+        
+        $self->{path}->merge((string)$path);
+      }
+      
+    }
+  ;
   
   has auth : rw string;
   
@@ -29,6 +59,7 @@ class Mojo::URL {
   
   has query : Mojo::Parameters;
   
+  # Class Methods
   static method new : Mojo::URL ($url : string = undef) {
     
     my $self = new Mojo::URL;
@@ -40,6 +71,7 @@ class Mojo::URL {
     return $self;
   }
   
+  # Instance Methods
   method clone : Mojo::URL () {
     
     my $clone = Mojo::URL->new;
@@ -182,7 +214,7 @@ class Mojo::URL {
       }
     }
   }
-
+  
   method password : string () {
     
     my $userinfo = "";
@@ -196,36 +228,6 @@ class Mojo::URL {
     }
     
     return $password;
-  }
-  
-  method path : Mojo::Path () {
-    
-    unless ($self->{path}) {
-      $self->{path} = Mojo::Path->new;
-    }
-    
-    my $path = $self->{path};
-    
-    return $path;
-  }
-  
-  method set_path : void ($path : object of string|Mojo::Path) {
-    
-    unless ($path) {
-      die "The path \$path must be defined.";
-    }
-    
-    if ($path isa Mojo::Path) {
-      $self->{path} = (Mojo::Path)$path;
-    }
-    else {
-      unless ($self->{path}) {
-        $self->{path} = Mojo::Path->new;
-      }
-      
-      $self->{path}->merge((string)$path);
-    }
-    
   }
   
   method path_query : string () {
@@ -302,7 +304,7 @@ class Mojo::URL {
   }
   
   method to_abs : Mojo::URL ($base : Mojo::URL = undef) {
-
+    
     my $abs = $self->clone;
     
     if ($abs->is_abs) {
@@ -361,7 +363,22 @@ class Mojo::URL {
     return $self->_string(1);
   }
   
-  method _string : string ($unsafe : int) {
+  method username : string () {
+    
+    my $userinfo = "";
+    if ($self->userinfo) {
+      
+    }
+    
+    my $username = (string)undef;
+    if (my $match = Re->m($username, "^([^:]+)")) {
+      $username = $match->cap1;
+    }
+    
+    return $username;
+  }
+  
+  private method _string : string ($unsafe : int) {
     
     # Scheme
     my $url = "";
@@ -404,19 +421,4 @@ class Mojo::URL {
     return $url;
   }
   
-  method username : string () {
-    
-    my $userinfo = "";
-    if ($self->userinfo) {
-      
-    }
-    
-    my $username = (string)undef;
-    if (my $match = Re->m($username, "^([^:]+)")) {
-      $username = $match->cap1;
-    }
-    
-    return $username;
-  }
-
 }
