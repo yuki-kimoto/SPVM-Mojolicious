@@ -57,7 +57,43 @@ class Mojo::URL {
   
   has base : rw Mojo::URL;
   
-  has query : Mojo::Parameters;
+  has query : rw Mojo::Parameters
+    get {
+      
+      unless ($self->{query}) {
+        $self->{query} = Mojo::Parameters->new;
+      }
+      
+      return $self->{query};
+    }
+    
+    set ($query : object of string[]|Hash|Mojo::Parameters)  {
+      
+      unless ($query) {
+        die "The query \$query must be defined.";
+      }
+      
+      unless ($self->{query}) {
+        $self->{query} = Mojo::Parameters->new;
+      }
+      
+      # Merge with hash
+      if ($query isa Hash) {
+        $self->{query}->merge($query->(Hash)->to_array);
+      }
+      
+      # Append array
+      elsif ($query isa string[]) {
+        $self->{query}->append((string[])$query);
+      }
+      
+      # New parameters
+      elsif ($query isa Mojo::Parameters) {
+        $self->{query} = (Mojo::Parameters)$query;
+      }
+      
+    }
+  ;
   
   # Class Methods
   static method new : Mojo::URL ($url : string = undef) {
@@ -265,42 +301,6 @@ class Mojo::URL {
     }
     
     return $protocol;
-  }
-  
-  method query : Mojo::Parameters () {
-    
-    unless ($self->{query}) {
-      $self->{query} = Mojo::Parameters->new;
-    }
-    
-    return $self->{query};
-  }
-  
-  method set_query : void ($query : object of string[]|Hash|Mojo::Parameters)  {
-    
-    unless ($query) {
-      die "The query \$query must be defined.";
-    }
-    
-    unless ($self->{query}) {
-      $self->{query} = Mojo::Parameters->new;
-    }
-    
-    # Merge with hash
-    if ($query isa Hash) {
-      $self->{query}->merge($query->(Hash)->to_array);
-    }
-    
-    # Append array
-    elsif ($query isa string[]) {
-      $self->{query}->append((string[])$query);
-    }
-    
-    # New parameters
-    elsif ($query isa Mojo::Parameters) {
-      $self->{query} = (Mojo::Parameters)$query;
-    }
-    
   }
   
   method to_abs : Mojo::URL ($base : Mojo::URL = undef) {
