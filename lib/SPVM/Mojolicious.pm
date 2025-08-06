@@ -36,6 +36,8 @@ Most tests are not written.
 
 =item * L<Mojo::Parameters|SPVM::Mojo::Parameters>
 
+=item * L<Mojo::URL|SPVM::Mojo::URL>
+
 =back
 
 =head1 Porting
