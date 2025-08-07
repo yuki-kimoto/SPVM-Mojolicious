@@ -33,7 +33,7 @@ Mojo::Path class in L<SPVM> is a container for paths used by L<Mojo::URL|SPVM::M
 
 =head2 parts
 
-C<has parts : rw string[]>
+C<has parts : virtual rw string[]>
 
 The path parts.
 

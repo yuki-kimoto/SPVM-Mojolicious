@@ -9,7 +9,7 @@ class Mojo::Parameters {
   use Sort;
   
   # Fields
-  has pairs : rw string[]
+  has pairs : rw virtual string[]
     get {
       return $self->pairs_list->to_array;
     }

@@ -8,7 +8,7 @@ class Mojo::Path {
   use Re;
   
   # Fields
-  has parts : rw string[]
+  has parts : virtual rw string[]
     get {
       return $self->parts_list->to_array;
     }

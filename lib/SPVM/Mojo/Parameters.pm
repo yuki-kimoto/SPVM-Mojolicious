@@ -33,7 +33,7 @@ Mojo::Parameters class in L<SPVM> is a container for form parameters used by L<M
 
 =head2 pairs
 
-C<has pairs : rw string[];>
+C<has pairs : virtual rw string[];>
 
 Parsed parameter pairs.
 
