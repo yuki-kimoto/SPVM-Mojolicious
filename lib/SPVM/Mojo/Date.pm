@@ -30,9 +30,17 @@ Mojo::Date class in L<SPVM> implements HTTP date and time functions, based on L<
 
 =head2 epoch
 
-C<has epoch : rw long;>
+C<has epoch : virtual rw double;>
 
-Epoch seconds, defaults to the current time.
+Epoch seconds with a fractional part, defaults to the current time.
+
+This is a virtual field. The real value is set to and got from L</"epoch_sec"> and L</"epoch_nsec"> fields.
+
+=head2 epoch_sec
+
+C<has epoch_sec : rw long;>
+
+Epoch seconds.
 
 =head2 epoch_nsec
 
@@ -41,6 +49,8 @@ C<has epoch_nsec : rw long;>
 Epoch nano seconds.
 
 =head1 Class Methods
+
+=head2 new
 
 C<static method new : Mojo::Date ($date_value : object of string|L<Long|SPVM::Long> = undef);>
 
@@ -55,24 +65,16 @@ Examples:
 
 =head1 Instance Methods
 
-=head2 epoch_double
-
-C<method epoch_double : double ();>
-
-Return epoch seconds with nano seconds casting L</"epoch"> and L</"epoch_nsec"> to double type.
-
 =head2 parse
 
-C<method parse : void ($date : string)>
+C<method parse : void ($date : string);>
 
 Parse date.
 
   # Epoch
   say Mojo::Date->new("784111777")->epoch;
   
-  my $date = Mojo::Date->new("784111777.21");
-  say $date->epoch;
-  say $date->epoch_nsec;
+  say Mojo::Date->new("784111777.21")->epoch;
   
   # RFC 822/1123
   say Mojo::Date->new("Sun, 06 Nov 1994 08:49:37 GMT")->epoch;
@@ -86,11 +88,7 @@ Parse date.
   # RFC 3339
   say Mojo::Date->new("1994-11-06T08:49:37Z")->epoch;
   say Mojo::Date->new("1994-11-06T08:49:37")->epoch;
-  
-  my $date = Mojo::Date->new("1994-11-06T08:49:37.21Z");
-  say $date->epoch;
-  say $date->epoch_nsec;
-  
+  say Mojo::Date->new("1994-11-06T08:49:37.21Z")->epoch;
   say Mojo::Date->new("1994-11-06T08:49:37+01:00")->epoch;
   say Mojo::Date->new("1994-11-06T08:49:37-01:00")->epoch;
 
