@@ -34,6 +34,12 @@ C<has epoch : rw long;>
 
 Epoch seconds, defaults to the current time.
 
+=head2 epoch_nsec
+
+C<has epoch_nsec : rw long;>
+
+Epoch nano seconds.
+
 =head1 Class Methods
 
 C<static method new : Mojo::Date ($date_value : object of string|L<Long|SPVM::Long> = undef);>
@@ -49,9 +55,44 @@ Examples:
 
 =head1 Instance Methods
 
+=head2 epoch_double
+
+C<method epoch_double : double ();>
+
+Return epoch seconds with nano seconds casting L</"epoch"> and L</"epoch_nsec"> to double type.
+
 =head2 parse
 
-C<method parse : void ($date_value : string)>
+C<method parse : void ($date : string)>
+
+Parse date.
+
+  # Epoch
+  say Mojo::Date->new("784111777")->epoch;
+  
+  my $date = Mojo::Date->new("784111777.21");
+  say $date->epoch;
+  say $date->epoch_nsec;
+  
+  # RFC 822/1123
+  say Mojo::Date->new("Sun, 06 Nov 1994 08:49:37 GMT")->epoch;
+  
+  # RFC 850/1036
+  say Mojo::Date->new("Sunday, 06-Nov-94 08:49:37 GMT")->epoch;
+  
+  # Ansi C asctime()
+  say Mojo::Date->new("Sun Nov  6 08:49:37 1994")->epoch;
+  
+  # RFC 3339
+  say Mojo::Date->new("1994-11-06T08:49:37Z")->epoch;
+  say Mojo::Date->new("1994-11-06T08:49:37")->epoch;
+  
+  my $date = Mojo::Date->new("1994-11-06T08:49:37.21Z");
+  say $date->epoch;
+  say $date->epoch_nsec;
+  
+  say Mojo::Date->new("1994-11-06T08:49:37+01:00")->epoch;
+  say Mojo::Date->new("1994-11-06T08:49:37-01:00")->epoch;
 
 =head2 to_datetime
 

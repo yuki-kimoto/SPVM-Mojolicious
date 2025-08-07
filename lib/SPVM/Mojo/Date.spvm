@@ -59,6 +59,15 @@ class Mojo::Date {
   }
   
   # Instance Methods
+  method epoch_double : double () {
+    
+    my $epoch_double = (double)$self->{epoch};
+    
+    $epoch_double += (double)$self->{epoch_nsec} / 1_000_000_000.0;
+    
+    return $epoch_double;
+  }
+  
   method parse : void ($date : string) {
     
     unless ($date) {
