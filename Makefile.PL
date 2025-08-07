@@ -64,6 +64,7 @@ WriteMakefile(
     'SPVM::FindBin' => '0.035',
     'SPVM::Time::HiRes' => '0.005',
     'SPVM::IO::Socket::SSL' => '0.010',
+    'SPVM::Math' => '1.006',
   },
   TEST_REQUIRES => {
     
