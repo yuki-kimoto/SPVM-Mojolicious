@@ -6,6 +6,24 @@ class Mojo::Date {
   
   use Time::Local;
   use Sys;
+  use Math;
+  
+  has epoch_double : virtual rw double
+    get {
+      my $epoch_double = (double)$self->{epoch};
+      
+      $epoch_double += (double)$self->{epoch_nsec} / 1_000_000_000.0;
+      
+      return $epoch_double;
+    }
+    set {
+      
+      $self->{epoch} = (long)$_;
+      
+      my $fractional_part = $_ - Math->floor($_);
+      $self->{epoch_nsec} = (long)($fractional_part * 1_000_000_000.0 + 0.5);
+    }
+  ;
   
   has epoch : rw long
     get {
@@ -59,15 +77,6 @@ class Mojo::Date {
   }
   
   # Instance Methods
-  method epoch_double : double () {
-    
-    my $epoch_double = (double)$self->{epoch};
-    
-    $epoch_double += (double)$self->{epoch_nsec} / 1_000_000_000.0;
-    
-    return $epoch_double;
-  }
-  
   method parse : void ($date : string) {
     
     unless ($date) {
