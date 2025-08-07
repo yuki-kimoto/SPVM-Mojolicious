@@ -41,8 +41,8 @@ class Mojo::Date {
     
     my $self = new Mojo::Date;
     
-    unless ($epoch >= 0) {
-      die "The epoch \$epoch must be a non-negative value.";
+    unless ($epoch > -1) {
+      $epoch = Sys->time;
     }
     
     $self->{epoch} = $epoch;
