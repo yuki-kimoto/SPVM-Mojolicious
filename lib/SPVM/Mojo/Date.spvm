@@ -7,7 +7,15 @@ class Mojo::Date {
   use Time::Local;
   use Sys;
   
-  has epoch : rw long;
+  has epoch : rw long
+    get {
+      unless ($self->{epoch} > -1) {
+        $self->{epoch} = Sys->time;
+      }
+      
+      return $self->{epoch};
+    }
+  ;
   
   # Class Variables
   our $DAYS : string[];
@@ -30,6 +38,8 @@ class Mojo::Date {
     
     my $self = new Mojo::Date;
     
+    $self->{epoch} = -1;
+    
     if ($date_value) {
       $self->parse($date_value);
     }
@@ -51,10 +61,6 @@ class Mojo::Date {
     elsif ($date_value isa Long) {
       
       my $epoch = (long)$date_value;
-      
-      unless ($epoch > -1) {
-        $epoch = Sys->time;
-      }
       
       $self->{epoch} = $epoch;
       
