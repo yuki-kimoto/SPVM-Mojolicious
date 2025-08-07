@@ -36,59 +36,39 @@ class Mojo::Date {
   }
   
   # Class Methods
-  static method new : Mojo::Date ($date_value : object of string|Long|long[] = undef) {
+  static method new : Mojo::Date ($date_value : object of string|Long = undef) {
     
     my $self = new Mojo::Date;
     
     $self->{epoch} = -1;
     
-    if ($date_value) {
-      $self->parse($date_value);
-    }
-    
-    return $self;
-  }
-  
-  # Instance Methods
-  method parse : void ($date_value : object of string|Long = undef) {
-    
-    unless ($date_value) {
-      die "The date value \$date_value must be defined.";
-    }
-    
-    my $date = (string)undef;
     if ($date_value isa string) {
-      $date = (string)$date_value;
+      $self->parse((string)$date_value);
     }
     elsif ($date_value isa Long) {
       
       my $epoch = (long)$date_value;
       
       $self->{epoch} = $epoch;
-      
-      return;
-    }
-    elsif ($date_value isa long[]) {
-      
-      my $epoch_and_epoch_nsec = (long[])$date_value;
-      
-      unless (@$epoch_and_epoch_nsec == 2) {
-        die "The array length of the date value \$date_value must be 2 if it is a value of long[] type.";
-      }
-      
-      $self->{epoch} = $epoch_and_epoch_nsec->[0];
-      
-      $self->{epoch_nsec} = $epoch_and_epoch_nsec->[1];
-      
-      return;
     }
     else {
       die "The type of the date value \$date_value must be string or Long.";
     }
     
+    return $self;
+  }
+  
+  # Instance Methods
+  method parse : void ($date : string) {
+    
+    unless ($date) {
+      die "The date value \$date must be defined.";
+    }
+    
     # epoch (784111777)
     if (my $_ = Re->m($date, "^(\d+)$")) {
       $self->{epoch} = (long)$_->cap1;
+      $self->{epoch_nsec} = 0;
       return;
     }
     elsif (my $_ = Re->m($date, "^(\d+)\.(\d+)$")) {
@@ -96,6 +76,8 @@ class Mojo::Date {
       $self->{epoch_nsec} = (long)$_->cap2 * 1_000_000_000;
       return;
     }
+    
+    my $epoch_nsec = 0L;
     
     my $rfc3339_re_pattern = ["^(\d+)-(\d+)-(\d+)\D+(\d+):(\d+):(\d+(?:\.\d+)?)(?:Z|([+-])(\d+):(\d+))?$", "i"];
     
@@ -124,7 +106,14 @@ class Mojo::Date {
       $day = (int)$match->cap3;
       $h = (int)$match->cap4;
       $m = (int)$match->cap5;
-      $s = (int)$match->cap6;
+      my $s_tmp = $match->cap6;
+      
+      if (my $_ = Re->m($s, "^(\d+)(?:\.(\d+))?$")) {
+        $s = (int)$_->cap1;
+        if (length $_->cap2) {
+          $epoch_nsec = (long)$_->cap2;
+        }
+      }
       
       if (length $match->cap7) {
         $offset = (((int)$match->cap8 * 3600) + ((int)$match->cap9 * 60));
@@ -170,6 +159,7 @@ class Mojo::Date {
     }
     
     $self->{epoch} = $epoch;
+    $self->{epoch_nsec} = $epoch_nsec;
   }
   
   method to_datetime : string () {

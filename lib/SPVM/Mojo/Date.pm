@@ -36,7 +36,7 @@ Epoch seconds, defaults to the current time.
 
 =head1 Class Methods
 
-C<method parse : void ($date_value : object of string|Long = undef)>
+C<static method new : Mojo::Date ($date_value : object of string|L<Long|SPVM::Long> = undef);>
 
 Construct a new L<Mojo::Date> object and L</"parse"> date if necessary.
 
@@ -45,12 +45,13 @@ Examples:
   my $date = Mojo::Date->new;
   my $date = Mojo::Date->new("Sun Nov  6 08:49:37 1994");
   my $date = Mojo::Date->new(Sys->time + 60);
+  my $date = Mojo::Date->new("784111777.21");
 
 =head1 Instance Methods
 
 =head2 parse
 
-C<method parse : void ($date : string);>
+C<method parse : void ($date_value : string)>
 
 =head2 to_datetime
 
@@ -59,10 +60,10 @@ C<method to_datetime : string ();>
 Render L<RFC 3339|https://tools.ietf.org/html/rfc3339> date and time.
 
   # "1994-11-06T08:49:37Z"
-  Mojo::Date->new(784111777)->to_datetime;
+  Mojo::Date->new(784111777L)->to_datetime;
 
   # "1994-11-06T08:49:37.21Z"
-  Mojo::Date->new(784111777.21)->to_datetime;
+  Mojo::Date->new("784111777.21")->to_datetime;
 
 =head2 to_string
 
