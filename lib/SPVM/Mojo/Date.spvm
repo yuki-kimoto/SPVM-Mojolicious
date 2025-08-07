@@ -17,6 +17,8 @@ class Mojo::Date {
     }
   ;
   
+  has epoch_nsec : rw long;
+  
   # Class Variables
   our $DAYS : string[];
   INIT { $DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]; }
@@ -34,7 +36,7 @@ class Mojo::Date {
   }
   
   # Class Methods
-  static method new : Mojo::Date ($date_value : object of string|Long = undef) {
+  static method new : Mojo::Date ($date_value : object of string|Long|long[] = undef) {
     
     my $self = new Mojo::Date;
     
@@ -51,7 +53,7 @@ class Mojo::Date {
   method parse : void ($date_value : object of string|Long = undef) {
     
     unless ($date_value) {
-      die "the date value \$date_value must be defined.";
+      die "The date value \$date_value must be defined.";
     }
     
     my $date = (string)undef;
@@ -66,8 +68,33 @@ class Mojo::Date {
       
       return;
     }
+    elsif ($date_value isa long[]) {
+      
+      my $epoch_and_epoch_nsec = (long[])$date_value;
+      
+      unless (@$epoch_and_epoch_nsec == 2) {
+        die "The array length of the date value \$date_value must be 2 if it is a value of long[] type.";
+      }
+      
+      $self->{epoch} = $epoch_and_epoch_nsec->[0];
+      
+      $self->{epoch_nsec} = $epoch_and_epoch_nsec->[1];
+      
+      return;
+    }
     else {
       die "The type of the date value \$date_value must be string or Long.";
+    }
+    
+    # epoch (784111777)
+    if (my $_ = Re->m($date, "^(\d+)$")) {
+      $self->{epoch} = (long)$_->cap1;
+      return;
+    }
+    elsif (my $_ = Re->m($date, "^(\d+)\.(\d+)$")) {
+      $self->{epoch} = (long)$_->cap1;
+      $self->{epoch_nsec} = (long)$_->cap2 * 1_000_000_000;
+      return;
     }
     
     my $rfc3339_re_pattern = ["^(\d+)-(\d+)-(\d+)\D+(\d+):(\d+):(\d+(?:\.\d+)?)(?:Z|([+-])(\d+):(\d+))?$", "i"];
@@ -151,10 +178,12 @@ class Mojo::Date {
     
     # RFC 3339 (1994-11-06T08:49:37Z)
     my $tm = Sys->gmtime($epoch);
-    my $string = Fn->sprintf("%04d-%02d-%02dT%02d:%02d:%02d", [(object)($tm->tm_year + 1900), $tm->tm_mon + 1, $tm->tm_mday, $tm->tm_hour, $tm->tm_min, $tm->tm_sec]);
+    my $string = Fn->sprintf("%04d-%02d-%02dT%02d:%02d:%02d.%09lld", [(object)($tm->tm_year + 1900), $tm->tm_mon + 1, $tm->tm_mday, $tm->tm_hour, $tm->tm_min, $tm->tm_sec]);
     
-    if (my $match = Re->m($epoch, "(\.\d+)$")) {
-      $string .= $match->cap1;
+    if ($self->{epoch_nsec} > 0) {
+      $string .= ".$self->{epoch_nsec}";
+      Re->s(my $_ = [$string], "0+$", "");
+      $string = $_->[0];
     }
     
     $string .= "Z";
@@ -172,4 +201,5 @@ class Mojo::Date {
     
     return $string;
   }
+  
 }
