@@ -38,6 +38,8 @@ Most tests are not written.
 
 =item * L<Mojo::URL|SPVM::Mojo::URL>
 
+=item * L<Mojo::Date|SPVM::Mojo::Date>
+
 =back
 
 =head1 Porting
