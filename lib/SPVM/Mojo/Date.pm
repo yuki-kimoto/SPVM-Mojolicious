@@ -36,11 +36,24 @@ Epoch seconds, defaults to the current time.
 
 =head1 Class Methods
 
+C<static method new : Mojo::Date ($date_value : object of string|Long = undef);>
 
+Construct a new L<Mojo::Date> object and L</"parse"> date if necessary.
+
+Examples:
+
+  my $date = Mojo::Date->new;
+  my $date = Mojo::Date->new("Sun Nov  6 08:49:37 1994");
 
 =head1 Instance Methods
 
+=head2 parse
 
+C<method parse : void ($date : string);>
+
+C<method to_datetime : string ();>
+
+C<method to_string : string ();>
 
 =head1 See Also
 
