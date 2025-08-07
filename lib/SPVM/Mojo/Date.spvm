@@ -26,26 +26,27 @@ class Mojo::Date {
   }
   
   # Class Methods
-  static method new : Mojo::Date ($date : string = undef) {
+  static method new : Mojo::Date ($date_value : object of string|Long = undef) {
     
     my $self = new Mojo::Date;
     
-    if ($date) {
-      $self->parse($date);
+    if ($date_value) {
+      if ($date_value isa string) {
+        $self->parse((string)$date_value);
+      }
+      elsif ($date_value isa Long) {
+        my $epoch = (long)$date_value;
+        
+        unless ($epoch > -1) {
+          $epoch = Sys->time;
+        }
+        
+        $self->{epoch} = $epoch;
+      }
+      else {
+        die "The type of the date value \$date_value mustg be string or Long.";
+      }
     }
-    
-    return $self;
-  }
-  
-  static method new_from_epoch : Mojo::Date ($epoch : long) {
-    
-    my $self = new Mojo::Date;
-    
-    unless ($epoch > -1) {
-      $epoch = Sys->time;
-    }
-    
-    $self->{epoch} = $epoch;
     
     return $self;
   }
