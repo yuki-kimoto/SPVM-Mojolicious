@@ -58,6 +58,7 @@ WriteMakefile(
     'SPVM::Time::Local' => '0.112',
     'SPVM::File::Temp' => '0.026',
     'SPVM::File::Copy' => '0.022',
+    'SPVM::File::Basename' => '0.044',
     'SPVM::Digest::SHA' => '0.065',
     'SPVM::MIME::Base64' => '1.003',
     'SPVM::JSON' => '1.002',
