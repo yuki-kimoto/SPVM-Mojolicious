@@ -10,6 +10,7 @@ class Mojo::File {
   use Cwd;
   use File::Basename;
   use File::Copy;
+  use Mojo::Collection;
   
   # Undocumented Fields
   has path : object of string|File::Temp|File::Temp::Dir;

@@ -1,6 +1,7 @@
 0.010 2025-08-08
   [Changes]
     * Improve Mojo::EventEmitter.
+    * Add Mojo::Collection class.
   [Document Changes]
     * Add the document for Mojo::EventEmitter class.
   [Requirement Changes]
