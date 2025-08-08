@@ -77,6 +77,24 @@ class Mojo::File {
     return $new_file;
   }
   
+  method dirname : Mojo::File () {
+    
+    my $dirname_file = Mojo::File->new(File::Basename->dirname($self->to_string));
+    
+    return $dirname_file;
+  }
+  
+  method extname : string () {
+    my $basename = $self->basename;
+    
+    if (my $_ = Re->m($basename, ".+\.([^.]+)$")) {
+      return $_->cap1;
+    }
+    else {
+      return "";
+    }
+  }
+  
   method to_array : string[] () {
     
     return File::Spec->splitdir($self->to_string);
