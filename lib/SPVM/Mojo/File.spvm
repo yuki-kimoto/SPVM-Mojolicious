@@ -8,7 +8,9 @@ class Mojo::File {
   use File::Temp::Dir;
   use File::Spec;
   use Cwd;
+  use File::Basename;
   
+  # Undocumented Fields
   has path : object of string|File::Temp|File::Temp::Dir;
   
   # Class Methods
@@ -36,6 +38,14 @@ class Mojo::File {
     }
     
     return $self;
+  }
+  
+  # Instance Methods
+  method basename : string () {
+    
+    my $basename = File::Basename->basename($self->to_string);
+    
+    return $basename;
   }
   
   static method path : Mojo::File ($path : object of string|string[]|File::Temp|File::Temp::Dir) {
