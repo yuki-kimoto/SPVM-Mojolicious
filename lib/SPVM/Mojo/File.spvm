@@ -95,6 +95,10 @@ class Mojo::File {
     }
   }
   
+  method is_abs : int () {
+    return File::Spec->file_name_is_absolute($self->to_string);
+  }
+  
   method to_array : string[] () {
     
     return File::Spec->splitdir($self->to_string);
