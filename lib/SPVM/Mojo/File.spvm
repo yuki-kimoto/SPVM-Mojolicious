@@ -9,6 +9,7 @@ class Mojo::File {
   use File::Spec;
   use Cwd;
   use File::Basename;
+  use File::Copy;
   
   # Undocumented Fields
   has path : object of string|File::Temp|File::Temp::Dir;
@@ -56,7 +57,24 @@ class Mojo::File {
   }
   
   method chmod : void ($mode : int) {
+    
     Sys->chmod($mode, $self->to_string);
+  }
+  
+  method copy_to : Mojo::File ($to : string) {
+    
+    File::Copy->copy($self->to_string, $to);
+    
+    my $new_args = (object of string|string[])undef;
+    if (Sys->d($to)) {
+      $new_args = [$to, $self->basename];
+    }
+    else {
+      $new_args = $to;
+    }
+    my $new_file = Mojo::File->new($new_args);
+    
+    return $new_file;
   }
   
   method to_array : string[] () {
