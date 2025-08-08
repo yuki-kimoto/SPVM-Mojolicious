@@ -48,15 +48,15 @@ class Mojo::File {
     return $basename;
   }
   
-  static method path : Mojo::File ($path : object of string|string[]|File::Temp|File::Temp::Dir) {
-    return &new($path);
-  }
-  
   method child : Mojo::File ($base_name : object of string|string[]) {
     
     my $child = Mojo::File->new($base_name);
     
     return $child;
+  }
+  
+  method chmod : void ($mode : int) {
+    Sys->chmod($mode, $self->to_string);
   }
   
   method to_array : string[] () {
@@ -100,5 +100,9 @@ class Mojo::File {
     return $handle;
   }
 
+  static method path : Mojo::File ($path : object of string|string[]|File::Temp|File::Temp::Dir) {
+    return &new($path);
+  }
+  
 }
 
