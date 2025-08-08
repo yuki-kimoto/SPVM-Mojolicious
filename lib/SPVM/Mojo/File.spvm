@@ -100,6 +100,57 @@ class Mojo::File {
     return File::Spec->file_name_is_absolute($self->to_string);
   }
   
+  method list : Mojo::Collection ($options : object[] = undef) {
+  
+    my $options_h = Hash->new($options);
+    
+    my $path_file_name = $self->to_string;
+    
+    unless (Sys->d($path_file_name)) {
+      return Mojo::Collection->new;
+    }
+    
+    my $dh = IO->opendir($path_file_name);
+    
+    my $mojo_files_list = List->new(new Mojo::File[0]);
+    
+    my $files_list = StringList->new;
+    while (my $file = $dh->read) {
+      unless ($file ne "." && $file ne "..") {
+        next;
+      }
+      
+      unless ($options_h->get_int("hidden")) {
+        if (Re->m($file, "^\.")) {
+          next;
+        }
+      }
+      
+      $file = File::Spec->catfile([$path_file_name, $file]);
+      
+      unless ($options_h->get("dir")) {
+        if (Sys->d($file)) {
+          next;
+        }
+      }
+      
+      $files_list->push($file);
+    }
+    
+    my $files = $files_list->to_array;
+    
+    Sort->sort_string_asc($files);
+    
+    my $mojo_files = new Mojo::File[@$files];
+    
+    for (my $i = 0; $i < @$files; $i++) {
+      my $file = $files->[$i];
+      $mojo_files->[$i] = Mojo::File->new($file);
+    }
+    
+    return Mojo::Collection->new($mojo_files);
+  }
+  
   method to_array : string[] () {
     
     return File::Spec->splitdir($self->to_string);
@@ -146,4 +197,3 @@ class Mojo::File {
   }
   
 }
-
