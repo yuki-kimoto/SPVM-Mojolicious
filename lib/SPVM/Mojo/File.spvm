@@ -12,6 +12,7 @@ class Mojo::File {
   use File::Copy;
   use Mojo::Collection;
   use File::Find;
+  use File::Path;
   
   # Undocumented Fields
   has path : object of string|File::Temp|File::Temp::Dir;
@@ -205,6 +206,18 @@ class Mojo::File {
     }
     
     return $collection;
+  }
+  
+  method lstat : Sys::IO::Stat () {
+    
+    my $lstat = Sys->lstat($self->to_string);
+    
+    return $lstat;
+  }
+  
+  method make_path : void ($options : object[] = undef) {
+    
+    File::Path->make_path($$self, $options);
   }
   
   method to_array : string[] () {
