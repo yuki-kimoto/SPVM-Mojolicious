@@ -301,6 +301,11 @@ class Mojo::File {
     $fh->write($content);
   }
   
+  method stat : Sys::IO::Stat () {
+  
+    return Sys->stat($self->to_string);
+  }
+  
   method to_array : string[] () {
     
     return File::Spec->splitdir($self->to_string);
