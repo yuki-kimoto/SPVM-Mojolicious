@@ -6,6 +6,8 @@
     * Add the document for Mojo::EventEmitter class.
   [Requirement Changes]
     * Require SPVM::File::Basename 0.044.
+    * Require SPVM::File::Find 0.030.
+    * Require SPVM::File::Path 0.013.
 0.009 2025-08-07
   [Requirement Changes]
     * Require SPVM 0.990080.
