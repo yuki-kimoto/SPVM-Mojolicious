@@ -15,37 +15,37 @@ class Mojo::File {
   use File::Path;
   
   # Undocumented Fields
-  has path : object of string|File::Temp|File::Temp::Dir;
+  has path_value : object of string|File::Temp|File::Temp::Dir;
   
   # Class Methods
-  static method new : Mojo::File ($path : object of string|string[]|File::Temp|File::Temp::Dir) {
+  static method new : Mojo::File ($path_value : object of string|string[]|File::Temp|File::Temp::Dir) {
     
     my $self = new Mojo::File;
     
-    if (!$path) {
-      $self->{path} = File::Spec->canonpath(Cwd->getcwd);
+    if (!$path_value) {
+      $self->{path_value} = File::Spec->canonpath(Cwd->getcwd);
     }
-    elsif ($path isa string || $path isa File::Temp || $path isa File::Temp::Dir) {
-      $self->{path} = $path;
+    elsif ($path_value isa string || $path_value isa File::Temp || $path_value isa File::Temp::Dir) {
+      $self->{path_value} = $path_value;
     }
-    elsif ($path isa string[]) {
-      my $pathes = (string[])$path;
-      for my $_ (@$pathes) {
+    elsif ($path_value isa string[]) {
+      my $path_valuees = (string[])$path_value;
+      for my $_ (@$path_valuees) {
         unless ($_) {
-          die "Invalid path";
+          die "Invalid path_value";
         }
       }
-      $self->{path} = File::Spec->catfile($pathes);
+      $self->{path_value} = File::Spec->catfile($path_valuees);
     }
     else {
-      die "The path \$path is an invalid type.";
+      die "The path_value \$path_value is an invalid type.";
     }
     
     return $self;
   }
   
-  static method path : Mojo::File ($path : object of string|string[]|File::Temp|File::Temp::Dir) {
-    return &new($path);
+  static method path : Mojo::File ($path_value : object of string|string[]|File::Temp|File::Temp::Dir) {
+    return &new($path_value);
   }
   
   # Instance Methods
@@ -110,13 +110,13 @@ class Mojo::File {
     
     my $options_h = Hash->new($options);
     
-    my $path_file_name = $self->to_string;
+    my $path = $self->to_string;
     
-    unless (Sys->d($path_file_name)) {
+    unless (Sys->d($path)) {
       return Mojo::Collection->new;
     }
     
-    my $dh = IO->opendir($path_file_name);
+    my $dh = IO->opendir($path);
     
     my $mojo_files_list = List->new(new Mojo::File[0]);
     
@@ -132,7 +132,7 @@ class Mojo::File {
         }
       }
       
-      $file = File::Spec->catfile([$path_file_name, $file]);
+      $file = File::Spec->catfile([$path, $file]);
       
       unless ($options_h->get("dir")) {
         if (Sys->d($file)) {
@@ -161,12 +161,12 @@ class Mojo::File {
     
     my $options_h = Hash->new($options);
     
-    my $path_file_name = $self->to_string;
+    my $path = $self->to_string;
     
     my $all = Hash->new;
     
-    if (Sys->d($path_file_name)) {
-      my $wanted = [$options_h : Hash, $path_file_name : string, $all : Hash] method : void ($info : File::Find::Info) {
+    if (Sys->d($path)) {
+      my $wanted = [$options_h : Hash, $path : string, $all : Hash] method : void ($info : File::Find::Info) {
         
         my $name = $info->name;
         
@@ -179,7 +179,7 @@ class Mojo::File {
         if ($options_h->get_int("max_depth")) {
           my $rel = $name;
           
-          Re->s(my $_ = [$rel], "^\Q$path_file_name\E/?", "");
+          Re->s(my $_ = [$rel], "^\Q$path\E/?", "");
           $rel = $_->[0];
           
           if (@{File::Spec->splitdir($rel)} >= $options_h->get_int("max_depth")) {
@@ -193,7 +193,7 @@ class Mojo::File {
       };
     }
     
-    $all->delete($path_file_name);
+    $all->delete($path);
     
     my $files = $all->keys;
     
@@ -226,13 +226,13 @@ class Mojo::File {
   
   method move_to : Mojo::File ($to : string) {
     
-    my $path_file_name = $self->to_string;
+    my $path = $self->to_string;
     
-    File::Copy->move($path_file_name, $to);
+    File::Copy->move($path, $to);
     
     my $new_args = (object of string|string[])undef;
     if (Sys->d($to)) {
-      $new_args = [$to, File::Basename->basename($path_file_name)];
+      $new_args = [$to, File::Basename->basename($path)];
     }
     else {
       $new_args = $to;
@@ -258,9 +258,9 @@ class Mojo::File {
   
   method remove : void () {
     
-    my $path_file_name = $self->to_string;
-    if (Sys->e($path_file_name)) {
-      Sys->unlink($path_file_name);
+    my $path = $self->to_string;
+    if (Sys->e($path)) {
+      Sys->unlink($path);
     }
   }
 
@@ -278,22 +278,22 @@ class Mojo::File {
   
   method to_string : string () {
     
-    my $string = (string)undef;
+    my $path = (string)undef;
     
-    my $path = $self->{path};
-    if ($path) {
-      if ($path isa string) {
-        $string = (string)$path;
+    my $path_value = $self->{path_value};
+    if ($path_value) {
+      if ($path_value isa string) {
+        $path = (string)$path_value;
       }
-      elsif ($path isa File::Temp) {
-        $string = $path->(File::Temp)->filename;
+      elsif ($path_value isa File::Temp) {
+        $path = $path_value->(File::Temp)->filename;
       }
-      elsif ($path isa File::Temp::Dir) {
-        $string = $path->(File::Temp::Dir)->dirname;
+      elsif ($path_value isa File::Temp::Dir) {
+        $path = $path_value->(File::Temp::Dir)->dirname;
       }
     }
     
-    return $string;
+    return $path;
   }
   
 }
