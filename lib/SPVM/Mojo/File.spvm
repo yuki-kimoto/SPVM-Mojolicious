@@ -273,6 +273,28 @@ class Mojo::File {
     return Mojo::File->new([File::Basename->dirname($self->to_string), $base_name]);
   }
   
+  method slurp : string () {
+    
+    my $fh = IO->open("<", $self->to_string);
+    
+    my $content_buffer = StringBuffer->new;
+    my $buffer_length = 131072;
+    my $buffer = new_string_len($buffer_length);
+    
+    while (1) {
+      
+      my $length = $fh->read($buffer);
+      
+      if ($length == 0) {
+        last;
+      }
+      
+      $content_buffer->push($buffer, $length);
+    }
+    
+    return $content_buffer->to_string;
+  }
+  
   method to_array : string[] () {
     
     return File::Spec->splitdir($self->to_string);
