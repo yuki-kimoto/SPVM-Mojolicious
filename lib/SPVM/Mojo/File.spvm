@@ -263,7 +263,16 @@ class Mojo::File {
       Sys->unlink($path);
     }
   }
-
+  
+  method remove_tree : void () {
+    File::Path->remove_tree($self->to_string);;
+  }
+  
+  method sibling : Mojo::File ($base_name : string) {
+    
+    return Mojo::File->new([File::Basename->dirname($self->to_string), $base_name]);
+  }
+  
   method to_array : string[] () {
     
     return File::Spec->splitdir($self->to_string);
