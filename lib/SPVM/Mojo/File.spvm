@@ -295,6 +295,12 @@ class Mojo::File {
     return $content_buffer->to_string;
   }
   
+  method spew : void ($content : string) {
+    my $fh = IO->open(">", $self->to_string);
+    
+    $fh->write($content);
+  }
+  
   method to_array : string[] () {
     
     return File::Spec->splitdir($self->to_string);
