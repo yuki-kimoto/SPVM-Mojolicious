@@ -44,6 +44,10 @@ class Mojo::File {
     return $self;
   }
   
+  static method path : Mojo::File ($path : object of string|string[]|File::Temp|File::Temp::Dir) {
+    return &new($path);
+  }
+  
   # Instance Methods
   method basename : string () {
     
@@ -252,6 +256,14 @@ class Mojo::File {
     return Mojo::File->new(Cwd->realpath($self->to_string));
   }
   
+  method remove : void () {
+    
+    my $path_file_name = $self->to_string;
+    if (Sys->e($path_file_name)) {
+      Sys->unlink($path_file_name);
+    }
+  }
+
   method to_array : string[] () {
     
     return File::Spec->splitdir($self->to_string);
@@ -282,10 +294,6 @@ class Mojo::File {
     }
     
     return $string;
-  }
-  
-  static method path : Mojo::File ($path : object of string|string[]|File::Temp|File::Temp::Dir) {
-    return &new($path);
   }
   
 }
