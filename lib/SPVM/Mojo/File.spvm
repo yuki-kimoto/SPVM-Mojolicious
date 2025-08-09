@@ -239,6 +239,19 @@ class Mojo::File {
     return $mojo_file;
   }
   
+  method open : IO::File ($mode : string) {
+    
+    my $handle = IO::File->new;
+    
+    $handle->open($self->to_string, $mode);
+    
+    return $handle;
+  }
+  
+  method realpath : Mojo::File () {
+    return Mojo::File->new(Cwd->realpath($self->to_string));
+  }
+  
   method to_array : string[] () {
     
     return File::Spec->splitdir($self->to_string);
@@ -271,15 +284,6 @@ class Mojo::File {
     return $string;
   }
   
-  method open : IO::File ($mode : string) {
-    
-    my $handle = IO::File->new;
-    
-    $handle->open($self->to_string, $mode);
-    
-    return $handle;
-  }
-
   static method path : Mojo::File ($path : object of string|string[]|File::Temp|File::Temp::Dir) {
     return &new($path);
   }
