@@ -217,7 +217,26 @@ class Mojo::File {
   
   method make_path : void ($options : object[] = undef) {
     
-    File::Path->make_path($$self, $options);
+    File::Path->make_path($self->to_string, $options);
+  }
+  
+  method move_to : Mojo::File ($to : string) {
+    
+    my $path_file_name = $self->to_string;
+    
+    File::Copy->move($path_file_name, $to);
+    
+    my $new_args = (object of string|string[])undef;
+    if (Sys->d($to)) {
+      $new_args = [$to, File::Basename->basename($path_file_name)];
+    }
+    else {
+      $new_args = $to;
+    }
+    
+    my $mojo_file = Mojo::File->new($new_args);
+    
+    return $mojo_file;
   }
   
   method to_array : string[] () {
