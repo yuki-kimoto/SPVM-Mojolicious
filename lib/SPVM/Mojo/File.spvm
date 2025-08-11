@@ -314,16 +314,20 @@ class Mojo::File {
     return Sys->stat($self->to_string);
   }
   
-  method to_array : string[] () {
-    
-    return File::Spec->splitdir($self->to_string);
-  }
-  
   method to_abs : Mojo::File () {
     
     my $abs = Mojo::File->new(File::Spec->rel2abs($self->to_string));
     
     return $abs;
+  }
+  
+  method to_array : string[] () {
+    
+    return File::Spec->splitdir($self->to_string);
+  }
+  
+  method to_rel : Mojo::File ($rel_file : string) {
+    return Mojo::File->new(File::Spec->abs2rel($self->to_string, $rel_file));
   }
   
   method to_string : string () {
