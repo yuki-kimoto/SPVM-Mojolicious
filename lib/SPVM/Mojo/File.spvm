@@ -7,38 +7,38 @@ class Mojo::File {
   use File::Temp;
   use File::Temp::Dir;
   use File::Spec;
-  use Cwd;
   use File::Basename;
   use File::Copy;
-  use Mojo::Collection;
   use File::Find;
   use File::Path;
+  use Cwd;
+  use Mojo::Collection;
   
   # Undocumented Fields
-  has path_value : object of string|File::Temp|File::Temp::Dir;
+  has data : object of string|File::Temp|File::Temp::Dir;
   
   # Class Methods
-  static method new : Mojo::File ($path_value : object of string|string[]|File::Temp|File::Temp::Dir) {
+  static method new : Mojo::File ($data : object of string|string[]|File::Temp|File::Temp::Dir) {
     
     my $self = new Mojo::File;
     
-    if (!$path_value) {
-      $self->{path_value} = File::Spec->canonpath(Cwd->getcwd);
+    if (!$data) {
+      $self->{data} = File::Spec->canonpath(Cwd->getcwd);
     }
-    elsif ($path_value isa string || $path_value isa File::Temp || $path_value isa File::Temp::Dir) {
-      $self->{path_value} = $path_value;
+    elsif ($data isa string || $data isa File::Temp || $data isa File::Temp::Dir) {
+      $self->{data} = $data;
     }
-    elsif ($path_value isa string[]) {
-      my $path_valuees = (string[])$path_value;
-      for my $_ (@$path_valuees) {
+    elsif ($data isa string[]) {
+      my $dataes = (string[])$data;
+      for my $_ (@$dataes) {
         unless ($_) {
-          die "Invalid path_value";
+          die "Invalid data";
         }
       }
-      $self->{path_value} = File::Spec->catfile($path_valuees);
+      $self->{data} = File::Spec->catfile($dataes);
     }
     else {
-      die "The path_value \$path_value is an invalid type.";
+      die "The data \$data is an invalid type.";
     }
     
     return $self;
@@ -52,8 +52,8 @@ class Mojo::File {
     return &new(File::Temp->new($options));
   }
   
-  static method path : Mojo::File ($path_value : object of string|string[]|File::Temp|File::Temp::Dir) {
-    return &new($path_value);
+  static method path : Mojo::File ($data : object of string|string[]|File::Temp|File::Temp::Dir) {
+    return &new($data);
   }
   
   # Instance Methods
@@ -334,16 +334,16 @@ class Mojo::File {
     
     my $path = (string)undef;
     
-    my $path_value = $self->{path_value};
-    if ($path_value) {
-      if ($path_value isa string) {
-        $path = (string)$path_value;
+    my $data = $self->{data};
+    if ($data) {
+      if ($data isa string) {
+        $path = (string)$data;
       }
-      elsif ($path_value isa File::Temp) {
-        $path = $path_value->(File::Temp)->filename;
+      elsif ($data isa File::Temp) {
+        $path = $data->(File::Temp)->filename;
       }
-      elsif ($path_value isa File::Temp::Dir) {
-        $path = $path_value->(File::Temp::Dir)->dirname;
+      elsif ($data isa File::Temp::Dir) {
+        $path = $data->(File::Temp::Dir)->dirname;
       }
     }
     
