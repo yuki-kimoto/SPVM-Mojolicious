@@ -350,4 +350,15 @@ class Mojo::File {
     return $path;
   }
   
+  method touch : void () {
+    
+    my $path = $self->to_string;
+    
+    unless (Sys->e($path)) {
+      $self->open(">") ;
+    }
+    
+    Sys->utime(-1, -1, $path);
+  }
+  
 }
