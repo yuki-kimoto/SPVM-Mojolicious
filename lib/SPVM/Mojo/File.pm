@@ -26,10 +26,9 @@ operating systems.
   say $path->sibling(".bashrc")->to_string;
 
   # Use the alternative constructor
-  my $path = Mojo::File->path("/tmp/foo/bar")
+  my $path = Mojo::File->new("/tmp/foo/bar")
   $path->make_path;
-  $path->child("test.txt")
-  $path->spew("Hello Mojo!");
+  $path->child("test.txt")->spew("Hello Mojo!");
 
 =head1 Fields
 
@@ -39,9 +38,9 @@ C<has data : rw object of string|L<File::Temp|SPVM::File::Temp>|L<File::Temp::Di
 
 =head2 new
 
-C<static method new : Mojo::File ($data : object of string|string[]|File::Temp|File::Temp::Dir);>
+C<static method new : L<Mojo::File|SPVM::Mojo::File> ($data : object of string|string[]|L<File::Temp|SPVM::File::Temp>|L<File::Temp::Dir|SPVM::File::Temp::Dir>);>
 
-Construct a new L<Mojo::File> object, defaults to using the current working directory.
+Construct a new L<Mojo::File|SPVM::Mojo::File> object, defaults to using the current working directory.
 
 Examples:
 
@@ -56,9 +55,9 @@ Examples:
 
 =head2 tempdir
 
-C<static method tempdir : Mojo::File ($options : object[] = undef);>
+C<static method tempdir : L<Mojo::File|SPVM::Mojo::File> ($options : object[] = undef);>
 
-Construct a new scalar-based L<Mojo::File> object for a temporary directory with L<File::Temp>.
+Construct a new scalar-based L<Mojo::File|SPVM::Mojo::File> object for a temporary directory with L<File::Temp|SPVM::File::Temp>.
 
 Examples:
 
@@ -70,9 +69,9 @@ Examples:
 
 =head2 tempfile
 
-C<static method tempfile : Mojo::File ($options : object[] = undef);>
+C<static method tempfile : L<Mojo::File|SPVM::Mojo::File> ($options : object[] = undef);>
 
-Construct a new scalar-based L<Mojo::File> object for a temporary file with L<File::Temp>.
+Construct a new scalar-based L<Mojo::File|SPVM::Mojo::File> object for a temporary file with L<File::Temp|SPVM::File::Temp>.
 
   my $path = Mojo::File->tempfile;
   my $path = Mojo::File->tempfile({DIR => "/tmp"});
@@ -82,7 +81,7 @@ Construct a new scalar-based L<Mojo::File> object for a temporary file with L<Fi
 
 =head2 path
 
-C<static method path : Mojo::File ($data : object of string|string[]|File::Temp|File::Temp::Dir);>
+C<static method path : L<Mojo::File|SPVM::Mojo::File> ($data : object of string|string[]|L<File::Temp|SPVM::File::Temp>|L<File::Temp::Dir|SPVM::File::Temp::Dir>);>
 
 Alias for L</"new"> method.
 
@@ -92,18 +91,18 @@ Alias for L</"new"> method.
 
 C<method basename : string ();>
 
-Return the last level of the path with L<File::Basename>.
+Return the last level of the path with L<File::Basename|SPVM::File::Basename>.
 
 Exmaples:
 
   # ".vimrc" (on UNIX)
-  Mojo::File->path("/home/sri/.vimrc")->basename;
+  Mojo::File->new("/home/sri/.vimrc")->basename;
 
 =head2 child
 
-C<method child : Mojo::File ($base_name : object of string|string[]);>
+C<method child : L<Mojo::File|SPVM::Mojo::File> ($base_name : object of string|string[]);>
 
-Return a new L<Mojo::File> object relative to the path.
+Return a new L<Mojo::File|SPVM::Mojo::File> object relative to the path.
 
 Examples:
 
@@ -124,9 +123,9 @@ Examples:
 
 =head2 copy_to
 
-C<method copy_to : Mojo::File ($to : string);>
+C<method copy_to : L<Mojo::File|SPVM::Mojo::File> ($to : string);>
 
-Copy file with L<File::Copy> and return the destination as a L<Mojo::File> object.
+Copy file with L<File::Copy|SPVM::File::Copy> and return the destination as a L<Mojo::File|SPVM::Mojo::File> object.
 
 Examples:
 
@@ -135,9 +134,9 @@ Examples:
 
 =head2 dirname
 
-C<method dirname : Mojo::File ();>
+C<method dirname : L<Mojo::File|SPVM::Mojo::File> ();>
 
-Return all but the last level of the path with L<File::Basename> as a L<Mojo::File> object.
+Return all but the last level of the path with L<File::Basename|SPVM::File::Basename> as a L<Mojo::File|SPVM::Mojo::File> object.
 
 Examples:
 
@@ -177,7 +176,7 @@ Examples:
 
 C<method list : Mojo::Collection ($options : object[] = undef);>
 
-List all files in the directory and return a L<Mojo::Collection> object containing the results as L<Mojo::File>
+List all files in the directory and return a L<Mojo::Collection|SPVM::Mojo::Collection> object containing the results as L<Mojo::File|SPVM::Mojo::File>
 objects. The list does not include C<.> and C<..>.
 
 Examples:
@@ -212,8 +211,8 @@ Include hidden files.
 
 C<method list_tree : Mojo::Collection ($options : object[] = undef);>
 
-List all files recursively in the directory and return a L<Mojo::Collection> object containing the results as
-L<Mojo::File> objects. The list does not include C<.> and C<..>.
+List all files recursively in the directory and return a L<Mojo::Collection|SPVM::Mojo::Collection> object containing the results as
+L<Mojo::File|SPVM::Mojo::File> objects. The list does not include C<.> and C<..>.
 
 Examples:
 
@@ -235,12 +234,6 @@ These options are currently available:
 
 Include directories.
 
-=item dont_use_nlink
-
-  dont_use_nlink => 1
-
-Force L<File::Find> to always stat directories.
-
 =item hidden
 
   hidden => 1
@@ -259,7 +252,7 @@ Maximum number of levels to descend when searching for files.
 
 C<method lstat : Sys::IO::Stat ();>
 
-Return a L<File::stat> object for the symlink.
+Return a L<Sys::IO::Stat|SPVM::Sys::IO::Stat> object for the symlink.
 
 Examples:
 
@@ -275,7 +268,7 @@ Examples:
 
 C<method make_path : void ($options : object[] = undef);>
 
-Create the directories if they don"t already exist, any additional arguments are passed through to L<File::Path>.
+Create the directories if they don"t already exist, any additional arguments are passed through to L<File::Path|SPVM::File::Path>.
 
 Examples:
 
@@ -284,35 +277,33 @@ Examples:
 
 =head2 move_to
 
-C<method move_to : Mojo::File ($to : string);>
+C<method move_to : L<Mojo::File|SPVM::Mojo::File> ($to : string);>
 
 Examples:
 
   my $destination = $path->move_to("/home/sri");
   my $destination = $path->move_to("/home/sri/.vimrc.backup");
 
-Move file with L<File::Copy> and return the destination as a L<Mojo::File> object.
+Move file with L<File::Copy|SPVM::File::Copy> and return the destination as a L<Mojo::File|SPVM::Mojo::File> object.
 
 =head2 open
 
-C<method open : IO::File ($mode : string);>
+C<method open : L<IO::File|SPVM::IO::File> ($mode : string);>
 
+Open file with L<IO::File|SPVM::IO::File>.
+
+Examples:
+  
+  use Sys::IO::Constatn as IOC;
+  
   my $handle = $path->open("+<");
   my $handle = $path->open("r+");
-  my $handle = $path->open(O_RDWR);
-  my $handle = $path->open("<:encoding(UTF-8)");
-
-Open file with L<IO::File>.
-
-  # Combine "fcntl.h" constants
-  use Sys::IO::Constant as IOC;
-  my $handle = Mojo::File->new("/home/sri/test.pl")->open(IOC->O_RDWR | IOC->O_CREAT | IOC->O_EXCL);
 
 =head2 realpath
 
-C<method realpath : Mojo::File ();>
+C<method realpath : L<Mojo::File|SPVM::Mojo::File> ();>
 
-Resolve the path with L<Cwd> and return the result as a L<Mojo::File> object.
+Resolve the path with L<Cwd|SPVM::Cwd> and return the result as a L<Mojo::File|SPVM::Mojo::File> object.
 
 Examples:
 
@@ -333,7 +324,7 @@ Examples:
 C<method remove_tree : void ();>
 
 Delete this directory and any files and subdirectories it may contain, any additional arguments are passed through to
-L<File::Path>.
+L<File::Path|SPVM::File::Path>.
 
 Examples:
 
@@ -341,9 +332,9 @@ Examples:
 
 =head2 sibling
 
-C<method sibling : Mojo::File ($base_name : object of string|stirng[]);>
+C<method sibling : L<Mojo::File|SPVM::Mojo::File> ($base_name : object of string|stirng[]);>
 
-Return a new L<Mojo::File> object relative to the directory part of the path.
+Return a new L<Mojo::File|SPVM::Mojo::File> object relative to the directory part of the path.
 
 Examples:
 
@@ -380,7 +371,7 @@ Examples:
 
 C<method stat : Sys::IO::Stat ();>
 
-Return a L<File::stat> object for the path.
+Return a L<Sys::IO::Stat|SPVM::Sys::IO::Stat> object for the path.
 
 Examples:
 
@@ -392,9 +383,9 @@ Examples:
 
 =head2 to_abs
 
-C<method to_abs : Mojo::File ();>
+C<method to_abs : L<Mojo::File|SPVM::Mojo::File> ();>
 
-Return absolute path as a L<Mojo::File> object, the path does not need to exist on the file system.
+Return absolute path as a L<Mojo::File|SPVM::Mojo::File> object, the path does not need to exist on the file system.
 
 Examples:
 
@@ -413,9 +404,9 @@ Examples:
 
 =head2 to_rel
 
-C<method to_rel : Mojo::File ($rel_file : string);>
+C<method to_rel : L<Mojo::File|SPVM::Mojo::File> ($rel_file : string);>
 
-Return a relative path from the original path to the destination path as a L<Mojo::File> object.
+Return a relative path from the original path to the destination path as a L<Mojo::File|SPVM::Mojo::File> object.
 
 Examples:
 
