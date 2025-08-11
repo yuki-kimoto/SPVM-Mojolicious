@@ -14,8 +14,8 @@ class Mojo::File {
   use Cwd;
   use Mojo::Collection;
   
-  # Undocumented Fields
-  has data : object of string|File::Temp|File::Temp::Dir;
+  # Fields
+  has data : rw object of string|File::Temp|File::Temp::Dir;
   
   # Class Methods
   static method new : Mojo::File ($data : object of string|string[]|File::Temp|File::Temp::Dir) {
