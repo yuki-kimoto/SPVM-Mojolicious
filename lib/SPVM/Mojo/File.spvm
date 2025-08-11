@@ -276,9 +276,19 @@ class Mojo::File {
     File::Path->remove_tree($self->to_string);;
   }
   
-  method sibling : Mojo::File ($base_name : string) {
+  method sibling : Mojo::File ($base_name : object of string|string[]) {
     
-    return Mojo::File->new([File::Basename->dirname($self->to_string), $base_name]);
+    my $dirname = File::Basename->dirname($self->to_string);
+    
+    my $new_args = (string[])undef;
+    if ($base_name isa string[]) {
+      $new_args = Array->merge_string([$dirname], (string[])$base_name);
+    }
+    else {
+      $new_args = [$dirname, (string)$base_name];
+    }
+    
+    return Mojo::File->new($new_args);
   }
   
   method slurp : string () {
