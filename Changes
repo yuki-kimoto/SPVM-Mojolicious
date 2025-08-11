@@ -1,9 +1,11 @@
 0.010 2025-08-08
   [Changes]
     * Improve Mojo::EventEmitter.
+    * Improve Mojo::File.
     * Add Mojo::Collection class.
   [Document Changes]
     * Add the document for Mojo::EventEmitter class.
+    * Add the document for Mojo::File class.
   [Requirement Changes]
     * Require SPVM::File::Basename 0.044.
     * Require SPVM::File::Find 0.030.
