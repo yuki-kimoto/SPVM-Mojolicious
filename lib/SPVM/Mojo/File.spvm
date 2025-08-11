@@ -44,6 +44,14 @@ class Mojo::File {
     return $self;
   }
   
+  static method tempdir : Mojo::File ($options : object[] = undef) {
+    return &new(File::Temp->newdir($options));
+  }
+  
+  static method tempfile : Mojo::File ($options : object[] = undef) {
+    return &new(File::Temp->new($options));
+  }
+  
   static method path : Mojo::File ($path_value : object of string|string[]|File::Temp|File::Temp::Dir) {
     return &new($path_value);
   }
