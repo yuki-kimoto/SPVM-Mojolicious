@@ -44,8 +44,6 @@ class Mojo::Headers {
     }
   ;
   
-  method max_lines_default : int () { return 100; }
-  
   # Undocumented Fields
   has state : string;
   
