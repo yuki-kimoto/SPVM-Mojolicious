@@ -77,6 +77,25 @@ class Mojo::Headers {
     }
   }
   
+  # Hop-by-hop headers
+  our $HOP_BY_HOP : string[];
+  INIT {
+    $HOP_BY_HOP = [
+      "Connection",
+      "Keep-Alive",
+      "Proxy-Authenticate",
+      "Proxy-Authorization",
+      "TE",
+      "Trailer",
+      "Transfer-Encoding",
+      "Upgrade",
+    ];
+    
+    for (my $i = 0; $i < @$HOP_BY_HOP; $i++) {
+      $HOP_BY_HOP->[$i] = Fn->lc($HOP_BY_HOP->[$i]);
+    }
+  }
+  
   # Fields
   has max_line_size : rw int
     get {
