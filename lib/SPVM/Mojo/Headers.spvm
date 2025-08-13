@@ -22,16 +22,19 @@ class Mojo::Headers {
   # Fields
   has headers_h : Hash;
   
-  has max_line_size : wo int;
-  
-  method max_line_size : int () {
-    
-    if ($self->{max_line_size} < 0) {
-      $self->{max_line_size} = &MAX_LINE_SIZE_DEFAULT;
+  has max_line_size : rw int
+    get {
+      unless ($self->{max_line_size} > -1) {
+        $self->{max_line_size} = length (my $_ = Sys->env("SPVM_MOJO_MAX_LINE_SIZE")) ? (int)$_ : -1;
+        
+        unless ($self->{max_line_size} > -1) {
+          $self->{max_line_size} = 8192;
+        }
+      }
+      
+      return $self->{max_line_size};
     }
-    
-    return $self->{max_line_size};
-  }
+  ;
   
   has max_lines : wo int;
   
