@@ -13,12 +13,6 @@ class Mojo::Headers {
   use Mojo::Cookie::Request;
   use Mojo::Cookie::Response;
   
-  # Enumerations
-  enum {
-    MAX_LINE_SIZE_DEFAULT = 8192,
-    MAX_LINES_DEFAULT = 100,
-  }
-  
   # Fields
   has headers_h : Hash;
   
@@ -36,16 +30,19 @@ class Mojo::Headers {
     }
   ;
   
-  has max_lines : wo int;
-  
-  method max_lines : int () {
-    
-    if ($self->{max_lines} < 0) {
-      $self->{max_lines} = &MAX_LINES_DEFAULT;
+  has max_lines : rw int
+    get {
+      unless ($self->{max_lines} > -1) {
+        $self->{max_lines} = length (my $_ = Sys->env("SPVM_MOJO_MAX_LINES")) ? (int)$_ : -1;
+        
+        unless ($self->{max_lines} > -1) {
+          $self->{max_lines} = 100;
+        }
+      }
+      
+      return $self->{max_lines};
     }
-    
-    return $self->{max_lines};
-  }
+  ;
   
   method max_lines_default : int () { return 100; }
   
