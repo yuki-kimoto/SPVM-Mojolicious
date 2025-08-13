@@ -251,8 +251,7 @@ class Mojo::File {
     return $mojo_file;
   }
   
-  # TODO: interger mode
-  method open : IO::File ($mode : string) {
+  method open : IO::File ($mode : object of string|Int) {
     
     my $handle = IO::File->new;
     

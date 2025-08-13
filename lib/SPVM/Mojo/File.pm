@@ -288,16 +288,17 @@ Move file with L<File::Copy|SPVM::File::Copy> and return the destination as a L<
 
 =head2 open
 
-C<method open : L<IO::File|SPVM::IO::File> ($mode : string);>
+C<method open : IO::File ($mode : object of string|Int)>
 
 Open file with L<IO::File|SPVM::IO::File>.
 
 Examples:
   
-  use Sys::IO::Constatn as IOC;
+  use Sys::IO::Constant as IOC;
   
-  my $handle = $path->open("+<");
+  my $handle = $path->open("<");
   my $handle = $path->open("r+");
+  my $handle = $path->open(IOC->O_RDWR);
 
 =head2 realpath
 
