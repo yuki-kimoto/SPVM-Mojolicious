@@ -273,8 +273,8 @@ class Mojo::File {
     }
   }
   
-  method remove_tree : void () {
-    File::Path->remove_tree($self->to_string);;
+  method remove_tree : void ($options : object[] = undef) {
+    File::Path->remove_tree($self->to_string, $options);
   }
   
   method sibling : Mojo::File ($base_name : object of string|string[]) {

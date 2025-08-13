@@ -321,7 +321,7 @@ Examples:
 
 =head2 remove_tree
 
-C<method remove_tree : void ();>
+C<method remove_tree : void ($options : object[] = undef);>
 
 Delete this directory and any files and subdirectories it may contain, any additional arguments are passed through to
 L<File::Path|SPVM::File::Path>.
