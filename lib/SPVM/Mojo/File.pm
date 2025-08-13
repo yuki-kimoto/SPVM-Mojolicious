@@ -32,13 +32,23 @@ operating systems.
 
 =head1 Fields
 
-C<has data : rw object of string|L<File::Temp|SPVM::File::Temp>|L<File::Temp::Dir|SPVM::File::Temp::Dir>;>
+=head2 file
+
+C<has file : rw object of string|L<File::Temp|SPVM::File::Temp>|L<File::Temp::Dir|SPVM::File::Temp::Dir>;>
+
+A file path or an object with a file path.
+
+Examples:
+
+  # Access scalar directly to manipulate path
+  my $path = Mojo::File->new("/home/sri/test");
+  $path->set_file($path->file . ".txt");
 
 =head1 Class Methods
 
 =head2 new
 
-C<static method new : L<Mojo::File|SPVM::Mojo::File> ($data : object of string|string[]|L<File::Temp|SPVM::File::Temp>|L<File::Temp::Dir|SPVM::File::Temp::Dir>);>
+C<static method new : L<Mojo::File|SPVM::Mojo::File> ($file : object of string|string[]|L<File::Temp|SPVM::File::Temp>|L<File::Temp::Dir|SPVM::File::Temp::Dir>);>
 
 Construct a new L<Mojo::File|SPVM::Mojo::File> object, defaults to using the current working directory.
 
@@ -81,7 +91,7 @@ Construct a new scalar-based L<Mojo::File|SPVM::Mojo::File> object for a tempora
 
 =head2 path
 
-C<static method path : L<Mojo::File|SPVM::Mojo::File> ($data : object of string|string[]|L<File::Temp|SPVM::File::Temp>|L<File::Temp::Dir|SPVM::File::Temp::Dir>);>
+C<static method path : L<Mojo::File|SPVM::Mojo::File> ($file : object of string|string[]|L<File::Temp|SPVM::File::Temp>|L<File::Temp::Dir|SPVM::File::Temp::Dir>);>
 
 Alias for L</"new"> method.
 
