@@ -13,6 +13,70 @@ class Mojo::Headers {
   use Mojo::Cookie::Request;
   use Mojo::Cookie::Response;
   
+  # Class Variables
+  our $NAMES : Hash of string;
+  INIT {
+    $NAMES = Hash->new;
+    
+    my $names = [
+      "Accept",
+      "Accept-Charset",
+      "Accept-Encoding",
+      "Accept-Language",
+      "Accept-Ranges",
+      "Access-Control-Allow-Origin",
+      "Allow",
+      "Authorization",
+      "Cache-Control",
+      "Connection",
+      "Content-Disposition",
+      "Content-Encoding",
+      "Content-Language",
+      "Content-Length",
+      "Content-Location",
+      "Content-Range",
+      "Content-Security-Policy",
+      "Content-Type",
+      "Cookie",
+      "DNT",
+      "Date",
+      "ETag",
+      "Expect",
+      "Expires",
+      "Host",
+      "If-Modified-Since",
+      "If-None-Match",
+      "Last-Modified",
+      "Link",
+      "Location",
+      "Origin",
+      "Proxy-Authenticate",
+      "Proxy-Authorization",
+      "Range",
+      "Sec-WebSocket-Accept",
+      "Sec-WebSocket-Extensions",
+      "Sec-WebSocket-Key",
+      "Sec-WebSocket-Protocol",
+      "Sec-WebSocket-Version",
+      "Server",
+      "Server-Timing",
+      "Set-Cookie",
+      "Status",
+      "Strict-Transport-Security",
+      "TE",
+      "Trailer",
+      "Transfer-Encoding",
+      "Upgrade",
+      "User-Agent",
+      "Vary",
+      "WWW-Authenticate",
+    ];
+    
+    for my $name (@$names) {
+      $NAMES->set(Fn->lc($name) => $name);
+    }
+  }
+  
   # Fields
   has headers_h : Hash;
   
