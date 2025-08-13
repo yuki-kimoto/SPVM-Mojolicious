@@ -107,7 +107,7 @@ class Mojo::Headers {
   ;
   
   # Undocumented Fields
-  has headers_h : Hash;
+  has headers_h : Hash of string[];
   
   has state : string;
   
@@ -162,15 +162,15 @@ class Mojo::Headers {
       
       my $key = Fn->lc($name);
       
-      my $new_value = (string)undef;
-      if (my $cur_value = $self->{headers_h}->get_string($key)) {
-        $new_value = "$cur_value, $value";
+      my $new_values = (string[])undef;
+      if (my $cur_values = (string[])$self->{headers_h}->get($key)) {
+        $new_values = Array->merge_string($cur_values, [$value]);
       }
       else {
-        $new_value = $value;
+        $new_values = [$value];
       }
       
-      $self->{headers_h}->set($key, $new_value);
+      $self->{headers_h}->set($key, $new_values);
     }
   }
   
@@ -186,7 +186,7 @@ class Mojo::Headers {
     copy_fields $clone, $self, Mojo::Headers;
     
     for my $_ (@{$self->{headers_h}->keys}) {
-      $clone->{headers_h}->set($_ => $self->{headers_h}->get_string($_));
+      $clone->{headers_h}->set($_ => $self->{headers_h}->get($_));
     }
     
     $clone->{buffer} = $self->{buffer}->clone;
@@ -249,9 +249,14 @@ class Mojo::Headers {
     
     my $key = Fn->lc($name);
     
-    my $value = $self->{headers_h}->get_string($key);
+    my $values = (string[])$self->{headers_h}->get($key);
     
-    return $value;
+    if ($values) {
+      return Fn->join(", ", $values);
+    }
+    else {
+      return undef;
+    }
   }
   
   method set_header : void ($name : string, $value : object of string|string[]) {
