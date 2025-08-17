@@ -221,9 +221,7 @@ class Mojo::Headers {
   
   method dehop : void () {
     
-    my $hop_by_hop = ["connection", "keep-alive", "proxy-authenticate", "proxy-authorization", "te trailer", "transfer-encoding upgrade"];
-    
-    for my $header (@$hop_by_hop) {
+    for my $header (@$HOP_BY_HOP) {
       $self->{headers_h}->delete($header);
     }
   }
