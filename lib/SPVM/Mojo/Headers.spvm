@@ -179,12 +179,8 @@ class Mojo::Headers {
         die "The value \$value must be defined.";
       }
       
-      if (Re->m($name, "[\x0d\x0a]")) {
-        die "Invalid characters in the $name header.";
-      }
-      
       if (Re->m($value, "[\x0d\x0a]")) {
-        die "Invalid characters in the value of the $name header.";
+        die "Invalid characters in the $name header.";
       }
       
       my $key = Fn->lc($name);
