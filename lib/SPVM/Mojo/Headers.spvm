@@ -153,15 +153,15 @@ class Mojo::Headers {
   }
   
   # Instance Methods
-  method add : void ($name : string, $value_ : object of string|Stringable|string[]) {
+  method add : void ($name : string, $value : object of string|Stringable|string[]) {
     
-    if ($value_ isa string[]) {
-      for my $_ (@(string[])$value_) {
+    if ($value isa string[]) {
+      for my $_ (@(string[])$value) {
         $self->add($name, $_);
       }
     }
-    elsif ($value_ isa string) {
-      my $value = (string)$value_;
+    elsif ($value isa string) {
+      my $value = (string)$value;
       
       unless ($name) {
         die "\$name must be defined.";
