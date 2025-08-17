@@ -226,8 +226,12 @@ class Mojo::Headers {
     }
   }
   
-  # TODO: Currently a header value is managed as a string if it has multiple values.
-  # method every_header : string[] ($name : string) {}
+  method every_header : string[] ($name : string) {
+    
+    my $values = (string[])$self->{headers_h}->get(Fn->lc($name)) // new string[0];
+    
+    return $values;
+  }
   
   method from_hash : Mojo::Headers ($hash : Hash) {
     
