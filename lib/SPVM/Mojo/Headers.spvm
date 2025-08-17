@@ -155,20 +155,28 @@ class Mojo::Headers {
   # Instance Methods
   method add : void ($name : string, $value : object of string|Stringable|string[]) {
     
-    if ($value isa string[]) {
-      for my $_ (@(string[])$value) {
-        $self->add($name, $_);
-      }
+    unless ($name) {
+      die "The name \$name must be defined.";
+    }
+    
+    my $values = (string[])undef;
+    if (!$value) {
+      $values = [(string)$value];
     }
     elsif ($value isa string) {
-      my $value = (string)$value;
-      
-      unless ($name) {
-        die "\$name must be defined.";
-      }
+      $values = [(string)$value];
+    }
+    elsif ($value isa string[]) {
+      $values = (string[])$value;
+    }
+    elsif ($value isa Stringable) {
+      $values = [$value->(Stringable)->to_string];
+    }
+    
+    for my $value (@$values) {
       
       unless ($value) {
-        die "\$value must be defined.";
+        die "The value \$value must be defined.";
       }
       
       if (Re->m($name, "[\x0d\x0a]")) {
