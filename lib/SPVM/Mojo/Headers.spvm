@@ -199,7 +199,9 @@ class Mojo::Headers {
   
   method append : void ($name : string, $value : string) {
     
-    $self->add($name, $value);
+    my $old = $self->header($name);
+    
+    $self->set_header($name => $old ? "$old, $value" : $value);
   }
   
   method clone : Mojo::Headers () {
