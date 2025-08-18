@@ -15,29 +15,21 @@ class Mojo::Content extends Mojo::EventEmitter {
   }
   
   # Fields
-  has auto_decompress : wo byte;
-  method auto_decompress : int () {
-    my $_ = $self->{auto_decompress};
-    if ($_ < 0) {
-      die "auto_decompress field is not yet specified.";
-    }
-    return $_;
-  }
+  has auto_decompress : rw byte;
   
-  has auto_relax : wo byte;
-  method auto_relax : int () {
-    my $_ = $self->{auto_relax};
-    if ($_ < 0) {
-      die "auto_relax field is not yet specified.";
-    }
-    return $_;
-  }
+  has auto_relax : rw byte;
   
-  has relaxed : ro byte;
+  has relaxed : rw byte;
   
   has skip_body : rw byte;
   
-  has headers : rw Mojo::Headers;
+  has headers : rw Mojo::Headers
+    get {
+      $self->{headers} //= Mojo::Headers->new;
+      
+      return $self->{headers};
+    }
+  ;
   
   has max_buffer_size : ro int;
   
@@ -86,8 +78,6 @@ class Mojo::Content extends Mojo::EventEmitter {
   protected method init : void ($options : object[] = undef) {
     
     my $options_h = Hash->new($options);
-    
-    $self->{headers} = Mojo::Headers->new;
     
     if ($options_h->exists("max_buffer_size")) {
       my $max_buffer_size = $options_h->get_int("max_buffer_size");
