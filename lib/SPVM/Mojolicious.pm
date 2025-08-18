@@ -44,6 +44,8 @@ Most tests are not written.
 
 =item * L<Mojo::File|SPVM::Mojo::File>
 
+=item * L<Mojo::Headers|SPVM::Mojo::Headers>
+
 =back
 
 =head1 Porting
