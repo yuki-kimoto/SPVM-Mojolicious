@@ -419,6 +419,21 @@ class Mojo::Content extends Mojo::EventEmitter {
     
   }
   
+  sub write_sse {
+    my ($self, $event, $cb) = @_;
+    
+    unless ($self->{sse}) {
+      $self->headers->set_content_type("text/event-stream");
+    }
+    
+    $self->{sse} = 1;
+    
+    unless ($event) {
+      return $self->write;
+    }
+    return $self->write(build_event($event), $cb);
+  }
+  
   protected method _parse_until_body : void ($chunk : string) {
     
     $self->{raw_size} += length($chunk = $chunk // "");
