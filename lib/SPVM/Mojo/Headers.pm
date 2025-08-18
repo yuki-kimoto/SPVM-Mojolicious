@@ -437,466 +437,495 @@ Examples:
 
 C<method connection : string ();>
 
-  my $connection = $headers->connection;
-  $headers->set_connection("close");
-
-Get or replace current header value, shortcut for the C<Connection> header.
+Get current header value, shortcut for the C<Connection> header.
 
 Examples:
 
+  my $connection = $headers->connection;
 
 =head2 set_connection
 
 C<method set_connection : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Connection> header.
+
 Examples:
 
+  $headers->set_connection("close");
 
 =head2 content_disposition
 
 C<method content_disposition : string ();>
 
-  my $disposition = $headers->content_disposition;
-  $headers->set_content_disposition("foo");
-
-Get or replace current header value, shortcut for the C<Content-Disposition> header.
+Get current header value, shortcut for the C<Content-Disposition> header.
 
 Examples:
 
+  my $disposition = $headers->content_disposition;
 
 =head2 set_content_disposition
 
 C<method set_content_disposition : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Content-Disposition> header.
+
 Examples:
 
+  $headers->set_content_disposition("foo");
 
 =head2 content_encoding
 
 C<method content_encoding : string ();>
 
-  my $encoding = $headers->content_encoding;
-  $headers->set_content_encoding("gzip");
-
-Get or replace current header value, shortcut for the C<Content-Encoding> header.
+Get current header value, shortcut for the C<Content-Encoding> header.
 
 Examples:
 
+  my $encoding = $headers->content_encoding;
 
 =head2 set_content_encoding
 
 C<method set_content_encoding : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Content-Encoding> header.
+
 Examples:
 
+  $headers->set_content_encoding("gzip");
 
 =head2 content_language
 
 C<method content_language : string ();>
 
-  my $language = $headers->content_language;
-  $headers->set_content_language("en");
-
-Get or replace current header value, shortcut for the C<Content-Language> header.
+Get current header value, shortcut for the C<Content-Language> header.
 
 Examples:
 
+  my $language = $headers->content_language;
 
 =head2 set_content_language
 
 C<method set_content_language : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Content-Language> header.
+
 Examples:
 
+  $headers->set_content_language("en");
 
 =head2 content_length
 
 C<method content_length : string ();>
 
-  my $len  = $headers->content_length;
-  $headers->set_content_length(4000);
-
-Get or replace current header value, shortcut for the C<Content-Length> header.
+Get current header value, shortcut for the C<Content-Length> header.
 
 Examples:
 
+  my $len  = $headers->content_length;
 
 =head2 set_content_length
 
 C<method set_content_length : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Content-Length> header.
+
 Examples:
 
+  $headers->set_content_length(4000);
 
 =head2 content_location
 
 C<method content_location : string ();>
 
-  my $location = $headers->content_location;
-  $headers->set_content_location("http://127.0.0.1/foo");
-
-Get or replace current header value, shortcut for the C<Content-Location> header.
+Get current header value, shortcut for the C<Content-Location> header.
 
 Examples:
 
+  my $location = $headers->content_location;
 
 =head2 set_content_location
 
 C<method set_content_location : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Content-Location> header.
+
 Examples:
 
+  $headers->set_content_location("http://127.0.0.1/foo");
 
 =head2 content_range
 
 C<method content_range : string ();>
 
-  my $range = $headers->content_range;
-  $headers->set_content_range("bytes 2-8/100");
-
-Get or replace current header value, shortcut for the C<Content-Range> header.
+Get current header value, shortcut for the C<Content-Range> header.
 
 Examples:
 
+  my $range = $headers->content_range;
 
 =head2 set_content_range
 
 C<method set_content_range : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Content-Range> header.
+
 Examples:
 
+  $headers->set_content_range("bytes 2-8/100");
 
 =head2 content_security_policy
 
 C<method content_security_policy : string ();>
 
-  my $policy = $headers->content_security_policy;
-  $headers->set_content_security_policy("default-src https:");
-
-Get or replace current header value, shortcut for the C<Content-Security-Policy> header from L<Content Security Policy
+Get current header value, shortcut for the C<Content-Security-Policy> header from L<Content Security Policy
 1.0|https://www.w3.org/TR/CSP/>.
 
 Examples:
 
+  my $policy = $headers->content_security_policy;
 
 =head2 set_content_security_policy
 
 C<method set_content_security_policy : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Content-Security-Policy> header from L<Content Security Policy
+1.0|https://www.w3.org/TR/CSP/>.
+
 Examples:
 
+  $headers->set_content_security_policy("default-src https:");
 
 =head2 content_type
 
 C<method content_type : string ();>
 
-  my $type = $headers->content_type;
-  $headers->set_content_type("text/plain");
-
-Get or replace current header value, shortcut for the C<Content-Type> header.
+Get current header value, shortcut for the C<Content-Type> header.
 
 Examples:
 
+  my $type = $headers->content_type;
 
 =head2 set_content_type
 
 C<method set_content_type : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Content-Type> header.
+
 Examples:
 
+  $headers->set_content_type("text/plain");
 
 =head2 cookie
 
 C<method cookie : string ();>
 
-  my $cookie = $headers->cookie;
-  $headers->set_cookie("f=b");
-
-Get or replace current header value, shortcut for the C<Cookie> header from L<RFC
+Get current header value, shortcut for the C<Cookie> header from L<RFC
 6265|https://tools.ietf.org/html/rfc6265>.
 
 Examples:
 
+  my $cookie = $headers->cookie;
 
 =head2 set_cookie
 
 C<method set_cookie : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Cookie> header from L<RFC
+6265|https://tools.ietf.org/html/rfc6265>.
+
 Examples:
 
+  $headers->set_cookie("f=b");
 
 =head2 date
 
 C<method date : string ();>
 
-  my $date = $headers->date;
-  $headers->set_date("Sun, 17 Aug 2008 16:27:35 GMT");
-
-Get or replace current header value, shortcut for the C<Date> header.
+Get current header value, shortcut for the C<Date> header.
 
 Examples:
 
+  my $date = $headers->date;
 
 =head2 set_date
 
 C<method set_date : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Date> header.
+
 Examples:
 
+  $headers->set_date("Sun, 17 Aug 2008 16:27:35 GMT");
 
 =head2 dnt
 
 C<method dnt : string ();>
 
-  my $dnt  = $headers->dnt;
-  $headers->set_dnt(1);
-
-Get or replace current header value, shortcut for the C<DNT> (Do Not Track) header, which has no specification yet, but
+Get current header value, shortcut for the C<DNT> (Do Not Track) header, which has no specification yet, but
 is very commonly used.
 
 Examples:
 
+  my $dnt  = $headers->dnt;
 
 =head2 set_dnt
 
 C<method set_dnt : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<DNT> (Do Not Track) header, which has no specification yet, but
+is very commonly used.
+
 Examples:
 
+  $headers->set_dnt(1);
 
 =head2 etag
 
 C<method etag : string ();>
 
-  my $etag = $headers->etag;
-  $headers->set_etag("\"abc321\"");
-
-Get or replace current header value, shortcut for the C<ETag> header.
+Get current header value, shortcut for the C<ETag> header.
 
 Examples:
 
+  my $etag = $headers->etag;
 
 =head2 set_etag
 
 C<method set_etag : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<ETag> header.
+
 Examples:
 
+  $headers->set_etag("\"abc321\"");
 
 =head2 expect
 
 C<method expect : string ();>
 
-  my $expect = $headers->expect;
-  $headers->set_expect("100-continue");
-
-Get or replace current header value, shortcut for the C<Expect> header.
+Get current header value, shortcut for the C<Expect> header.
 
 Examples:
 
+  my $expect = $headers->expect;
 
 =head2 set_expect
 
 C<method set_expect : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Expect> header.
+
 Examples:
 
+  $headers->set_expect("100-continue");
 
 =head2 expires
 
 C<method expires : string ();>
 
-  my $expires = $headers->expires;
-  $headers->set_expires("Thu, 01 Dec 1994 16:00:00 GMT");
-
-Get or replace current header value, shortcut for the C<Expires> header.
+Get current header value, shortcut for the C<Expires> header.
 
 Examples:
 
+  my $expires = $headers->expires;
 
 =head2 set_expires
 
 C<method set_expires : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Expires> header.
+
 Examples:
 
+  $headers->set_expires("Thu, 01 Dec 1994 16:00:00 GMT");
 
 =head2 host
 
 C<method host : string ();>
 
-  my $host = $headers->host;
-  $headers->set_host("127.0.0.1");
-
-Get or replace current header value, shortcut for the C<Host> header.
+Get current header value, shortcut for the C<Host> header.
 
 Examples:
 
+  my $host = $headers->host;
 
 =head2 set_host
 
 C<method set_host : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Host> header.
+
 Examples:
 
+  $headers->set_host("127.0.0.1");
 
 =head2 if_modified_since
 
 C<method if_modified_since : string ();>
 
-Examples:
-
-
-=head2 set_if_modified_since
-
-  my $date = $headers->if_modified_since;
-  $headers->set_if_modified_since("Sun, 17 Aug 2008 16:27:35 GMT");
-
-Get or replace current header value, shortcut for the C<If-Modified-Since> header.
+Get current header value, shortcut for the C<If-Modified-Since> header.
 
 C<method set_if_modified_since : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
 Examples:
 
+  my $date = $headers->if_modified_since;
+
+=head2 set_if_modified_since
+
+Replace current header value, shortcut for the C<If-Modified-Since> header.
+
+Examples:
+
+  $headers->set_if_modified_since("Sun, 17 Aug 2008 16:27:35 GMT");
 
 =head2 if_none_match
 
 C<method if_none_match : string ();>
 
-  my $etag = $headers->if_none_match;
-  $headers->set_if_none_match("\"abc321\"");
-
-Get or replace current header value, shortcut for the C<If-None-Match> header.
+Get current header value, shortcut for the C<If-None-Match> header.
 
 Examples:
 
+  my $etag = $headers->if_none_match;
 
 =head2 set_if_none_match
 
 C<method set_if_none_match : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<If-None-Match> header.
+
 Examples:
 
+  $headers->set_if_none_match("\"abc321\"");
 
 =head2 last_modified
 
 C<method last_modified : string ();>
 
-  my $date = $headers->last_modified;
-  $headers->set_last_modified("Sun, 17 Aug 2008 16:27:35 GMT");
-
-Get or replace current header value, shortcut for the C<Last-Modified> header.
+Get current header value, shortcut for the C<Last-Modified> header.
 
 Examples:
 
+  my $date = $headers->last_modified;
 
 =head2 set_last_modified
 
 C<method set_last_modified : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Last-Modified> header.
+
 Examples:
 
+  $headers->set_last_modified("Sun, 17 Aug 2008 16:27:35 GMT");
 
 =head2 link
 
 C<method link : string ();>
 
-  my $link = $headers->link;
-  $headers->set_link("<http://127.0.0.1/foo/3>; rel=\"next\"");
-
-Get or replace current header value, shortcut for the C<Link> header from L<RFC
+Get current header value, shortcut for the C<Link> header from L<RFC
 5988|https://tools.ietf.org/html/rfc5988>.
 
 Examples:
 
+  my $link = $headers->link;
 
 =head2 set_link
 
 C<method set_link : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Link> header from L<RFC
+5988|https://tools.ietf.org/html/rfc5988>.
+
 Examples:
 
+  $headers->set_link("<http://127.0.0.1/foo/3>; rel=\"next\"");
 
 =head2 links
   
 C<method links : L<Hash|SPVM::Hash> of Hash of string ();>
 
-  my $links = $headers->links;
-  $headers->set_links({next => "http://example.com/foo", prev => "http://example.com/bar"});
-
-Get or set web links from or to C<Link> header according to L<RFC 5988|http://tools.ietf.org/html/rfc5988>.
+Get web links from or to C<Link> header according to L<RFC 5988|http://tools.ietf.org/html/rfc5988>.
 
   # Extract information about next page
-  say $headers->links->{next}{link};
-  say $headers->links->{next}{title};
+  say $headers->links->get("next")->get_string("link");
+  say $headers->links->get("next")->get_string("title");
 
 Examples:
 
+  my $links = $headers->links;
 
 =head2 set_links
   
 C<method set_links : void ($links : object[]);>
 
+Set web links from or to C<Link> header according to L<RFC 5988|http://tools.ietf.org/html/rfc5988>.
+
 Examples:
 
+  $headers->set_links({next => "http://example.com/foo", prev => "http://example.com/bar"});
 
 =head2 location
 
 C<method location : string ();>
 
-  my $location = $headers->location;
-  $headers->set_location("http://127.0.0.1/foo");
-
-Get or replace current header value, shortcut for the C<Location> header.
+Get current header value, shortcut for the C<Location> header.
 
 Examples:
 
+  my $location = $headers->location;
 
 =head2 set_location
 
 C<method set_location : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Location> header.
+
 Examples:
 
+  $headers->set_location("http://127.0.0.1/foo");
 
 =head2 origin
 
 C<method origin : string ();>
 
-  my $origin = $headers->origin;
-  $headers->set_origin("http://example.com");
-
-Get or replace current header value, shortcut for the C<Origin> header from L<RFC
+Get current header value, shortcut for the C<Origin> header from L<RFC
 6454|https://tools.ietf.org/html/rfc6454>.
 
 Examples:
 
+  my $origin = $headers->origin;
 
 =head2 set_origin
 
 C<method set_origin : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Origin> header from L<RFC
+6454|https://tools.ietf.org/html/rfc6454>.
+
 Examples:
 
+  $headers->set_origin("http://example.com");
 
 =head2 proxy_authenticate
 
 C<method proxy_authenticate : string ();>
 
-  my $authenticate = $headers->proxy_authenticate;
-  $headers->set_proxy_authenticate("Basic \"realm\"");
-
-Get or replace current header value, shortcut for the C<Proxy-Authenticate> header.
+Get current header value, shortcut for the C<Proxy-Authenticate> header.
 
 Examples:
 
+  my $authenticate = $headers->proxy_authenticate;
 
 =head2 set_proxy_authenticate
 
 C<method set_proxy_authenticate : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Proxy-Authenticate> header.
+
 Examples:
 
+  $headers->set_proxy_authenticate("Basic \"realm\"");
 
 =head2 proxy_authorization
 
