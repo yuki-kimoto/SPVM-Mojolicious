@@ -401,7 +401,7 @@ class Mojo::Content extends Mojo::EventEmitter {
     
   }
   
-  method _build_chunk : string ($chunk : string) {
+  private method _build_chunk : string ($chunk : string) {
     
     # End
     unless (length $chunk) {
@@ -474,7 +474,7 @@ class Mojo::Content extends Mojo::EventEmitter {
     
   }
   
-  method _headers : void () {
+  private method _headers : void () {
     
     if ($self->{header_buffer}) {
       return;
@@ -538,7 +538,7 @@ class Mojo::Content extends Mojo::EventEmitter {
     }
   }
   
-  method _parse_chunked_trailing_headers : void () {
+  private method _parse_chunked_trailing_headers : void () {
     
     my $pre_buffer = $self->{pre_buffer};
     $self->{pre_buffer} = undef;
@@ -560,7 +560,7 @@ class Mojo::Content extends Mojo::EventEmitter {
     }
   }
   
-  method _parse_headers : void () {
+  private method _parse_headers : void () {
     
     my $headers = $self->headers;
     my $pre_buffer = $self->{pre_buffer};
