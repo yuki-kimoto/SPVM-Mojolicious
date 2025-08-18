@@ -436,25 +436,6 @@ class Mojo::Headers {
     }
   }
   
-  method to_string : string () {
-    
-    my $names = $self->names;
-    
-    my $buffer = StringBuffer->new;
-    for my $name (@$names) {
-      my $header_string = $self->header($name);
-      if ($header_string) {
-        $buffer->push("$name:");
-        $buffer->push($header_string);
-        $buffer->push("\r\n");
-      }
-    }
-    
-    my $string = $buffer->to_string;
-    
-    return $string;
-  }
-  
   method referer : string () { return $self->referrer; }
   
   method set_referer : void ($value : object of string|Stringable|string[]) { $self->set_referrer($value); }
@@ -483,6 +464,25 @@ class Mojo::Headers {
     }
     
     return $hash;
+  }
+  
+  method to_string : string () {
+    
+    my $names = $self->names;
+    
+    my $buffer = StringBuffer->new;
+    for my $name (@$names) {
+      my $header_string = $self->header($name);
+      if ($header_string) {
+        $buffer->push("$name:");
+        $buffer->push($header_string);
+        $buffer->push("\r\n");
+      }
+    }
+    
+    my $string = $buffer->to_string;
+    
+    return $string;
   }
   
   method accept : string () {
