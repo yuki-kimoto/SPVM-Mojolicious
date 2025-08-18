@@ -401,6 +401,22 @@ class Mojo::Content extends Mojo::EventEmitter {
     
   }
   
+  protected method _parse_until_body : void ($chunk : string) {
+    
+    $self->{raw_size} += length($chunk = $chunk // "");
+    $self->{pre_buffer} //= "";
+    $self->{pre_buffer} .= $chunk;
+    
+    $self->{state} = $self->{state} // "headers";
+    if ($self->{state} eq "headers") {
+      $self->_parse_headers;
+    }
+    
+    if ($self->{state} ne "headers" && !$self->{body}++) {
+      $self->emit("body");
+    }
+  }
+  
   private method _build_chunk : string ($chunk : string) {
     
     # End
@@ -578,20 +594,4 @@ class Mojo::Content extends Mojo::EventEmitter {
     
   }
 
-  protected method _parse_until_body : void ($chunk : string) {
-    
-    $self->{raw_size} += length($chunk = $chunk // "");
-    $self->{pre_buffer} //= "";
-    $self->{pre_buffer} .= $chunk;
-    
-    $self->{state} = $self->{state} // "headers";
-    if ($self->{state} eq "headers") {
-      $self->_parse_headers;
-    }
-    
-    if ($self->{state} ne "headers" && !$self->{body}++) {
-      $self->emit("body");
-    }
-  }
-  
 }
