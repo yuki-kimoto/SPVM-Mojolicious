@@ -4,33 +4,29 @@ package SPVM::Mojo::Content;
 
 1;
 
+=encoding utf8
+
 =head1 Name
 
-SPVM::Mojo::Content - Short Description
+SPVM::Mojo::Content - HTTP content base class
 
 =head1 Description
 
-Mojo::Content class in L<SPVM> has methods to do someting.
+Mojo::Content class in L<SPVM> is an abstract base class for HTTP content containers, based on L<RFC
+7230|https://tools.ietf.org/html/rfc7230> and L<RFC 7231|https://tools.ietf.org/html/rfc7231>, like
+L<Mojo::Content::MultiPart|SPVM::Mojo::Content::MultiPart> and L<Mojo::Content::Single|SPVM::Mojo::Content::Single>.
 
 =head1 Usage
 
   use Mojo::Content;
 
-=head1 Details
-
-
+  class Mojo::Content::MyContent extends Mojo::Content {
+    
+  }
 
 =head1 Super Class
 
-
-
-=head1 Interfaces
-
-
-
-=head1 Enumerations
-
-
+L<Mojo::EventEmitter|SPVM::Mojo::EventEmitter>
 
 =head1 Fields
 

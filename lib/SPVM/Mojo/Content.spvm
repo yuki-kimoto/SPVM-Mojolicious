@@ -45,7 +45,7 @@ class Mojo::Content extends Mojo::EventEmitter {
     }
   ;
   
-  has max_leftover_size : ro int
+  has max_leftover_size : rw int
     get {
       unless ($self->{max_leftover_size} > -1) {
         $self->{max_leftover_size} = length (my $_ = Sys->env("SPVM_MOJO_MAX_BUFFER_SIZE")) ? (int)$_ : -1;
