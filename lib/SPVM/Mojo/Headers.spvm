@@ -455,12 +455,19 @@ class Mojo::Headers {
     $self->{headers_h}->delete($key);
   }
   
-  method to_hash : Hash () {
+  method to_hash : Hash ($multi : int = 0) {
     
     my $hash = Hash->new;
     
-    for my $name (@{$self->names}) {
-      $hash->set($name => $self->header($name));
+    if ($multi) {
+      for my $name (@{$self->names}) {
+        $hash->set($name => $self->{headers_h}->get(Fn->lc($name)));
+      }
+    }
+    else {
+      for my $name (@{$self->names}) {
+        $hash->set($name => $self->header($name));
+      }
     }
     
     return $hash;

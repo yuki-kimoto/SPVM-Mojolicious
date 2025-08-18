@@ -98,342 +98,340 @@ Examples:
 
 =head2 clone
   
-C<method clone : Mojo::Headers ();>
+C<method clone : L<Mojo::Headers|SPVM::Mojo::Headers> ();>
 
-  my $clone = $headers->clone;
-
-Return a new L<Mojo::Headers> object cloned from these headers.
+Return a new L<Mojo::Headers|SPVM::Mojo::Headers> object cloned from these headers.
 
 Examples:
 
+  my $clone = $headers->clone;
 
 =head2 dehop
   
 C<method dehop : void ();>
 
-  $headers->set_dehop;
-
 Remove hop-by-hop headers that should not be retransmitted.
 
 Examples:
 
+  $headers->dehop;
 
 =head2 every_header
-  
-C<method every_header : string[] ($name : string);>
 
-  my $all = $headers->every_header("Location");
+C<method every_header : string[] ($name : string);>
 
 Similar to L</"header">, but returns all headers sharing the same name as an array reference.
 
+Examples:
+
+  my $all = $headers->every_header("Location");
+  
   # Get first header value
   say $headers->every_header("Location")->[0];
 
-Examples:
-
-
 =head2 from_hash
   
-C<method from_hash : Mojo::Headers ($hash : Hash);>
-
-  $headers->set_from_hash({"Cookie" => "a=b"});
-  $headers->set_from_hash({"Cookie" => ["a=b", "c=d"]});
-  $headers->set_from_hash({});
+C<method from_hash : L<Mojo::Headers|SPVM::Mojo::Headers> ($hash : L<Hash|SPVM::Hash>);>
 
 Parse headers from a hash reference, an empty hash removes all headers.
 
 Examples:
 
+  $headers->from_hash(Hash->new({"Cookie" => "a=b"}));
+  $headers->from_hash(Hash->new({"Cookie" => ["a=b", "c=d"]}));
+  $headers->from_hash(Hash->new);
 
 =head2 header
   
 C<method header : string ($name : string);>
 
-  my $value = $headers->header("Foo");
-  $headers->set_header(Foo => "one value");
-  $headers->set_header(Foo => "first value", "second value");
-
-Get or replace the current header values.
+Get the current header values.
 
 Examples:
 
+  my $value = $headers->header("Foo");
 
 =head2 set_header
   
 C<method set_header : void ($name : string, $value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace the current header values.
+
 Examples:
 
+  $headers->set_header(Foo => "one value");
+  $headers->set_header(Foo => ["first value", "second value"]);
 
 =head2 is_finished
   
 C<method is_finished : int ();>
 
-  my $value = $headers->header("Foo");
-  $headers->set_header(Foo => "one value");
-  $headers->set_header(Foo => "first value", "second value");
-
-Get or replace the current header values.
+Check if header parser is finished.
 
 Examples:
 
+  my $bool = $headers->is_finished;
 
 =head2 is_limit_exceeded
   
 C<method is_limit_exceeded : int ();>
 
-  my $bool = $headers->is_limit_exceeded;
-
 Check if headers have exceeded L</"max_line_size"> or L</"max_lines">.
 
 Examples:
 
+  my $bool = $headers->is_limit_exceeded;
 
 =head2 leftovers
   
 C<method leftovers : string ();>
 
-  my $bytes = $headers->leftovers;
-
 Get and remove leftover data from header parser.
 
 Examples:
 
+  my $bytes = $headers->leftovers;
 
 =head2 names
   
 C<method names : string[] ();>
 
-  my $names = $headers->names;
-
 Return an array reference with all currently defined headers.
-
-  # Names of all headers
-  say for @{$headers->names};
 
 Examples:
 
+  my $names = $headers->names;
+  
+  # Names of all headers
+  for my $_ (@{$headers->names}) {
+    say $_;
+  }
 
 =head2 parse
   
 C<method parse : void ($chunk : string);>
 
-  $headers->set_parse("Content-Type: text/plain\x0d\x0a\x0d\x0a");
-
 Parse formatted headers.
 
 Examples:
 
+  $headers->parse("Content-Type: text/plain\x0d\x0a\x0d\x0a");
 
 =head2 remove
   
 C<method remove : void ($name : string);>
 
-  $headers->set_remove("Foo");
+Remove a header.
 
 Examples:
 
-
-Remove a header.
+  $headers->remove("Foo");
 
 =head2 to_hash
   
-C<method to_hash : Hash ();>
-
-  my $single = $headers->to_hash;
-  my $multi  = $headers->to_hash(1);
+C<method to_hash : L<Hash|SPVM::Hash> ($multi : int = 0);>
 
 Turn headers into hash reference, array references to represent multiple headers with the same name are disabled by
 default.
 
-  say $headers->to_hash->{DNT};
-
 Examples:
 
+  my $single = $headers->to_hash;
+  my $multi  = $headers->to_hash(1);
+  
+  say $headers->to_hash->get_string("DNT");
 
 =head2 to_string
   
 C<method to_string : string ();>
 
-  my $str = $headers->to_string;
-
 Turn headers into a string, suitable for HTTP messages.
-
 
 Examples:
 
+  my $str = $headers->to_string;
 
 =head2 accept
   
 C<method accept : string ();>
 
-  my $accept = $headers->accept;
-  $headers->set_accept("application/json");
-
-Get or replace current header value, shortcut for the C<Accept> header.
+Get current header value, shortcut for the C<Accept> header.
 
 Examples:
 
+  my $accept = $headers->accept;
 
 =head2 set_accept
 
 C<method set_accept : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Accept> header.
+
 Examples:
 
+  $headers->set_accept("application/json");
 
 =head2 accept_charset
 
 C<method accept_charset : string ();>
 
-  my $charset = $headers->accept_charset;
-  $headers->set_accept_charset("UTF-8");
-
-Get or replace current header value, shortcut for the C<Accept-Charset> header.
+Get current header value, shortcut for the C<Accept-Charset> header.
 
 Examples:
 
+  my $charset = $headers->accept_charset;
 
 =head2 set_accept_charset
 
 C<method set_accept_charset : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Accept-Charset> header.
+
 Examples:
 
+  $headers->set_accept_charset("UTF-8");
 
 =head2 accept_encoding
 
 C<method accept_encoding : string ();>
 
-  my $encoding = $headers->accept_encoding;
-  $headers->set_accept_encoding("gzip");
-
-Get or replace current header value, shortcut for the C<Accept-Encoding> header.
+Get current header value, shortcut for the C<Accept-Encoding> header.
 
 Examples:
 
+  my $encoding = $headers->accept_encoding;
 
 =head2 set_accept_encoding
 
 C<method set_accept_encoding : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Accept-Encoding> header.
+
 Examples:
 
+  $headers->set_accept_encoding("gzip");
 
 =head2 accept_language
 
 C<method accept_language : string ();>
 
-  my $language = $headers->accept_language;
-  $headers->set_accept_language("de, en");
-
-Get or replace current header value, shortcut for the C<Accept-Language> header.
+Get current header value, shortcut for the C<Accept-Language> header.
 
 Examples:
 
+  my $language = $headers->accept_language;
 
 =head2 set_accept_language
 
 C<method set_accept_language : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Accept-Language> header.
+
 Examples:
 
+  $headers->set_accept_language("de, en");
 
 =head2 accept_ranges
 
 C<method accept_ranges : string ();>
 
-  my $ranges = $headers->accept_ranges;
-  $headers->set_accept_ranges("bytes");
-
-Get or replace current header value, shortcut for the C<Accept-Ranges> header.
+Get current header value, shortcut for the C<Accept-Ranges> header.
 
 Examples:
 
+  my $ranges = $headers->accept_ranges;
 
 =head2 set_accept_ranges
 
 C<method set_accept_ranges : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Accept-Ranges> header.
+
 Examples:
 
+  $headers->set_accept_ranges("bytes");
 
 =head2 access_control_allow_origin
 
 C<method access_control_allow_origin : string ();>
 
+Get current header value, shortcut for the C<Access-Control-Allow-Origin> header from L<Cross-Origin
+Resource Sharing|https://www.w3.org/TR/cors/>.
+
 Examples:
 
+  my $origin = $headers->access_control_allow_origin;
 
 =head2 set_access_control_allow_origin
 
 C<method set_access_control_allow_origin : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
-  my $origin = $headers->access_control_allow_origin;
-  $headers->set_access_control_allow_origin("*");
-
-Get or replace current header value, shortcut for the C<Access-Control-Allow-Origin> header from L<Cross-Origin
+Replace current header value, shortcut for the C<Access-Control-Allow-Origin> header from L<Cross-Origin
 Resource Sharing|https://www.w3.org/TR/cors/>.
 
 Examples:
 
+  $headers->set_access_control_allow_origin("*");
 
 =head2 allow
 
 C<method allow : string ();>
 
-  my $allow = $headers->allow;
-  $headers->set_allow("GET, POST");
-
-Get or replace current header value, shortcut for the C<Allow> header.
+Get current header value, shortcut for the C<Allow> header.
 
 Examples:
 
+  my $allow = $headers->allow;
 
 =head2 set_allow
 
 C<method set_allow : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Allow> header.
+
 Examples:
 
+  $headers->set_allow("GET, POST");
 
 =head2 authorization
 
 C<method authorization : string ();>
 
-  my $authorization = $headers->authorization;
-  $headers->set_authorization("Basic Zm9vOmJhcg==");
-
-Get or replace current header value, shortcut for the C<Authorization> header.
+Ge current header value, shortcut for the C<Authorization> header.
 
 Examples:
 
+  my $authorization = $headers->authorization;
 
 =head2 set_authorization
 
 C<method set_authorization : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Authorization> header.
+
 Examples:
 
+  $headers->set_authorization("Basic Zm9vOmJhcg==");
 
 =head2 cache_control
 
 C<method cache_control : string ();>
 
-  my $cache_control = $headers->cache_control;
-  $headers->set_cache_control("max-age=1, no-cache");
-
-Get or replace current header value, shortcut for the C<Cache-Control> header.
+Get current header value, shortcut for the C<Cache-Control> header.
 
 Examples:
 
+  my $cache_control = $headers->cache_control;
 
 =head2 set_cache_control
 
 C<method set_cache_control : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Cache-Control> header.
+
 Examples:
 
+  $headers->set_cache_control("max-age=1, no-cache");
 
 =head2 connection
 
@@ -821,7 +819,7 @@ Examples:
 
 =head2 links
   
-C<method links : Hash of Hash of string ();>
+C<method links : L<Hash|SPVM::Hash> of Hash of string ();>
 
   my $links = $headers->links;
   $headers->set_links({next => "http://example.com/foo", prev => "http://example.com/bar"});
