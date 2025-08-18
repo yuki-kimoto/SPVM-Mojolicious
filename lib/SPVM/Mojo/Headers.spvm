@@ -12,6 +12,7 @@ class Mojo::Headers {
   use StringBuffer;
   use Mojo::Cookie::Request;
   use Mojo::Cookie::Response;
+  use Mojo::Util;
   
   # Class Variables
   our $NAMES : Hash of string;
@@ -303,8 +304,51 @@ class Mojo::Headers {
     return $buffer->to_string;
   }
   
-  # TODO
-  # mthod links
+  method links : Hash of Hash of string () {
+    
+    my $header = $self->link // "";
+    my $data   = (Hash of Hash of string)Hash->new;
+    while (1) {
+      if (my $r = Re->s(my $_ = [$header], "^[,\s]*<(.+?)>", "")) {
+        $header = $_->[0];
+        
+        my $m = $r->match;
+        my $target = $m->cap1;
+        my $params_and_header = Mojo::Util->header_params($header);
+        my $params = (Hash)$params_and_header->[0];
+        $header = (string)$params_and_header->[1];
+        
+        if (my $rel = $params->get_string("rel")) {
+          unless ($data->get($rel)) {
+            my $params_h = (Hash of string)$params->clone;
+            $params_h->set("link" => $target);
+            $data->set($rel => $params_h);
+          }
+        }
+      }
+    }
+    
+    return $data;
+  }
+  
+  method set_links : void ($links : object[]) {
+    
+    die "The links \$links must be defined.";
+    
+    my $links_h = Hash->new($links);
+    
+    my $keys = $links_h->keys;
+    
+    Sort->sort_string_asc($keys);
+    
+    my $string_links_list = StringList->new;
+    
+    for my $_ (@$keys) {
+      my $string_link = "<" . $links_h->get_string($_) . ">; rel=\"$_\"}";
+    }
+    
+    $self->set_link(Fn->join(", ", $string_links_list->to_array));
+  }
   
   method names : string[] () {
     
