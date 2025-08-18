@@ -74,13 +74,150 @@ C<has skip_body : rw byte;>
 
 Skip body parsing and finish after headers.
 
-=head1 Class Methods
-
-
-
 =head1 Instance Methods
 
+=head2 body_contains
 
+C<method body_contains : int ($chunk : string);>
+
+Check if content contains a specific string. Meant to be overloaded in a subclass.
+
+=head2 body_size
+
+C<method body_size : int ();>
+
+Content size in bytes. Meant to be overloaded in a subclass.
+
+=head2 boundary
+
+C<method boundary : string ();>
+
+Extract multipart boundary from C<Content-Type> header.
+
+=head2 clone
+
+C<method clone : L<Mojo::Content|SPVM::Mojo::Content> ();>
+
+Return a new L<Mojo::Content|SPVM::Mojo::Content> object cloned from this content if possible, otherwise return C<undef>.
+
+=head2 generate_body_chunk
+
+C<method generate_body_chunk : string ($offset : int);>
+
+Generate dynamic content.
+
+=head2 get_body_chunk
+
+C<method get_body_chunk : string ($offset : int);>
+
+Get a chunk of content starting from a specific position. Meant to be overloaded in a subclass.
+
+=head2 get_header_chunk
+
+C<method get_header_chunk : string ($offset : int);>
+
+Get a chunk of the headers starting from a specific position. Note that this method finalizes the content.
+
+=head2 header_size
+
+C<method header_size : int ();>
+
+Size of headers in bytes. Note that this method finalizes the content.
+
+=head2 headers_contain  
+
+C<method headers_contain : int ($chunk : string);>
+
+Check if headers contain a specific string. Note that this method finalizes the content.
+
+=head2 is_chunked
+
+C<method is_chunked : int ();>
+
+Check if C<Transfer-Encoding> header indicates chunked transfer encoding.
+
+=head2 is_compressed
+
+C<method is_compressed : int ();>
+
+Check C<Content-Encoding> header for C<gzip> value.
+
+=head2 is_dynamic
+
+C<method is_dynamic : int ();>
+
+Check if content will be dynamically generated, which prevents L</"clone"> from working.
+
+=head2 is_finished
+
+C<method is_finished : int ();>
+
+Check if parser is finished.
+
+=head2 is_limit_exceeded
+
+C<method is_limit_exceeded : int ();>
+
+Check if buffer has exceeded L</"max_buffer_size">.
+
+=head2 is_multipart
+
+C<method is_multipart : int ();>
+
+False, this is not a L<Mojo::Content::MultiPart> object.
+
+=head2 is_parsing_body
+
+C<method is_parsing_body : int ();>
+
+Check if body parsing started yet.
+
+=head2 is_sse
+
+C<method is_sse : int ();>
+
+Check if C<Content-Type> header indicates Server-Sent Events (SSE). Note that this method is B<EXPERIMENTAL> and may
+change without warning!
+
+=head2 leftovers
+
+C<method leftovers : string ();>
+
+Get leftover data from content parser.
+
+=head2 parse
+
+C<method parse : Mojo::Content ($chunk : string);>
+
+Parse content chunk.
+
+=head2 parse_body
+
+C<method parse_body : void ($chunk : string);>
+
+Parse body chunk and skip headers.
+
+=head2 progress
+
+C<method progress : int ();>
+
+Size of content already received from message in bytes.
+
+=head2 write
+
+C<method write : void ($chunk : string, $cb : Mojo::EventEmitter::Callback);>
+
+Write dynamic content non-blocking, the optional drain callback will be executed once all data has been written.
+Calling this method without a chunk of data will finalize the L</"headers"> and allow for dynamic content to be written
+later. You can write an empty chunk of data at any time to end the stream.
+
+=head2 write_chunk  
+
+C<method write_chunk : void ($chunk : string, $cb : Mojo::EventEmitter::Callback);>
+
+Write dynamic content non-blocking with chunked transfer encoding, the optional drain callback will be executed once
+all data has been written. Calling this method without a chunk of data will finalize the L</"headers"> and allow for
+dynamic content to be written later. You can write an empty chunk of data at any time to end the stream.
 
 =head1 See Also
 

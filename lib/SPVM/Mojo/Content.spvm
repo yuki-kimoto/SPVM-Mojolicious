@@ -268,6 +268,10 @@ class Mojo::Content extends Mojo::EventEmitter {
     return $state eq "body";
   }
   
+  method is_sse : int () {
+    return ($self->headers->content_type // "") eq "text/event-stream";
+  }
+  
   method leftovers : string () {
     
     return $self->{buffer};
