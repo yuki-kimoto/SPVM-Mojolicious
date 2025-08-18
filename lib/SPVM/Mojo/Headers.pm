@@ -391,7 +391,7 @@ Replace current header value, shortcut for the C<Allow> header.
 
 Examples:
 
-  $headers->set_allow("GET, POST");
+  $headers->set_allow(["GET, POST"]);
 
 =head2 authorization
 
@@ -823,8 +823,7 @@ Examples:
 
 C<method link : string ();>
 
-Get current header value, shortcut for the C<Link> header from L<RFC
-5988|https://tools.ietf.org/html/rfc5988>.
+Get current header value, shortcut for the Link header from L<RFC5988|https://tools.ietf.org/html/rfc5988>.
 
 Examples:
 
@@ -834,7 +833,7 @@ Examples:
 
 C<method set_link : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
-Replace current header value, shortcut for the C<Link> header from L<RFC
+Replace current header value, shortcut for the Link header from L<RFC
 5988|https://tools.ietf.org/html/rfc5988>.
 
 Examples:
@@ -845,7 +844,7 @@ Examples:
   
 C<method links : L<Hash|SPVM::Hash> of Hash of string ();>
 
-Get web links from or to C<Link> header according to L<RFC 5988|http://tools.ietf.org/html/rfc5988>.
+Get web links from or to Link header according to L<RFC 5988|http://tools.ietf.org/html/rfc5988>.
 
   # Extract information about next page
   say $headers->links->get("next")->get_string("link");
@@ -859,7 +858,7 @@ Examples:
   
 C<method set_links : void ($links : object[]);>
 
-Set web links from or to C<Link> header according to L<RFC 5988|http://tools.ietf.org/html/rfc5988>.
+Set web links from or to Link header according to L<RFC 5988|http://tools.ietf.org/html/rfc5988>.
 
 Examples:
 
@@ -931,369 +930,399 @@ Examples:
 
 C<method proxy_authorization : string ();>
 
-  my $authorization = $headers->proxy_authorization;
-  $headers->set_proxy_authorization("Basic Zm9vOmJhcg==");
-
-Get or replace current header value, shortcut for the C<Proxy-Authorization> header.
+Get current header value, shortcut for the C<Proxy-Authorization> header.
 
 Examples:
 
+  my $authorization = $headers->proxy_authorization;
 
 =head2 set_proxy_authorization
 
 C<method set_proxy_authorization : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Proxy-Authorization> header.
+
 Examples:
 
+  $headers->set_proxy_authorization("Basic Zm9vOmJhcg==");
 
 =head2 range
 
 C<method range : string ();>
 
-  my $range = $headers->range;
-  $headers->set_range("bytes=2-8");
-
-Get or replace current header value, shortcut for the C<Range> header.
+Get current header value, shortcut for the C<Range> header.
 
 Examples:
 
+  my $range = $headers->range;
 
 =head2 set_range
 
 C<method set_range : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Range> header.
+
 Examples:
 
+  $headers->set_range("bytes=2-8");
 
 =head2 referer
   
 C<method referer : string ();>
 
-  my $referrer = $headers->referer;
-  $headers->set_referer("http://example.com");
-
 Alias for L</"referrer">.
 
 Examples:
 
+  my $referrer = $headers->referer;
 
 =head2 set_referer
   
 C<method set_referer : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Alias for L</"set_referrer">.
+
 Examples:
 
+  $headers->set_referer("http://example.com");
 
 =head2 referrer
   
 C<method referrer : string ();>
 
-  my $referrer = $headers->referrer;
-  $headers->set_referrer("http://example.com");
-
-Get or replace current header value, shortcut for the C<Referer> header, there was a typo in L<RFC
+Get current header value, shortcut for the C<Referer> header, there was a typo in L<RFC
 2068|https://tools.ietf.org/html/rfc2068> which resulted in C<Referer> becoming an official header.
 
 Examples:
 
+  my $referrer = $headers->referrer;
 
 =head2 set_referrer
   
 C<method set_referrer : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Referer> header, there was a typo in L<RFC
+2068|https://tools.ietf.org/html/rfc2068> which resulted in C<Referer> becoming an official header.
+
+  $headers->set_referrer("http://example.com");
+
 =head2 sec_websocket_accept
 
 C<method sec_websocket_accept : string ();>
 
-  my $accept = $headers->sec_websocket_accept;
-  $headers->set_sec_websocket_accept("s3pPLMBiTxaQ9kYGzzhZRbK+xOo=");
-
-Get or replace current header value, shortcut for the C<Sec-WebSocket-Accept> header from L<RFC
+Get current header value, shortcut for the C<Sec-WebSocket-Accept> header from L<RFC
 6455|https://tools.ietf.org/html/rfc6455>.
 
 Examples:
 
+  my $accept = $headers->sec_websocket_accept;
 
 =head2 set_sec_websocket_accept
 
 C<method set_sec_websocket_accept : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Sec-WebSocket-Accept> header from L<RFC
+6455|https://tools.ietf.org/html/rfc6455>.
+
 Examples:
 
+  $headers->set_sec_websocket_accept("s3pPLMBiTxaQ9kYGzzhZRbK+xOo=");
 
 =head2 sec_websocket_extensions
 
 C<method sec_websocket_extensions : string ();>
 
-  my $extensions = $headers->sec_websocket_extensions;
-  $headers->set_sec_websocket_extensions("foo");
-
-Get or replace current header value, shortcut for the C<Sec-WebSocket-Extensions> header from L<RFC
+Get current header value, shortcut for the C<Sec-WebSocket-Extensions> header from L<RFC
 6455|https://tools.ietf.org/html/rfc6455>.
 
 Examples:
 
+  my $extensions = $headers->sec_websocket_extensions;
 
 =head2 set_sec_websocket_extensions
 
 C<method set_sec_websocket_extensions : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Sec-WebSocket-Extensions> header from L<RFC
+6455|https://tools.ietf.org/html/rfc6455>.
+
 Examples:
 
+  $headers->set_sec_websocket_extensions("foo");
 
 =head2 sec_websocket_key
 
 C<method sec_websocket_key : string ();>
 
-  my $key  = $headers->sec_websocket_key;
-  $headers->set_sec_websocket_key("dGhlIHNhbXBsZSBub25jZQ==");
-
-Get or replace current header value, shortcut for the C<Sec-WebSocket-Key> header from L<RFC
+Get current header value, shortcut for the C<Sec-WebSocket-Key> header from L<RFC
 6455|https://tools.ietf.org/html/rfc6455>.
 
 Examples:
 
+  my $key  = $headers->sec_websocket_key;
 
 =head2 set_sec_websocket_key
 
 C<method set_sec_websocket_key : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Sec-WebSocket-Key> header from L<RFC
+6455|https://tools.ietf.org/html/rfc6455>.
+
 Examples:
 
+  $headers->set_sec_websocket_key("dGhlIHNhbXBsZSBub25jZQ==");
 
 =head2 sec_websocket_protocol
 
 C<method sec_websocket_protocol : string ();>
 
-  my $proto = $headers->sec_websocket_protocol;
-  $headers->set_sec_websocket_protocol("sample");
-
-Get or replace current header value, shortcut for the C<Sec-WebSocket-Protocol> header from L<RFC
+Get current header value, shortcut for the C<Sec-WebSocket-Protocol> header from L<RFC
 6455|https://tools.ietf.org/html/rfc6455>.
 
 Examples:
 
+  my $proto = $headers->sec_websocket_protocol;
 
 =head2 set_sec_websocket_protocol
 
 C<method set_sec_websocket_protocol : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Sec-WebSocket-Protocol> header from L<RFC
+6455|https://tools.ietf.org/html/rfc6455>.
+
 Examples:
 
+  $headers->set_sec_websocket_protocol("sample");
 
 =head2 sec_websocket_version
 
 C<method sec_websocket_version : string ();>
 
-  my $version = $headers->sec_websocket_version;
-  $headers->set_sec_websocket_version(13);
-
-Get or replace current header value, shortcut for the C<Sec-WebSocket-Version> header from L<RFC
+Get current header value, shortcut for the C<Sec-WebSocket-Version> header from L<RFC
 6455|https://tools.ietf.org/html/rfc6455>.
 
 Examples:
 
+  my $version = $headers->sec_websocket_version;
 
 =head2 set_sec_websocket_version
 
 C<method set_sec_websocket_version : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Sec-WebSocket-Version> header from L<RFC
+6455|https://tools.ietf.org/html/rfc6455>.
+
 Examples:
 
+  $headers->set_sec_websocket_version(13);
 
 =head2 server
 
 C<method server : string ();>
 
-  my $server = $headers->server;
-  $headers->set_server("Mojo");
-
-Get or replace current header value, shortcut for the C<Server> header.
+Get current header value, shortcut for the C<Server> header.
 
 Examples:
 
+  my $server = $headers->server;
 
 =head2 set_server
 
 C<method set_server : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Server> header.
+
 Examples:
 
+  $headers->set_server("Mojo");
 
 =head2 server_timing
 
 C<method server_timing : string ();>
 
-  my $timing = $headers->server_timing;
-  $headers->set_server_timing("app;desc=Mojolicious;dur=0.0001");
-
-Get or replace current header value, shortcut for the C<Server-Timing> header from L<Server
+Get current header value, shortcut for the C<Server-Timing> header from L<Server
 Timing|https://www.w3.org/TR/server-timing/>.
 
 Examples:
 
+  my $timing = $headers->server_timing;
 
 =head2 set_server_timing
 
 C<method set_server_timing : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Server-Timing> header from L<Server
+Timing|https://www.w3.org/TR/server-timing/>.
+
 Examples:
 
+  $headers->set_server_timing("app;desc=Mojolicious;dur=0.0001");
 
 =head2 get_set_cookie
 
 C<method get_set_cookie : string ();>
 
-  my $cookie = $headers->set_cookie;
-  $headers->set_set_cookie("f=b; path=/");
-
-Get or replace current header value, shortcut for the C<Set-Cookie> header from L<RFC
+Get current header value, shortcut for the C<Set-Cookie> header from L<RFC
 6265|https://tools.ietf.org/html/rfc6265>.
 
 Examples:
 
+  my $cookie = $headers->set_cookie;
 
 =head2 set_set_cookie
 
 C<method set_set_cookie : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Set-Cookie> header from L<RFC
+6265|https://tools.ietf.org/html/rfc6265>.
+
 Examples:
 
+  $headers->set_set_cookie("f=b; path=/");
 
 =head2 status
 
 C<method status : string ();>
 
-  my $status = $headers->status;
-  $headers->set_status("200 OK");
-
-Get or replace current header value, shortcut for the C<Status> header from L<RFC
+Get current header value, shortcut for the C<Status> header from L<RFC
 3875|https://tools.ietf.org/html/rfc3875>.
 
 Examples:
 
+  my $status = $headers->status;
 
 =head2 set_status
 
 C<method set_status : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Status> header from L<RFC
+3875|https://tools.ietf.org/html/rfc3875>.
+
 Examples:
 
+  $headers->set_status("200 OK");
 
 =head2 strict_transport_security
 
 C<method strict_transport_security : string ();>
 
-  my $policy = $headers->strict_transport_security;
-  $headers->set_strict_transport_security("max-age=31536000");
-
-Get or replace current header value, shortcut for the C<Strict-Transport-Security> header from L<RFC
+Get current header value, shortcut for the C<Strict-Transport-Security> header from L<RFC
 6797|https://tools.ietf.org/html/rfc6797>.
 
 Examples:
 
+  my $policy = $headers->strict_transport_security;
 
 =head2 set_strict_transport_security
 
 C<method set_strict_transport_security : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Strict-Transport-Security> header from L<RFC
+6797|https://tools.ietf.org/html/rfc6797>.
+
 Examples:
 
+  $headers->set_strict_transport_security("max-age=31536000");
 
 =head2 te
 
 C<method te : string ();>
 
-  my $te   = $headers->te;
-  $headers->set_te("chunked");
-
-Get or replace current header value, shortcut for the C<TE> header.
+Get current header value, shortcut for the C<TE> header.
 
 Examples:
 
+  my $te   = $headers->te;
 
 =head2 set_te
 
 C<method set_te : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<TE> header.
+
 Examples:
 
+  $headers->set_te("chunked");
 
 =head2 trailer
 
 C<method trailer : string ();>
 
-  my $trailer = $headers->trailer;
-  $headers->set_trailer("X-Foo");
-
-Get or replace current header value, shortcut for the C<Trailer> header.
+Get current header value, shortcut for the C<Trailer> header.
 
 Examples:
 
+  my $trailer = $headers->trailer;
 
 =head2 set_trailer
 
 C<method set_trailer : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Trailer> header.
+
 Examples:
 
+  $headers->set_trailer("X-Foo");
 
 =head2 transfer_encoding
 
 C<method transfer_encoding : string ();>
 
-  my $encoding = $headers->transfer_encoding;
-  $headers->set_transfer_encoding("chunked");
-
-Get or replace current header value, shortcut for the C<Transfer-Encoding> header.
+Get current header value, shortcut for the C<Transfer-Encoding> header.
 
 Examples:
 
+  my $encoding = $headers->transfer_encoding;
 
 =head2 set_transfer_encoding
 
 C<method set_transfer_encoding : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Transfer-Encoding> header.
+
 Examples:
 
+  $headers->set_transfer_encoding("chunked");
 
 =head2 upgrade
 
 C<method upgrade : string ();>
 
-  my $upgrade = $headers->upgrade;
-  $headers->set_upgrade("websocket");
-
-Get or replace current header value, shortcut for the C<Upgrade> header.
+Get current header value, shortcut for the C<Upgrade> header.
 
 Examples:
 
+  my $upgrade = $headers->upgrade;
 
 =head2 set_upgrade
 
 C<method set_upgrade : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<Upgrade> header.
+
 Examples:
 
+  $headers->set_upgrade("websocket");
 
 =head2 user_agent
 
 C<method user_agent : string ();>
 
-  my $agent = $headers->user_agent;
-  $headers->set_user_agent("Mojo/1.0");
-
-Get or replace current header value, shortcut for the C<User-Agent> header.
+Get current header value, shortcut for the C<User-Agent> header.
 
 Examples:
 
+  my $agent = $headers->user_agent;
 
 =head2 set_user_agent
 
 C<method set_user_agent : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<User-Agent> header.
+
 Examples:
 
+  $headers->set_user_agent("Mojo/1.0");
 
 =head2 vary
 
@@ -1301,38 +1330,39 @@ C<method vary : string ();>
 
 C<method set_vary : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
-  my $vary = $headers->vary;
-  $headers->set_vary("*");
-
-Get or replace current header value, shortcut for the C<Vary> header.
+Get current header value, shortcut for the C<Vary> header.
 
 Examples:
 
+  my $vary = $headers->vary;
 
 =head2 set_vary
 
+Replace current header value, shortcut for the C<Vary> header.
+
 Examples:
 
+  $headers->set_vary("*");
 
 =head2 www_authenticate
 
 C<method www_authenticate : string ();>
 
-  my $authenticate = $headers->www_authenticate;
-  $headers->set_www_authenticate("Basic realm=\"realm\"");
-
-Get or replace current header value, shortcut for the C<WWW-Authenticate> header.
+Get current header value, shortcut for the C<WWW-Authenticate> header.
 
 Examples:
 
+  my $authenticate = $headers->www_authenticate;
 
 =head2 set_www_authenticate
 
 C<method set_www_authenticate : void ($value : object of string|L<Stringable|SPVM::Stringable>|string[]);>
 
+Replace current header value, shortcut for the C<WWW-Authenticate> header.
 
 Examples:
 
+  $headers->set_www_authenticate("Basic realm=\"realm\"");
 
 =head1 See Also
 
