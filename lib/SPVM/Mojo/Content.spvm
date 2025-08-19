@@ -7,6 +7,8 @@ class Mojo::Content extends Mojo::EventEmitter {
   allow Mojo::Transaction::HTTP;
   
   use Native::MethodCall;
+  use Mojo::SSE;
+  use Mojo::SSE::Event;
   
   # Class Variables
   our $BOUNDARY_RE : Regex;
@@ -97,6 +99,8 @@ class Mojo::Content extends Mojo::EventEmitter {
   has chunk_len : int;
   
   has body : byte;
+  
+  has sse : byte;
   
   # Instance Methods
   protected method init : void ($options : object[] = undef) {
@@ -378,7 +382,7 @@ class Mojo::Content extends Mojo::EventEmitter {
     return $progress;
   }
   
-  method write : void ($chunk : string, $cb : Mojo::EventEmitter::Callback) {
+  method write : void ($chunk : string = undef, $cb : Mojo::EventEmitter::Callback = undef) {
     
     $self->{dynamic} = 1;
     
@@ -396,7 +400,7 @@ class Mojo::Content extends Mojo::EventEmitter {
     
   }
   
-  method write_chunk : void ($chunk : string, $cb : Mojo::EventEmitter::Callback) {
+  method write_chunk : void ($chunk : string = undef, $cb : Mojo::EventEmitter::Callback = undef) {
     
     unless ($self->{chunked}) {
       $self->headers->set_transfer_encoding("chunked");
@@ -419,8 +423,7 @@ class Mojo::Content extends Mojo::EventEmitter {
     
   }
   
-  sub write_sse {
-    my ($self, $event, $cb) = @_;
+  method write_sse : void ($event : Mojo::SSE::Event, $cb : Mojo::EventEmitter::Callback) {
     
     unless ($self->{sse}) {
       $self->headers->set_content_type("text/event-stream");
@@ -429,9 +432,11 @@ class Mojo::Content extends Mojo::EventEmitter {
     $self->{sse} = 1;
     
     unless ($event) {
-      return $self->write;
+      $self->write;
+      return;
     }
-    return $self->write(build_event($event), $cb);
+    
+    $self->write(Mojo::SSE->build_event($event), $cb);
   }
   
   protected method _parse_until_body : void ($chunk : string) {
