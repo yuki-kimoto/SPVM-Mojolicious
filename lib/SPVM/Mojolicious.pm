@@ -46,6 +46,8 @@ Most tests are not written.
 
 =item * L<Mojo::Headers|SPVM::Mojo::Headers>
 
+=item * L<Mojo::SSE|SPVM::Mojo::SSE>
+
 =item * L<Mojo::SSE::Event|SPVM::Mojo::SSE::Event>
 
 =back

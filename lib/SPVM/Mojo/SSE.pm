@@ -8,64 +8,43 @@ package SPVM::Mojo::SSE;
 
 =head1 Name
 
-SPVM::Mojo::SSE - Short Description
+SPVM::Mojo::SSE - Server-Sent Events
 
 =head1 Description
 
-Mojo::SSE class in L<SPVM> has methods to do someting.
+Mojo::SSE class in L<SPVM> implements the Server-Sent Events protocol. Note that this module is B<EXPERIMENTAL> and may change
+without warning!
 
 =head1 Usage
 
   use Mojo::SSE;
 
-=head1 Details
-
-
-
-=head1 Super Class
-
-
-
-=head1 Interfaces
-
-
-
-=head1 Enumerations
-
-
-
-=head1 Fields
-
-
-
 =head1 Class Methods
 
+=head2 build_event
 
+C<static method build_event : string ($event : L<Mojo::SSE::Event|SPVM::Mojo::SSE::Event>);>
 
-=head1 Instance Methods
+Build Server-Sent Event.
 
+=head2 parse_event
 
+C<static method parse_event : L<Mojo::SSE::Event|SPVM::Mojo::SSE::Event> ($buffer_ref : string[]);>
 
-=head1 Well Known Child Classes
-
-
+Parse Server-Sent Event. Returns C<undef> if no complete event was found.
 
 =head1 See Also
 
+=over 2
 
+=item * L<Mojo::Content|SPVM::Mojo::Content>
 
+=item * L<SPVM::Mojolicious>
 
-=head1 Repository
-
-
-
-=head1 Author
-
-Yuki Kimoto C<kimoto.yuki@gmail.com>
+=back
 
 =head1 Copyright & License
 
 Copyright (c) 2025 Yuki Kimoto
 
 MIT License
-
