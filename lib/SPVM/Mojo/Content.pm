@@ -227,6 +227,16 @@ Write Server-Sent Event (SSE) non-blocking, the optional drain callback will be 
 written. Calling this method without an event will finalize the response headers and allow for events to be written
 later. Note that this method is B<EXPERIMENTAL> and may change without warning!
 
+=head1 Well Known Child Classes
+
+=over 2
+
+=item * L<Mojo::Content::MultiPart|SPVM::Mojo::Content::MultiPart>
+
+=item * L<Mojo::Content::Single|SPVM::Mojo::Content::Single>
+
+=back
+
 =head1 See Also
 
 =over 2

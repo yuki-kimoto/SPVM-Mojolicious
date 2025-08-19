@@ -37,13 +37,14 @@ class Mojo::Content::Single extends Mojo::Content {
   
   has body_size : int;
   
-  static method new : Mojo::Content::Single ($options : object[] = undef) {
+  # Class Methods
+  static method new : Mojo::Content::Single () {
     
     my $self = new Mojo::Content::Single;
     
     $self->{auto_upgrade} = -1;
     
-    $self->init($options);
+    $self->init;
     
     $self->{read} = method : void ($that : Mojo::Content::Single, $chunk : string){
       $that->set_asset($that->asset->add_chunk($chunk));
@@ -54,6 +55,7 @@ class Mojo::Content::Single extends Mojo::Content {
     return $self;
   }
   
+  # Instance Methods
   method body_contains : int ($chunk : string) {
   
     return $self->asset->contains($chunk) >= 0;
@@ -116,10 +118,6 @@ class Mojo::Content::Single extends Mojo::Content {
     $multi->parse(undef);
     
     return (Mojo::Content)$multi;
-  }
-  
-  method is_multipart : int () {
-    return 0;
   }
   
 }

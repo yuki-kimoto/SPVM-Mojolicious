@@ -263,7 +263,7 @@ class Mojo::Content extends Mojo::EventEmitter {
     return !!$self->{limit};
   }
   
-  method is_multipart : int () { die "Not implemented"; }
+  method is_multipart : int () { return 0; }
   
   method is_parsing_body : int () {
     
