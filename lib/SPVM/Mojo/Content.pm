@@ -187,7 +187,7 @@ Get leftover data from content parser.
 
 =head2 parse
 
-C<method parse : Mojo::Content ($chunk : string);>
+C<method parse : L<Mojo::Content|SPVM::Mojo::Content> ($chunk : string);>
 
 Parse content chunk.
 
@@ -205,7 +205,7 @@ Size of content already received from message in bytes.
 
 =head2 write
 
-C<method write : void ($chunk : string, $cb : Mojo::EventEmitter::Callback);>
+C<method write : void ($chunk : string, $cb : L<Mojo::EventEmitter::Callback|SPVM::Mojo::EventEmitter::Callback>);>
 
 Write dynamic content non-blocking, the optional drain callback will be executed once all data has been written.
 Calling this method without a chunk of data will finalize the L</"headers"> and allow for dynamic content to be written
@@ -213,17 +213,27 @@ later. You can write an empty chunk of data at any time to end the stream.
 
 =head2 write_chunk  
 
-C<method write_chunk : void ($chunk : string, $cb : Mojo::EventEmitter::Callback);>
+C<method write_chunk : void ($chunk : string, $cb : L<Mojo::EventEmitter::Callback|SPVM::Mojo::EventEmitter::Callback>);>
 
 Write dynamic content non-blocking with chunked transfer encoding, the optional drain callback will be executed once
 all data has been written. Calling this method without a chunk of data will finalize the L</"headers"> and allow for
 dynamic content to be written later. You can write an empty chunk of data at any time to end the stream.
+
+=head2 write_sse
+
+C<method write_sse : void ($event : L<Mojo::SSE::Event|SPVM::Mojo::SSE::Event>, $cb : L<Mojo::EventEmitter::Callback|SPVM::Mojo::EventEmitter::Callback>);>
+
+Write Server-Sent Event (SSE) non-blocking, the optional drain callback will be executed once all data has been
+written. Calling this method without an event will finalize the response headers and allow for events to be written
+later. Note that this method is B<EXPERIMENTAL> and may change without warning!
 
 =head1 See Also
 
 =over 2
 
 =item * L<Mojo::Headers|SPVM::Mojo::Headers>
+
+=item * L<Mojo::Message|SPVM::Mojo::Message>
 
 =item * L<SPVM::Mojolicious>
 
