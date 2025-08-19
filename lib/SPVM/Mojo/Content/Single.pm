@@ -6,31 +6,24 @@ package SPVM::Mojo::Content::Single;
 
 =head1 Name
 
-SPVM::Mojo::Content::Single - Short Description
+SPVM::Mojo::Content::Single - HTTP content
 
 =head1 Description
 
-Mojo::Content::Single class in L<SPVM> has methods to do someting.
+Mojo::Content::Single class in L<SPVM> is a container for HTTP content, based on L<RFC 7230|https://tools.ietf.org/html/rfc7230> and
+L<RFC 7231|https://tools.ietf.org/html/rfc7231>.
 
 =head1 Usage
 
   use Mojo::Content::Single;
 
-=head1 Details
-
-
+  my $single = Mojo::Content::Single->new;
+  $single->parse("Content-Length: 12\x0d\x0a\x0d\x0aHello World!");
+  say $single->headers->content_length;
 
 =head1 Super Class
 
-
-
-=head1 Interfaces
-
-
-
-=head1 Enumerations
-
-
+L<Mojo::Content|SPVM::Mojo::Content>
 
 =head1 Fields
 

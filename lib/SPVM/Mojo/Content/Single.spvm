@@ -10,9 +10,19 @@ class Mojo::Content::Single extends Mojo::Content {
   use Mojo::Content::MultiPart;
   
   # Fields
-  has asset : rw Mojo::Asset;
+  has asset : rw Mojo::Asset
+    get {
+      unless ($self->{asset}) {
+        my $asset = Mojo::Asset::Memory->new;
+        $asset->set_auto_upgrade(1);
+        $self->{asset} = $asset;
+      }
+      
+      return $self->{asset};
+    }
+  ;
   
-  has auto_upgrade : ro byte;
+  has auto_upgrade : rw byte;
   
   # Undocumented Fields
   has read : Mojo::EventEmitter::Callback;
@@ -24,11 +34,6 @@ class Mojo::Content::Single extends Mojo::Content {
     my $self = new Mojo::Content::Single;
     
     $self->{auto_upgrade} = 1;
-    
-    my $asset = Mojo::Asset::Memory->new;
-    $asset->set_auto_upgrade(1);
-    $self->{asset} = $asset;
-    
     
     $self->init($options);
     
