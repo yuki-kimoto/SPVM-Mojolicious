@@ -50,6 +50,10 @@ Most tests are not written.
 
 =item * L<Mojo::SSE::Event|SPVM::Mojo::SSE::Event>
 
+=item * L<Mojo::Content::Single|SPVM::Mojo::Content::Single>
+
+=item * L<Mojo::Content|SPVM::Mojo::Content>
+
 =back
 
 =head1 Porting
