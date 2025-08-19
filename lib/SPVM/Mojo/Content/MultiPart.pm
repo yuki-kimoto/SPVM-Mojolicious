@@ -53,24 +53,42 @@ Content parts embedded in this multipart content, usually L<Mojo::Content::Singl
 
 =head1 Instance Methods
 
-
+  method body_contains : int ($chunk : string) {
+  
+  method body_size : int () {
+  
+  method build_boundary : string () {
+  
+  static method _range : int[] ($start : int, $end : int) {
+  
+  method clone : Mojo::Content::MultiPart () {
+  
+  method get_body_chunk : string ($offset : int) {
+  
+  method is_multipart : int () {
+  
+  method _parse_multipart_body : int ($boundary : string) {
+  
+  method _parse_multipart_boundary : int ($boundary : string) {
+  
+  method _parse_multipart_preamble : int ($boundary : string) {
+  
+  method _read : void ($chunk : string) {
 
 =head1 See Also
 
+=over 2
 
+=item * L<Mojo::Content::Single|SPVM::Mojo::Content::Single>
 
+=item * L<Mojo::Content|SPVM::Mojo::Content>
 
-=head1 Repository
+=item * L<SPVM::Mojolicious>
 
-
-
-=head1 Author
-
-Yuki Kimoto C<kimoto.yuki@gmail.com>
+=back
 
 =head1 Copyright & License
 
 Copyright (c) 2025 Yuki Kimoto
 
 MIT License
-
