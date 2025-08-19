@@ -31,8 +31,6 @@ L<Mojo::Content|SPVM::Mojo::Content>
 
 =head2 part
 
-  $multi->on(part => method : void ($multi : Mojo::Content::MultiPart, $single : Mojo::Content::Single) {...});
-
 Emitted when a new L<Mojo::Content::Single|SPVM::Mojo::Content::Single> part starts.
 
   $multi->on(part => method : void ($multi : Mojo::Content::MultiPart, $single : Mojo::Content::Single) {
@@ -43,7 +41,7 @@ Emitted when a new L<Mojo::Content::Single|SPVM::Mojo::Content::Single> part sta
 
 =head2 parts
 
-C<has parts : Mojo::Content[];>
+C<has parts : L<Mojo::Content|SPVM::Mojo::Content>[];>
 
 Content parts embedded in this multipart content, usually L<Mojo::Content::Single|SPVM::Mojo::Content::Single> objects.
 
@@ -52,28 +50,43 @@ Content parts embedded in this multipart content, usually L<Mojo::Content::Singl
 
 
 =head1 Instance Methods
+  
+=head2 body_contains
 
-  method body_contains : int ($chunk : string) {
-  
-  method body_size : int () {
-  
-  method build_boundary : string () {
-  
-  static method _range : int[] ($start : int, $end : int) {
-  
-  method clone : Mojo::Content::MultiPart () {
-  
-  method get_body_chunk : string ($offset : int) {
-  
-  method is_multipart : int () {
-  
-  method _parse_multipart_body : int ($boundary : string) {
-  
-  method _parse_multipart_boundary : int ($boundary : string) {
-  
-  method _parse_multipart_preamble : int ($boundary : string) {
-  
-  method _read : void ($chunk : string) {
+C<method body_contains : int ($chunk : string);>
+
+Check if content parts contain a specific string.
+
+=head2 body_size
+
+C<method body_size : int ();>
+
+Content size in bytes.
+
+=head2 build_boundary
+
+C<method build_boundary : string ();>
+
+Generate a suitable boundary for content and add it to C<Content-Type> header.
+
+=head2 clone
+
+C<method clone : L<Mojo::Content::MultiPart|SPVM::Mojo::Content::MultiPart> ();>
+
+Return a new L<Mojo::Content::MultiPart|SPVM::Mojo::Content::MultiPart> object cloned from this content if possible, otherwise return C<undef>.
+
+=head2 get_body_chunk
+
+C<method get_body_chunk : string ($offset : int);>
+
+Get a chunk of content starting from a specific position. Note that it might not be possible to get the same chunk
+twice if content was generated dynamically.
+
+=head2 is_multipart
+
+C<method is_multipart : int ();>
+
+True, this is a L<Mojo::Content::MultiPart|SPVM::Mojo::Content::MultiPart> object.
 
 =head1 See Also
 

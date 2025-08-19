@@ -50,9 +50,11 @@ Most tests are not written.
 
 =item * L<Mojo::SSE::Event|SPVM::Mojo::SSE::Event>
 
+=item * L<Mojo::Content|SPVM::Mojo::Content>
+
 =item * L<Mojo::Content::Single|SPVM::Mojo::Content::Single>
 
-=item * L<Mojo::Content|SPVM::Mojo::Content>
+=item * L<Mojo::Content::MultiPart|SPVM::Mojo::Content::MultiPart>
 
 =back
 

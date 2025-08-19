@@ -36,6 +36,19 @@ class Mojo::Content::MultiPart extends Mojo::Content {
     return $self;
   }
   
+  private static method _range : int[] ($start : int, $end : int) {
+    
+    my $length = $end - $start + 1;
+    
+    my $nums = new int[$length];
+    
+    for (my $i = 0; $i < $end + 1; $i++) {
+      $nums->[$i] = $start + $i;
+    }
+    
+    return $nums;
+  }
+  
   # Instance Methods
   method body_contains : int ($chunk : string) {
     
@@ -110,19 +123,6 @@ class Mojo::Content::MultiPart extends Mojo::Content {
     $headers->set_content_type("$before; boundary=$boundary$after");
     
     return $boundary;
-  }
-  
-  static method _range : int[] ($start : int, $end : int) {
-    
-    my $length = $end - $start + 1;
-    
-    my $nums = new int[$length];
-    
-    for (my $i = 0; $i < $end + 1; $i++) {
-      $nums->[$i] = $start + $i;
-    }
-    
-    return $nums;
   }
   
   method clone : Mojo::Content::MultiPart () {
