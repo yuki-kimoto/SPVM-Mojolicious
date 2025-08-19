@@ -28,6 +28,40 @@ L<Mojo::Content::MultiPart|SPVM::Mojo::Content::MultiPart> and L<Mojo::Content::
 
 L<Mojo::EventEmitter|SPVM::Mojo::EventEmitter>
 
+=head1 Events
+
+=head2 body
+
+Emitted once all headers have been parsed and the body starts.
+
+Examples:
+
+  $content->on(body => method : void ($content : Mojo::Content) {
+    if ($content->headers->header("X-No-MultiPart")) {
+      $content->auto_upgrade(0);
+    }
+  });
+
+=head2 drain
+
+Emitted once all data has been written.
+
+Examples:
+
+  $content->on(drain => method : void ($content : Mojo::Content) {
+    $content->write_chunk(Sys->time);
+  });
+
+=head2 read
+
+Emitted when a new chunk of content arrives.
+
+Examples:
+
+  $content->on(read => method : void ($content : Mojo::Content, $bytes : string) {
+    say "Streaming: $bytes";
+  });
+
 =head1 Fields
 
 =head2 auto_decompress

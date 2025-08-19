@@ -4,6 +4,8 @@
 class Mojo::Content::MultiPart extends Mojo::Content {
   version_from Mojolicious;
   
+  allow Mojo::Content::Single;
+  
   use Mojo::Content::Single;
   
   # Fields
@@ -29,15 +31,6 @@ class Mojo::Content::MultiPart extends Mojo::Content {
     $self->on(read => method : void ($that : Mojo::Content::MultiPart, $chunk : string) {
       $that->_read($chunk);
     });
-    
-    return $self;
-  }
-  
-  static method new_from_single : Mojo::Content::MultiPart ($single : Mojo::Content::Single, $options : object[] = undef) {
-    
-    my $self = new Mojo::Content::MultiPart;
-    
-    copy_fields $self, $single, Mojo::Content;
     
     return $self;
   }

@@ -111,13 +111,22 @@ class Mojo::Content::Single extends Mojo::Content {
     # Content needs to be upgraded to multipart
     $self->unsubscribe(read => $self->{read});
     
-    my $multi = Mojo::Content::MultiPart->new_from_single($self);
+    my $multi = &new_from_single($self);
     
     $self->emit(upgrade => $multi);
     
     $multi->parse(undef);
     
     return (Mojo::Content)$multi;
+  }
+  
+  private static method new_from_single : Mojo::Content::MultiPart ($single : Mojo::Content::Single, $options : object[] = undef) {
+    
+    my $self = Mojo::Content::MultiPart->new;
+    
+    copy_fields $self, $single, Mojo::Content;
+    
+    return $self;
   }
   
 }
