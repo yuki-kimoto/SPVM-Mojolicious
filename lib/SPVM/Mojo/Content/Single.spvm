@@ -22,7 +22,15 @@ class Mojo::Content::Single extends Mojo::Content {
     }
   ;
   
-  has auto_upgrade : rw byte;
+  has auto_upgrade : rw byte
+    get {
+      unless ($self->{auto_upgrade} > -1) {
+        $self->{auto_upgrade} = 1;
+      }
+      
+      return $self->{auto_upgrade};
+    }
+  ;
   
   # Undocumented Fields
   has read : Mojo::EventEmitter::Callback;
@@ -33,7 +41,7 @@ class Mojo::Content::Single extends Mojo::Content {
     
     my $self = new Mojo::Content::Single;
     
-    $self->{auto_upgrade} = 1;
+    $self->{auto_upgrade} = -1;
     
     $self->init($options);
     
