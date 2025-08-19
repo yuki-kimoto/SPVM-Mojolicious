@@ -35,11 +35,6 @@ class Mojo::Content::MultiPart extends Mojo::Content {
     return $self;
   }
   
-  method parse : Mojo::Content ($chunk : string) {
-    
-    die "TODO";
-  }
-  
   method body_contains : int ($chunk : string) {
     
     my $parts = $self->{parts};
