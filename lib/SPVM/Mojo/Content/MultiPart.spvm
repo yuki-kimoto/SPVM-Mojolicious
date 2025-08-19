@@ -24,7 +24,7 @@ class Mojo::Content::MultiPart extends Mojo::Content {
   
   has multi_state : string;
   
-  static method new : Mojo::Content::MultiPart ($options : object[] = undef) {
+  static method new : Mojo::Content::MultiPart () {
     
     my $self = new Mojo::Content::MultiPart;
     

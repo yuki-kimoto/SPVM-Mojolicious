@@ -120,7 +120,7 @@ class Mojo::Content::Single extends Mojo::Content {
     return (Mojo::Content)$multi;
   }
   
-  private static method new_from_single : Mojo::Content::MultiPart ($single : Mojo::Content::Single, $options : object[] = undef) {
+  private static method new_from_single : Mojo::Content::MultiPart ($single : Mojo::Content::Single) {
     
     my $self = Mojo::Content::MultiPart->new;
     
