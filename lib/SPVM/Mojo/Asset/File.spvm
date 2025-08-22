@@ -54,14 +54,8 @@ class Mojo::Asset::File extends Mojo::Asset {
   
   has tmpdir : rw string
     get {
-      unless ($self->{tmpdir}) {
-        my $env_tmpdir = length(my $_ = Sys->env("SPVM_MOJO_TMPDIR")) ? (int)$_ : -1;
-        
-        $self->{tmpdir} = $env_tmpdir;
-        
-        unless ($self->{tmpdir}) {
-          $self->{tmpdir} = File::Spec->tmpdir;
-        }
+      unless (exists $self->{tmpdir}) {
+        $self->{tmpdir} = length(my $_ = Sys->env("SPVM_MOJO_TMPDIR")) ? (string)$_ : File::Spec->tmpdir;
       }
       
       return $self->{tmpdir};
