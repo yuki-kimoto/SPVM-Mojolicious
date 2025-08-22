@@ -39,7 +39,7 @@ class Mojo::Message extends Mojo::EventEmitter {
   has max_message_size : rw int
     get {
       unless (exists $self->{max_message_size}) {
-        my $env_max_message_size = length(my $_ = Sys->env("SPVM_MOJO_MAX_MESSAGE_SIZE")) ? (int)$_ : 16777216;
+        $self->{max_message_size} = length(my $_ = Sys->env("SPVM_MOJO_MAX_MESSAGE_SIZE")) ? (int)$_ : 16777216;
       }
       
       return $self->{max_message_size};

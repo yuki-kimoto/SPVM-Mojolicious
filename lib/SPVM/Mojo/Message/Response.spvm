@@ -82,9 +82,15 @@ class Mojo::Message::Response extends Mojo::Message {
   
   has message : rw string;
   
-  protected method MAX_MESSAGE_SIZE_DEFAULT : int () {
-    return 2147483647;
-  }
+  has max_message_size : rw int
+    get {
+      unless (exists $self->{max_message_size}) {
+        $self->{max_message_size} = length(my $_ = Sys->env("SPVM_MOJO_MAX_MESSAGE_SIZE")) ? (int)$_ : 2147483647;
+      }
+      
+      return $self->{max_message_size};
+    }  
+  ;
   
   # Undocumented Fields
   has start_buffer : string;
