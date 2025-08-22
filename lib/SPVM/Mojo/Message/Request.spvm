@@ -10,6 +10,11 @@ class Mojo::Message::Request extends Mojo::Message {
   use Mojo::URL;
   use Hash;
   
+  # Class Variables
+  our $seed : string;
+  
+  our $counter : int;
+  
   # Fields
   has env : rw Hash of string
     get {
@@ -45,7 +50,26 @@ class Mojo::Message::Request extends Mojo::Message {
     }
   ;
   
-  has request_id : int;
+  has request_id : rw string
+    get {
+      unless (exists $self->{request_id}) {
+        $seed    = Sys->process_id . Sys->time . Sys->rand;
+        $counter = (int)Sys->rand(0xffffff);
+        
+        my $b64 = Fn->substr(Digest::SHA->sha1_base64($seed . ($counter = ($counter + 1) % 0xffffff)), 0, 12);
+        
+        Re->s(my $_ = [$b64], "+", "-");
+        $b64 = $_->[0];
+        
+        Re->s(my $_ = [$b64], "/", "_");
+        $b64 = $_->[0];
+        
+        $self->{request_id} = $b64;
+      }
+      
+      return $self->{request_id};
+    }
+  ;
   
   has trusted_proxies : rw string[]
     get {
