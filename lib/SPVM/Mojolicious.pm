@@ -62,6 +62,8 @@ Most tests are not written.
 
 =item * L<Mojo::Message|SPVM::Mojo::Message>
 
+=item * L<Mojo::Upload|SPVM::Mojo::Upload>
+
 =back
 
 =head1 Porting

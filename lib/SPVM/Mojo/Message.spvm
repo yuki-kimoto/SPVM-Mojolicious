@@ -345,12 +345,11 @@ class Mojo::Message extends Mojo::EventEmitter {
     
     my $uploads = List->new(new Mojo::Upload[0]);
     for my $data (@{$self->_parse_formdata(1)}) {
-      my $upload = Mojo::Upload->new({
-        name     => $data->(object[])->[0],
-        filename => $data->(object[])->[2],
-        asset    => $data->(object[])->[1]->(Mojo::Content::Single)->asset,
-        headers  => $data->(object[])->[1]->(Mojo::Content)->headers
-      });
+      my $upload = Mojo::Upload->new;
+      $upload->set_name($data->(object[])->[0]->(string));
+      $upload->set_filename($data->(object[])->[2]->(string));
+      $upload->set_asset($data->(object[])->[1]->(Mojo::Content::Single)->asset);
+      $upload->set_headers($data->(object[])->[1]->(Mojo::Content)->headers);
       $uploads->push($upload);
     }
     
