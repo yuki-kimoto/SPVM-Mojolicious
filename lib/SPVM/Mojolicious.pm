@@ -60,6 +60,8 @@ Most tests are not written.
 
 =item * L<Mojo::Content::MultiPart|SPVM::Mojo::Content::MultiPart>
 
+=item * L<Mojo::Message|SPVM::Mojo::Message>
+
 =back
 
 =head1 Porting

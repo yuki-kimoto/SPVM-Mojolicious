@@ -85,10 +85,6 @@ class Mojo::Message extends Mojo::EventEmitter {
     $self->{buffer} = "";
   }
   
-  method content_v0 : string () {
-    return $self->{content_buffer}->to_string;
-  }
-  
   method body : string () {
     
     my $content = $self->content;
@@ -106,7 +102,6 @@ class Mojo::Message extends Mojo::EventEmitter {
       $asset->add_chunk($body);
       $content->set_asset($asset);
     }
-    
   }
   
   method body_params : Mojo::Parameters () {
@@ -132,10 +127,6 @@ class Mojo::Message extends Mojo::EventEmitter {
     }
     
     return $params;
-  }
-  
-  method _parse_formdata : object[] ($upload : int = 0) {
-    
   }
   
   method body_size : int () {
@@ -318,7 +309,7 @@ class Mojo::Message extends Mojo::EventEmitter {
     }
   }
   
-  method _limit : void ($message : string) {
+  private method _limit : void ($message : string) {
     ++$self->{limit};
     die $message;
   }
@@ -365,7 +356,11 @@ class Mojo::Message extends Mojo::EventEmitter {
     return $uploads->to_array->(Mojo::Upload[]);
   }
   
-  method _build : string ($method : string) {
+  private method _parse_formdata : object[] ($upload : int = 0) {
+    
+  }
+  
+  private method _build : string ($method : string) {
     
     my $buffer = StringBuffer->new;
     my $offset = 0;
@@ -401,7 +396,7 @@ class Mojo::Message extends Mojo::EventEmitter {
     return $buffer->to_string;
   }
   
-  method _cache : object ($method : string, $all : int, $name : string) {
+  private method _cache : object ($method : string, $all : int, $name : string) {
     
     # Cache objects by name
     my $caches = (Hash)$self->{_cache}->get($method);
