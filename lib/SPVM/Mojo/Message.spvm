@@ -13,6 +13,7 @@ class Mojo::Message extends Mojo::EventEmitter {
   use Mojo::Parameters;
   use Mojo::Upload;
   use JSON;
+  use Mojo::Content::MultiPart;
   
   # Fields
   has content : rw Mojo::Content
@@ -358,6 +359,55 @@ class Mojo::Message extends Mojo::EventEmitter {
   
   private method _parse_formdata : object[] ($upload : int = 0) {
     
+    my $formdata = (List of string|Mojo::Content)List->new;
+    my $content = $self->content;
+    unless ($content->is_multipart) {
+      return $formdata->to_array;
+    }
+    
+    # Check all parts recursively
+    my $parts = (List of Mojo::Content)List->new(new Mojo::Content[0]);
+    $parts->push($content);
+    
+    while (my $part = (Mojo::Content)$parts->shift) {
+      
+      if ($part->is_multipart) {
+        $parts->unshift_($part->(Mojo::Content::MultiPart)->parts);
+        next;
+      }
+      
+      my $disposition = $part->headers->content_disposition;
+      unless ($disposition) {
+        next;
+      }
+      
+      my $filename = (string)undef;
+      if (my $m = Re->m($disposition, "[; ]filename=\"((?:\\\\\"|[^\"])*)\"")) {;
+        $filename = $m->cap1;
+      }
+      
+      if ($upload && !$filename || !$upload && $filename) {
+        next;
+      }
+      
+      my $name = (string)undef;
+      if (my $m = Re->m($disposition, "[; ]name=\"((?:\\\\\"|[^;\"])*)\"")) {
+        $name = $m->cap1;
+      }
+      
+      if (!$name) {
+        next;
+      }
+      
+      my $part_string = (string)undef;
+      unless ($upload) {
+        $part_string = $part->(Mojo::Content::Single)->asset->slurp;
+      }
+      
+      $formdata->push([(object)$name, $part_string, $filename]);
+    }
+    
+    return $formdata->to_array;
   }
   
   private method _build : string ($method : string) {
