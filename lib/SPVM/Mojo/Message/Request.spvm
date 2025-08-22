@@ -104,6 +104,7 @@ class Mojo::Message::Request extends Mojo::Message {
     return $self;
   }
   
+  # Instance Methods
   method clone : Mojo::Message::Request () {
     
     # Dynamic requests cannot be cloned
@@ -335,9 +336,9 @@ class Mojo::Message::Request extends Mojo::Message {
     
   }
   
-  static method _basic : string ($proxy_authorization : string) { $proxy_authorization && (my $_ = Re->m($proxy_authorization, "Basic (.+)$")) ? Mojo::Util->b64_decode($_->cap1) : undef; }
+  private static method _basic : string ($proxy_authorization : string) { $proxy_authorization && (my $_ = Re->m($proxy_authorization, "Basic (.+)$")) ? Mojo::Util->b64_decode($_->cap1) : undef; }
   
-  method _parse_env : void ($env : Hash of string) {
+  private method _parse_env : void ($env : Hash of string) {
     
     # Bypass normal message parser
     $self->{state} = "cgi";
@@ -430,7 +431,7 @@ class Mojo::Message::Request extends Mojo::Message {
     }
   }
   
-  method _start_line : void () {
+  private method _start_line : void () {
     
     if ($self->{start_buffer}) {
       return;
