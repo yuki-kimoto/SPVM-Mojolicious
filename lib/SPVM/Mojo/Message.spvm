@@ -15,7 +15,15 @@ class Mojo::Message extends Mojo::EventEmitter {
   use JSON;
   
   # Fields
-  has content : ro Mojo::Content;
+  has content : rw Mojo::Content
+    get {
+      unless (exists $self->{content}) {
+        $self->{content} = Mojo::Content::Single->new;
+      }
+      
+      return $self->{content};
+    }
+  ;
   
   has max_line_size : rw int
     get {
@@ -37,7 +45,15 @@ class Mojo::Message extends Mojo::EventEmitter {
     }  
   ;
   
-  has version : ro string;
+  has version : rw string
+    get {
+      unless (exists $self->{version}) {
+        $self->{version} = "1.1";
+      }
+      
+      return $self->{version};
+    }
+  ;
   
   has error : ro Hash;
   
@@ -67,10 +83,6 @@ class Mojo::Message extends Mojo::EventEmitter {
   protected method init : void ($options : object[] = undef) {
     
     my $options_h = Hash->new($options);
-    
-    $self->{version} //= "1.1";
-    
-    $self->{content} = Mojo::Content::Single->new;
     
     $self->{_cache} = Hash->new;
     
