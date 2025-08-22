@@ -55,8 +55,6 @@ class Mojo::Message extends Mojo::EventEmitter {
     }
   ;
   
-  has error : ro Hash;
-  
   # Undocumented Fields
   has state : string;
   
@@ -167,13 +165,6 @@ class Mojo::Message extends Mojo::EventEmitter {
   
   method cookies : Mojo::Cookie[] () { die "Not implemented."; }
   
-  method set_error : void ($error : Hash) {
-    
-    $self->{error} = $error;
-    
-    $self->finish;
-  }
-  
   method every_cookie : Mojo::Cookie[] ($name : string) {
     return (Mojo::Cookie[])$self->_cache("cookies", 1, $name);
   }
@@ -267,10 +258,6 @@ class Mojo::Message extends Mojo::EventEmitter {
   
   method parse : void ($chunk : string) {
     
-    if ($self->{error}) {
-      return;
-    }
-    
     $self->{raw_size} += length $chunk;
     
     $self->{buffer} .= $chunk;
@@ -333,7 +320,6 @@ class Mojo::Message extends Mojo::EventEmitter {
   
   method _limit : void ($message : string) {
     ++$self->{limit};
-    $self->set_error(Hash->new({message => $message}));
     die $message;
   }
   

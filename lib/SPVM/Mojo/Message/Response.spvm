@@ -138,9 +138,7 @@ class Mojo::Message::Response extends Mojo::Message {
     
     my $_ = Re->m($start_line, "^\s*HTTP/(\d\.\d)\s+(\d\d\d)\s*(.+)?$");
     unless ($_) {
-      $self->set_error(Hash->new({message => "Bad response start-line"}));
       die "Bad response start-line";
-      return 0;
     }
     
     my $version = $_->cap1;

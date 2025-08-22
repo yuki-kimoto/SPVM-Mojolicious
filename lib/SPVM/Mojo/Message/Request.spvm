@@ -127,9 +127,7 @@ class Mojo::Message::Request extends Mojo::Message {
     # We have a (hopefully) full request-line
     my $_ = Re->m($start_line, "^(\S+)\s+(\S+)\s+HTTP\/(\d\.\d)$");
     unless ($_) {
-      $self->set_error(Hash->new({message => "Bad request start-line"}));
-      
-      return 0;
+      die "Bad request start-line";
     }
     
     my $method = $_->cap1;
