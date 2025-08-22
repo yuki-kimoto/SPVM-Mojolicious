@@ -1,4 +1,4 @@
-# Copyright (c) 2023 [--user-name]
+# Copyright (c) 2023 Yuki Kimoto
 # MIT License
 
 class Mojo::Message extends Mojo::EventEmitter {
@@ -21,14 +21,8 @@ class Mojo::Message extends Mojo::EventEmitter {
   
   method max_line_size : int () {
     
-    unless ($self->{max_line_size} > -1) {
-      my $env_max_line_size = length(my $_ = Sys->env("SPVM_MOJO_MAX_LINE_SIZE")) ? (int)$_ : -1;
-      
-      $self->{max_line_size} = $env_max_line_size;
-      
-      unless ($self->{max_line_size} > -1) {
-        $self->{max_line_size} = 8192;
-      }
+    unless (exists $self->{max_line_size}) {
+      $self->{max_line_size} = length(my $_ = Sys->env("SPVM_MOJO_MAX_LINE_SIZE")) ? (int)$_ : 8192;
     }
     
     return $self->{max_line_size};
@@ -38,21 +32,11 @@ class Mojo::Message extends Mojo::EventEmitter {
   
   method max_message_size : int () {
     
-    unless ($self->{max_message_size} > -1) {
-      my $env_max_message_size = length(my $_ = Sys->env("SPVM_MOJO_MAX_MESSAGE_SIZE")) ? (int)$_ : -1;
-      
-      $self->{max_message_size} = $env_max_message_size;
-      
-      unless ($self->{max_message_size} > -1) {
-        $self->{max_message_size} = $self->MAX_MESSAGE_SIZE_DEFAULT;
-      }
+    unless (exists $self->{max_message_size}) {
+      my $env_max_message_size = length(my $_ = Sys->env("SPVM_MOJO_MAX_MESSAGE_SIZE")) ? (int)$_ : 16777216;
     }
     
     return $self->{max_message_size};
-  }
-  
-  protected method MAX_MESSAGE_SIZE_DEFAULT : int () {
-    return 16777216;
   }
   
   has version : ro string;
@@ -87,10 +71,6 @@ class Mojo::Message extends Mojo::EventEmitter {
     my $options_h = Hash->new($options);
     
     $self->{version} //= "1.1";
-    
-    $self->{max_message_size} = -1;
-    
-    $self->{max_line_size} = -1;
     
     $self->{content} = Mojo::Content::Single->new;
     
