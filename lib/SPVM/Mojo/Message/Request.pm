@@ -14,8 +14,6 @@ Mojo::Message::Request class in L<SPVM> is a container for HTTP requests, based 
 L<RFC 7231|https://tools.ietf.org/html/rfc7231>, L<RFC 7235|https://tools.ietf.org/html/rfc7235> and L<RFC
 2817|https://tools.ietf.org/html/rfc2817>.
 
-This class is a private class.
-
 =head1 Usage
 
   use Mojo::Message::Request;
