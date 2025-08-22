@@ -102,12 +102,6 @@ class Mojo::Message::Response extends Mojo::Message {
     
     $self->SUPER::init;
     
-    $self->{content_buffer} = StringBuffer->new;
-    
-    $self->{content} = Mojo::Content::Single->new;
-    
-    $self->content->set_headers(Mojo::Headers->new);
-    
     return $self;
   }
   

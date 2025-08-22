@@ -6,21 +6,33 @@ package SPVM::Mojo::Message::Response;
 
 =head1 Name
 
-SPVM::Mojo::Message::Response - HTTP Response
+SPVM::Mojo::Message::Response - HTTP response
 
 =head1 Description
 
-The Mojo::Message::Response class of L<SPVM> has methods to manipulate HTTP responses.
+Mojo::Message::Response class in L<SPVM> is a container for HTTP responses, based on L<RFC 7230|https://tools.ietf.org/html/rfc7230>
+and L<RFC 7231|https://tools.ietf.org/html/rfc7231>.
 
 =head1 Usage
   
-  my $response = Mojo->new->get('http://example.com/');
+  use Mojo::Message::Response;
   
-  my $success = $response->success;
+  # Parse
+  my $res = Mojo::Message::Response->new;
+  $res->parse("HTTP/1.0 200 OK\x0d\x0a");
+  $res->parse("Content-Length: 12\x0d\x0a");
+  $res->parse("Content-Type: text/plain\x0d\x0a\x0d\x0a");
+  $res->parse('Hello World!');
+  say $res->code;
+  say $res->headers->content_type;
+  say $res->body;
   
-  my $status = $response->status;
-  
-  my $content = $response->content;
+  # Build
+  my $res = Mojo::Message::Response->new;
+  $res->set_code(200);
+  $res->headers->set_content_type("text/plain");
+  $res->set_body("Hello World!");
+  say $res->to_string;
 
 =head1 Inheritance
 
@@ -28,29 +40,24 @@ L<Mojo::Message|SPVM::Mojo::Message>
 
 =head1 Fields
 
-=head2 protocol
+=head2 code
 
-C<has protocol : ro string;>
+C<has code: rw int;>
 
-The protocol of the HTTP response.
+HTTP response status code.
 
-=head2 status
+=head2 max_message_size
 
-C<has status : ro string;>
+C<has max_message_size : rw int>
 
-The status code of the HTTP response.
+Maximum message size in bytes, defaults to the value of the C<MOJO_MAX_MESSAGE_SIZE> environment variable or
+C<2147483648> (2GiB). Setting the value to C<0> will allow messages of indefinite size.
 
-=head2 success
+=head2 message
 
-C<has success : ro byte;>
+C<has message : rw string;>
 
-The success field of the response will be true if the status code is 2XX.
-
-=head2 reason
-
-C<has reason : ro string;>
-
-The reason of the status code of the HTTP response.
+HTTP response status message.
 
 =head1 Instance Methods
 
