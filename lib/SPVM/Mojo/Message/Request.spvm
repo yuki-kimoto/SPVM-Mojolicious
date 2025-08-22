@@ -73,24 +73,9 @@ class Mojo::Message::Request extends Mojo::Message {
   has start_buffer : string;
   
   # Class Methods
-  static method new : Mojo::Message::Request ($options : object[] = undef) {
-    
-    my $options_h = Hash->new($options);
+  static method new : Mojo::Message::Request () {
     
     my $self = new Mojo::Message::Request;
-    
-    $self->SUPER::init;
-    
-    $self->{content} = Mojo::Content::Single->new;
-    
-    my $headers = (Mojo::Headers)$options_h->get_or_default("headers", undef);
-    if ($headers) {
-      $self->content->set_headers($headers);
-    }
-    
-    for my $name (@{$options_h->keys}) {
-      die "The \"$name\" option is not available.";
-    }
     
     return $self;
   }
