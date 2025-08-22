@@ -17,27 +17,25 @@ class Mojo::Message extends Mojo::EventEmitter {
   # Fields
   has content : ro Mojo::Content;
   
-  has max_line_size : wo int;
-  
-  method max_line_size : int () {
-    
-    unless (exists $self->{max_line_size}) {
-      $self->{max_line_size} = length(my $_ = Sys->env("SPVM_MOJO_MAX_LINE_SIZE")) ? (int)$_ : 8192;
+  has max_line_size : rw int
+    get {
+      unless (exists $self->{max_line_size}) {
+        $self->{max_line_size} = length(my $_ = Sys->env("SPVM_MOJO_MAX_LINE_SIZE")) ? (int)$_ : 8192;
+      }
+      
+      return $self->{max_line_size};
     }
-    
-    return $self->{max_line_size};
-  }
+  ;
   
-  has max_message_size : wo int;
-  
-  method max_message_size : int () {
-    
-    unless (exists $self->{max_message_size}) {
-      my $env_max_message_size = length(my $_ = Sys->env("SPVM_MOJO_MAX_MESSAGE_SIZE")) ? (int)$_ : 16777216;
-    }
-    
-    return $self->{max_message_size};
-  }
+  has max_message_size : rw int
+    get {
+      unless (exists $self->{max_message_size}) {
+        my $env_max_message_size = length(my $_ = Sys->env("SPVM_MOJO_MAX_MESSAGE_SIZE")) ? (int)$_ : 16777216;
+      }
+      
+      return $self->{max_message_size};
+    }  
+  ;
   
   has version : ro string;
   
