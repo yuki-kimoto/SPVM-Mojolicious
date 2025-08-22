@@ -26,6 +26,10 @@ Most tests are not written.
 
 =item * L<Mojo::Asset|SPVM::Mojo::Asset>
 
+=item * L<Mojo::Asset::File|SPVM::Mojo::Asset::File>
+
+=item * L<Mojo::Asset::Memory|SPVM::Mojo::Asset::Memory>
+
 =item * L<Mojo::Cookie|SPVM::Mojo::Cookie>
 
 =item * L<Mojo::Cookie::Request|SPVM::Mojo::Cookie::Request>
