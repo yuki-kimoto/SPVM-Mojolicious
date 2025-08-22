@@ -67,17 +67,10 @@ class Mojo::Asset::File extends Mojo::Asset {
     
     my $self = new Mojo::Asset::File;
     
-    $self->init;
-    
     return $self;
   }
   
   # Instance Methods
-  protected method init : void () {
-    
-    $self->SUPER::init;
-  }
-  
   method add_chunk : Mojo::Asset::File ($chunk : string) {
     
     my $handle = $self->handle;

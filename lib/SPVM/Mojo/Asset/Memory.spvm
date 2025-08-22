@@ -48,10 +48,7 @@ class Mojo::Asset::Memory extends Mojo::Asset {
   # Instance Methods
   protected method init : void () {
     
-    $self->SUPER::init;
-    
     $self->{content_buffer} = StringBuffer->new;
-    
   }
   
   method add_chunk : Mojo::Asset ($chunk : string) {
