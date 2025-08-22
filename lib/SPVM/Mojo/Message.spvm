@@ -80,9 +80,7 @@ class Mojo::Message extends Mojo::EventEmitter {
   has content_buffer : rw StringBuffer;
   
   # Instance Methods
-  protected method init : void ($options : object[] = undef) {
-    
-    my $options_h = Hash->new($options);
+  protected method init : void () {
     
     $self->{_cache} = Hash->new;
     
