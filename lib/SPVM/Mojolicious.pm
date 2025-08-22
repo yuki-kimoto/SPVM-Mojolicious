@@ -62,6 +62,10 @@ Most tests are not written.
 
 =item * L<Mojo::Message|SPVM::Mojo::Message>
 
+=item * L<Mojo::Message::Request|SPVM::Mojo::Message::Request>
+
+=item * L<Mojo::Message::Response|SPVM::Mojo::Message::Response>
+
 =item * L<Mojo::Upload|SPVM::Mojo::Upload>
 
 =back

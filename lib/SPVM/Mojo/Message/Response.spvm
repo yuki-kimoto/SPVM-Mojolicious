@@ -220,8 +220,8 @@ class Mojo::Message::Response extends Mojo::Message {
   method is_success : int () { return $self->_status_class([200]); }
   
   method start_line_size : int () { return length ($self->_start_line, $self->{start_buffer}); }
- 
-  method _start_line : void () {
+  
+  private method _start_line : void () {
     
     if ($self->{start_buffer}) {
       return;
@@ -235,7 +235,7 @@ class Mojo::Message::Response extends Mojo::Message {
     $self->{start_buffer} = "HTTP/$version $code $msg\x0d\x0a";
   }
   
-  method _status_class : int ($codes : int[]) {
+  private method _status_class : int ($codes : int[]) {
     
     my $self_code = $self->code;
     
