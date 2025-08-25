@@ -42,7 +42,14 @@ class Mojo::Transaction extends Mojo::EventEmitter {
   
   has completed : byte;
   
-  has connection : ro int;
+  has connection : rw int
+    set {
+      
+      $self->{connection} = $_;
+      
+      $self->emit(connection => $_);
+    }
+  ;
   
   # The handle is stored in a transaction object instead that Mojolicious stores it in a user agent object.
   has handle : rw IO::Socket;
@@ -75,14 +82,6 @@ class Mojo::Transaction extends Mojo::EventEmitter {
   
   method completed : void () {
     $self->{completed} = 1;
-  }
-  
-  method set_connection : void ($id : int) {
-    
-    $self->{connection} = $id;
-    
-    $self->emit(connection => $id);
-    
   }
   
   method is_finished : int () {
