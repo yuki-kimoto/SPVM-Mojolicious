@@ -442,25 +442,25 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     }
     else {
       
-      my $tx_ = (Mojo::Transaction::HTTP)$tx;
+      my $tx = (Mojo::Transaction::HTTP)$tx;
       
       # Disable collecting the cookies temporalily
-      # $self->cookie_jar->collect($tx_);
+      # $self->cookie_jar->collect($tx);
       
       # Upgrade connection to WebSocket
-      if (my $ws_tx = $self->transactor->upgrade($tx_)) {
-        $ws_tx->client_read($tx_->res->content->leftovers);
+      if (my $ws_tx = $self->transactor->upgrade($tx)) {
+        $ws_tx->client_read($tx->res->content->leftovers);
         return undef;
       }
       
       # CONNECT requests always have a follow-up request
-      unless (Fn->uc($tx_->req->method) eq "CONNECT") {
-        $self->_reuse($tx_) ;
+      unless (Fn->uc($tx->req->method) eq "CONNECT") {
+        $self->_reuse($tx) ;
       }
       
-      $tx_ = $self->_redirect($tx_);
+      $tx = $self->_redirect($tx);
       
-      return $tx_;
+      return $tx;
     }
   }
   

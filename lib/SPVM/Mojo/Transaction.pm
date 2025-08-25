@@ -6,7 +6,7 @@ package SPVM::Mojo::Transaction;
 
 =head1 Name
 
-SPVM::Mojo::Transaction - Short Description
+SPVM::Mojo::Transaction - Transaction base class
 
 =head1 Description
 
@@ -14,23 +14,13 @@ Mojo::Transaction class in L<SPVM> has methods to do someting.
 
 =head1 Usage
 
-  use Mojo::Transaction;
-
-=head1 Details
-
-
-
+  class Mojo::Transaction::MyTransaction extends Mojo::Transaction {
+  
+  }
+  
 =head1 Super Class
 
-
-
-=head1 Interfaces
-
-
-
-=head1 Enumerations
-
-
+L<Mojo::EventEmitter|SPVM::Mojo::EventEmitter>
 
 =head1 Fields
 
