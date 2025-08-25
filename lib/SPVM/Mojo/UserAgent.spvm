@@ -60,6 +60,9 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
   
   has keep_alive_sockets_list : List of object[]; # endpoint and socket pairs 
   
+  # Undocumented Fields
+  has connections_h : Hash of IO::Socket;
+  
   # Class Methods
   static method new : Mojo::UserAgent () {
     
@@ -92,6 +95,8 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     $self->{transactor} = Mojo::UserAgent::Transactor->new;
     
     $self->{keep_alive_sockets_list} = List->new(new object[0]);
+    
+    $self->{connections_h} = (Hash of IO::Socket)Hash->new;
     
     return $self;
   }
