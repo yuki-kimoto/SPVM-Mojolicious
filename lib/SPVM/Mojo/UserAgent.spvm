@@ -259,7 +259,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
           $tx->set_kept_alive(1) ;
         }
         
-        $tx->set_handle($handle);
+        $tx->{handle} = $handle;
         
         $self->_process($tx);
         
@@ -348,7 +348,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
       }
     }
     
-    $tx->set_handle($handle);
+    $tx->{handle} = $handle;
     
     if (&DEBUG) {
       warn "-- Connect ($proto://$host:$port)";
@@ -361,7 +361,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     
     my $req = $tx->req;
     
-    my $handle = $tx->handle;
+    my $handle = $tx->{handle};
     
     my $start_line = $req->build_start_line;
     
@@ -377,7 +377,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
   private method read_response : void ($tx : Mojo::Transaction::HTTP) {
     my $res = Mojo::Message::Response->new;
     
-    my $handle = $tx->handle;
+    my $handle = $tx->{handle};
     
     while (1) {
       my $chunk = (mutable string)new_string_len &READ_BUFFER_SIZE;
@@ -484,7 +484,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     
     $self->_dequeue($endpoint);
     
-    $keep_alive_sockets_list->push([(object)$endpoint, $tx->handle]);
+    $keep_alive_sockets_list->push([(object)$endpoint, $tx->{handle}]);
   }
   
   method _connect_proxy : Mojo::Transaction::HTTP ($old : Mojo::Transaction::HTTP) {
@@ -521,7 +521,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
   
   method _process : void ($tx : Mojo::Transaction::HTTP) {
     
-    my $handle = $tx->handle;
+    my $handle = $tx->{handle};
     
     unless ($handle isa IO::Socket::UNIX) {
       my $handle_ip = (IO::Socket::IP)$handle;
