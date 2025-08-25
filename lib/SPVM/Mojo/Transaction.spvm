@@ -57,7 +57,7 @@ class Mojo::Transaction extends Mojo::EventEmitter {
       return $addrs->[0];
     }
     
-    set ($remote_address : string) {
+    set {
       
       $self->{original_remote_address} = $_;
     }
