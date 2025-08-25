@@ -42,7 +42,7 @@ class Mojo::Transaction extends Mojo::EventEmitter {
   
   has completed : byte;
   
-  has connection : rw int
+  has connection : rw string
     set {
       
       $self->{connection} = $_;

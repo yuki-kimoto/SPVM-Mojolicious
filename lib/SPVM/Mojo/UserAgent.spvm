@@ -529,6 +529,8 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     
     my $handle = (IO::Socket)$self->{connections_h}->get(Fn->to_address($tx));
     
+    $tx->set_connection(Fn->to_address($tx));
+    
     unless ($handle isa IO::Socket::UNIX) {
       my $handle_ip = (IO::Socket::IP)$handle;
       $tx->set_local_address($handle_ip->sockhost);

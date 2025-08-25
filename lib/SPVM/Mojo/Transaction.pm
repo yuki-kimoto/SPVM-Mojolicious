@@ -22,10 +22,62 @@ Mojo::Transaction class in L<SPVM> has methods to do someting.
 
 L<Mojo::EventEmitter|SPVM::Mojo::EventEmitter>
 
+=head1 Events
+
+=head2 connection
+
+Emitted when a connection has been assigned to transaction.
+
+Examples:
+
+  $tx->on(connection => method : void ($tx : Mojo::Transaction, $connection : ) {...});
+
+=head2 finish
+
+Emitted when transaction is finished.
+
+Examples:
+
+  $tx->on(finish => method : void ($tx : Mojo::Transaction) {...});
+
 =head1 Fields
 
+=head2 kept_alive
 
+  has kept_alive : rw byte;
 
+=head2 local_address
+
+  has local_address : rw string;
+
+=head2 local_port
+
+  has local_port : rw int;
+
+=head2 original_remote_address
+
+  has original_remote_address : rw string;
+
+=head2 remote_port
+
+  has remote_port : rw int;
+
+=head2 req
+
+  has req : rw Mojo::Message::Request
+
+=head2 res
+
+  has res : rw Mojo::Message::Response
+
+=head2 completed
+
+  has completed : byte;
+
+=head2 connection
+
+  has connection : rw string
+  
 =head1 Class Methods
 
 

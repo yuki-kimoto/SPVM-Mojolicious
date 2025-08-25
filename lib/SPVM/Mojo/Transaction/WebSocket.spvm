@@ -95,7 +95,7 @@ class Mojo::Transaction::WebSocket extends Mojo::Transaction {
     $self->emit(finish => $code, $reason);
   }
   
-  method connection : int () { return $self->handshake->connection; }
+  method connection : string () { return $self->handshake->connection; }
   
   method finish : void ($code : int = 0, $reason : string = undef) {
     
