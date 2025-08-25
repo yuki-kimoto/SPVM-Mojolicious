@@ -264,7 +264,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
           $tx->set_kept_alive(1) ;
         }
         
-        $tx->{handle} = $handle;
+        $self->{connections_h}->set(Fn->to_address($tx) => $handle);
         
         $self->_process($tx);
         
@@ -353,7 +353,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
       }
     }
     
-    $tx->{handle} = $handle;
+    $self->{connections_h}->set(Fn->to_address($tx) => $handle);
     
     if (&DEBUG) {
       warn "-- Connect ($proto://$host:$port)";
@@ -366,7 +366,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     
     my $req = $tx->req;
     
-    my $handle = $tx->{handle};
+    my $handle = (IO::Socket)$self->{connections_h}->get(Fn->to_address($tx));
     
     my $start_line = $req->build_start_line;
     
@@ -382,7 +382,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
   private method read_response : void ($tx : Mojo::Transaction::HTTP) {
     my $res = Mojo::Message::Response->new;
     
-    my $handle = $tx->{handle};
+    my $handle = (IO::Socket)$self->{connections_h}->get(Fn->to_address($tx));
     
     while (1) {
       my $chunk = (mutable string)new_string_len &READ_BUFFER_SIZE;
@@ -489,7 +489,8 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     
     $self->_dequeue($endpoint);
     
-    $keep_alive_sockets_list->push([(object)$endpoint, $tx->{handle}]);
+    my $handle = (IO::Socket)$self->{connections_h}->get(Fn->to_address($tx));
+    $keep_alive_sockets_list->push([(object)$endpoint, $handle]);
   }
   
   method _connect_proxy : Mojo::Transaction::HTTP ($old : Mojo::Transaction::HTTP) {
@@ -526,7 +527,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
   
   method _process : void ($tx : Mojo::Transaction::HTTP) {
     
-    my $handle = $tx->{handle};
+    my $handle = (IO::Socket)$self->{connections_h}->get(Fn->to_address($tx));
     
     unless ($handle isa IO::Socket::UNIX) {
       my $handle_ip = (IO::Socket::IP)$handle;

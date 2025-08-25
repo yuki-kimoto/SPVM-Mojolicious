@@ -4,8 +4,6 @@
 class Mojo::Transaction::HTTP extends Mojo::Transaction {
   version_from Mojolicious;
   
-  allow Mojo::UserAgent;
-  
   use Mojo::Message::Response;
   use Mojo::Message::Request;
   use Mojo::Headers;
