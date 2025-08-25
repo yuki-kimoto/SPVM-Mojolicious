@@ -86,7 +86,9 @@ class Mojo::WebSocket {
 
   }
 
-  static method parse_frame : object[] ($buffer_ref : string[], $max : int) {
+  static method parse_frame : Mojo::WebSocket::Frame ($buffer_ref : string[], $max : int) {
+    
+    die "Not yet implemented.";
 =pod
     my ($buffer, $max) = @_;
 
