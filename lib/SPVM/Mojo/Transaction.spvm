@@ -18,6 +18,51 @@ class Mojo::Transaction extends Mojo::EventEmitter {
   
   has original_remote_address : rw string;
   
+  has remote_address : virtual rw string
+    get {
+      
+      unless ($self->req->reverse_proxy) {
+        return $self->original_remote_address;
+      }
+      
+      my $x_forwarded_for = $self->req->headers->header("X-Forwarded-For");
+      unless ($x_forwarded_for) {
+        $x_forwarded_for = "";
+      }
+      
+      my $addrs   = Re->split("\s*,\s*", $x_forwarded_for);
+      my $trusted = $self->req->trusted_proxies;
+      
+      unless (@$trusted) {
+        if (@$addrs) {
+          return $addrs->[@$addrs - 1];
+        }
+        else {
+          return $self->original_remote_address;
+        }
+      }
+      
+      $addrs = Array->merge_string($addrs, [$self->original_remote_address]);
+      
+      Fn->reverse_inplace($addrs);
+      
+      for my $addr (@$addrs) {
+        my $matches = Fn->grep([$addr : string] method : int ($_ : string) { return Mojo::Util->network_contains($_, $addr); }, $trusted);
+        
+        unless (@$matches) {
+          return $addr ;
+        }
+      }
+      
+      return $addrs->[0];
+    }
+    
+    set ($remote_address : string) {
+      
+      $self->{original_remote_address} = $_;
+    }
+  ;
+  
   has remote_port : rw int;
   
   has req : rw Mojo::Message::Request
@@ -40,8 +85,6 @@ class Mojo::Transaction extends Mojo::EventEmitter {
     }
   ;
   
-  has completed : byte;
-  
   has connection : rw string
     set {
       
@@ -50,6 +93,9 @@ class Mojo::Transaction extends Mojo::EventEmitter {
       $self->emit(connection => $_);
     }
   ;
+  
+  # Undocumented Fields
+  has completed : byte;
   
   # Class Methods
   static method new : Mojo::Transaction () {
@@ -88,49 +134,6 @@ class Mojo::Transaction extends Mojo::EventEmitter {
   
   method is_websocket : int () {
     die "Not implemented.";
-  }
-  
-  method remote_address : string () {
-    
-    unless ($self->req->reverse_proxy) {
-      return $self->original_remote_address;
-    }
-    
-    my $x_forwarded_for = $self->req->headers->header("X-Forwarded-For");
-    unless ($x_forwarded_for) {
-      $x_forwarded_for = "";
-    }
-    
-    my $addrs   = Re->split("\s*,\s*", $x_forwarded_for);
-    my $trusted = $self->req->trusted_proxies;
-    
-    unless (@$trusted) {
-      if (@$addrs) {
-        return $addrs->[@$addrs - 1];
-      }
-      else {
-        return $self->original_remote_address;
-      }
-    }
-    
-    $addrs = Array->merge_string($addrs, [$self->original_remote_address]);
-    
-    Fn->reverse_inplace($addrs);
-    
-    for my $addr (@$addrs) {
-      my $matches = Fn->grep([$addr : string] method : int ($_ : string) { return Mojo::Util->network_contains($_, $addr); }, $trusted);
-      
-      unless (@$matches) {
-        return $addr ;
-      }
-    }
-    
-    return $addrs->[0];
-  }
-  
-  method set_remote_address : void ($remote_address : string) {
-    
-    $self->{original_remote_address} = $remote_address;
   }
   
   method result : Mojo::Message::Response () {
