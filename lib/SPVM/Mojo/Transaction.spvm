@@ -133,7 +133,7 @@ class Mojo::Transaction extends Mojo::EventEmitter {
   }
   
   method is_websocket : int () {
-    die "Not implemented.";
+    return 0;
   }
   
   method result : Mojo::Message::Response () {
