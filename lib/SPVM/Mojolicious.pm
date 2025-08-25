@@ -68,6 +68,16 @@ Most tests are not written.
 
 =item * L<Mojo::Upload|SPVM::Mojo::Upload>
 
+=item * L<Mojo::Transaction|SPVM::Mojo::Transaction>
+
+=item * L<Mojo::Transaction::HTTP|SPVM::Mojo::Transaction::HTTP>
+
+=item * L<Mojo::Transaction::WebSocket|SPVM::Mojo::Transaction::WebSocket>
+
+=item * L<Mojo::WebSocket::Frame|SPVM::Mojo::WebSocket::Frame>
+
+=item * L<Mojo::WebSocket|SPVM::Mojo::WebSocket>
+
 =back
 
 =head1 Porting
