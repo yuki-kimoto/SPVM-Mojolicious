@@ -164,7 +164,7 @@ class Mojo::Transaction::WebSocket extends Mojo::Transaction {
     $self->handshake->resume;
   }
   
-  method send : void ($msg : object of string|object[]|Mojo::WebSocket::Frame, $cb : Callback = undef) {
+  method send : void ($msg : object of string|object[]|Mojo::WebSocket::Frame, $cb : Mojo::EventEmitter::Callback = undef) {
     
     if ($cb) {
       $self->once(drain => $cb);
@@ -187,7 +187,7 @@ class Mojo::Transaction::WebSocket extends Mojo::Transaction {
   }
   
   method parse_message : void ($frame : object[]) {
-    
+    die "Not yet supported.";
   }
   
   method server_write : string () {
