@@ -29,8 +29,6 @@ class Mojo::Transaction::HTTP extends Mojo::Transaction {
     
     $self->SUPER::init;
     
-    $self->{writing} = -1;
-    
     return $self;
   }
   
@@ -192,10 +190,6 @@ class Mojo::Transaction::HTTP extends Mojo::Transaction {
   
   method resume : void () {
     
-    if ($self->{writing} == -1) {
-      die "[Unexpected Error";
-    }
-    
     $self->{writing} = 1;
     
     $self->emit("resume");
@@ -219,7 +213,7 @@ class Mojo::Transaction::HTTP extends Mojo::Transaction {
   method _write : string ($server : int) {
     
     unless ($server) {
-      if ($self->{writing} == -1) {
+      unless (exists $self->{writing}) {
         $self->{writing} = 1;
       }
     }
