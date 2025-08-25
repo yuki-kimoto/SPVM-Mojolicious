@@ -245,13 +245,13 @@ Local interface port.
 
 =head2 parse_message
 
-C<method parse_message : void ($frame : object[]);>
+C<method parse_message : void ($frame : L<Mojo::WebSocket::Frame|SPVM::Mojo::WebSocket::Frame>);>
 
 Parse WebSocket message.
 
 Examples:
 
-  $ws->parse_message([(object)$fin, $rsv1, $rsv2, $rsv3, $op, $payload]);
+  $ws->parse_message($frame);
 
 =head2 protocol
 

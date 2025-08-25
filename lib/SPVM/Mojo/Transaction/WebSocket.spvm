@@ -186,7 +186,7 @@ class Mojo::Transaction::WebSocket extends Mojo::Transaction {
     $self->emit("resume");
   }
   
-  method parse_message : void ($frame : object[]) {
+  method parse_message : void ($frame : Mojo::WebSocket::Frame) {
     die "Not yet supported.";
   }
   
