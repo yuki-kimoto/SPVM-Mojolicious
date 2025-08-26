@@ -26,9 +26,25 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
   }
   
   # Fields
-  has ca : rw string;
+  has ca : rw string
+    get {
+      unless (exists $self->{ca}) {
+        $self->{ca} = length(my $_ = Sys->env("SPVM_MOJO_CA_FILE")) ? $_ : undef;
+      }
+      
+      return $self->{ca};
+    }
+  ;
   
-  has cert : rw string;
+  has cert : rw string
+    get {
+      unless (exists $self->{cert}) {
+        $self->{cert} = length(my $_ = Sys->env("SPVM_CERT_FILE")) ? $_ : undef;
+      }
+      
+      return $self->{cert};
+    }
+  ;
   
   has connect_timeout : rw double;
   
@@ -40,7 +56,15 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
   
   has max_response_size : rw int;
   
-  has key : rw string;
+  has key : rw string
+    get {
+      unless (exists $self->{key}) {
+        $self->{key} = length(my $_ = Sys->env("SPVM_MOJO_KEY_FILE")) ? $_ : undef;
+      }
+      
+      return $self->{key};
+    }
+  ;
   
   has max_connections : rw int;
   
@@ -79,12 +103,6 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     $self->{request_timeout} = length(my $_ = Sys->env("SPVM_MOJO_REQUEST_TIMEOUT")) ? (double)$_ : 0.0;
     
     $self->{max_connections} = 5;
-    
-    $self->{key} = length(my $_ = Sys->env("SPVM_MOJO_KEY_FILE")) ? $_ : undef;
-    
-    $self->{ca} = length(my $_ = Sys->env("SPVM_MOJO_CA_FILE")) ? $_ : undef;
-    
-    $self->{cert} = length(my $_ = Sys->env("SPVM_CERT_FILE")) ? $_ : undef;
     
     $self->{proxy} = Mojo::UserAgent::Proxy->new;
     
