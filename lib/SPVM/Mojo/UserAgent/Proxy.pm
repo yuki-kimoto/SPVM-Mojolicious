@@ -42,24 +42,40 @@ Domains that don't require a proxy server to be used.
 
 =head1 Class Methods
 
+C<static method new : L<Mojo::UserAgent::Proxy|SPVM::Mojo::UserAgent::Proxy> ();>
 
+Create a new L<Mojo::UserAgent::Proxy|SPVM::Mojo::UserAgent::Proxy> object, and return it.
 
 =head1 Instance Methods
 
+=head2 detect
 
+C<method detect : void ();>
+
+Check environment variables C<HTTP_PROXY>, C<http_proxy>, C<HTTPS_PROXY>, C<https_proxy>, C<NO_PROXY> and C<no_proxy>
+for proxy information. Automatic proxy detection can be enabled with the C<SPVM_MOJO_PROXY> environment variable.
+
+=head2 is_needed
+
+C<method is_needed : int ($domain : string) ;>
+
+Check if request for domain would use a proxy server.
+
+=head2 prepare
+
+C<method prepare : void ($tx : L<Mojo::Transaction::HTTP|SPVM::Mojo::Transaction::HTTP>);>
+
+Prepare proxy server information for transaction.
 
 =head1 See Also
 
+=over 2
 
+=item * L<Mojo::UserAgent|SPVM::Mojo::UserAgent>
 
+=item * L<SPVM::Mojolicious>
 
-=head1 Repository
-
-
-
-=head1 Author
-
-Yuki Kimoto C<kimoto.yuki@gmail.com>
+=back
 
 =head1 Copyright & License
 

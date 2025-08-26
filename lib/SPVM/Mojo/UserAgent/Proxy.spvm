@@ -74,7 +74,9 @@ class Mojo::UserAgent::Proxy {
   
   method prepare : void ($tx : Mojo::Transaction::HTTP) {
     
-    if (length Sys->env("SPVM_MOJO_PROXY")) {
+    my $env_mojo_proxy = length(my $_ = Sys->env("SPVM_MOJO_PROXY")) ? (int)$_ : 0;
+    
+    if ($env_mojo_proxy) {
       $self->detect;
     }
     
