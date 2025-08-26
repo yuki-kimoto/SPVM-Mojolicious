@@ -4,6 +4,9 @@
 class Mojo::UserAgent::Transactor::Endpoint {
   version_from Mojolicious;
   
+  # Interfaces
+  interface Stringable;
+  
   # Fields
   has protocol : rw string;
   
@@ -17,6 +20,18 @@ class Mojo::UserAgent::Transactor::Endpoint {
     my $self = new Mojo::UserAgent::Transactor::Endpoint;
     
     return $self;
+  }
+  
+  # Instance Methods
+  method to_string () {
+    
+    my $proto = $self->protocol;
+    my $host = $self->host;
+    my $port = $self->port;
+    
+    my $string = "$proto:$host:$port";
+    
+    return $string;
   }
   
 }

@@ -8,60 +8,71 @@ package SPVM::Mojo::UserAgent::Transactor::Endpoint;
 
 =head1 Name
 
-SPVM::Mojo::UserAgent::Transactor::Endpoint - Short Description
+SPVM::Mojo::UserAgent::Transactor::Endpoint - Transaction endpoint
 
 =head1 Description
 
-Mojo::UserAgent::Transactor::Endpoint class in L<SPVM> has methods to do someting.
+Mojo::UserAgent::Transactor::Endpoint class in L<SPVM> represents a transaction endpoint.
 
 =head1 Usage
 
   use Mojo::UserAgent::Transactor::Endpoint;
 
-=head1 Details
-
-
-
-=head1 Super Class
-
-
-
 =head1 Interfaces
 
+=over 2
 
+=item * L<Stringable|SPVM::Stringable>
 
-=head1 Enumerations
-
-
+=back
 
 =head1 Fields
 
+=head2 protocol
 
+C<has protocol : rw string;>
+
+A protocol.
+
+=head2 host
+
+C<has host : rw string;>
+
+A host.
+
+=head2 port
+
+C<has port : rw int;>
+
+A port.
 
 =head1 Class Methods
 
+=head2 new
 
+C<static method new : L<Mojo::UserAgent::Transactor::Endpoint|SPVM::Mojo::UserAgent::Transactor::Endpoint> ();>
+
+Create a new L<Mojo::UserAgent::Transactor::Endpoint|SPVM::Mojo::UserAgent::Transactor::Endpoint> object, and return it.
 
 =head1 Instance Methods
 
+=head2 to_string
 
+C<method to_string ();>
 
-=head1 Well Known Child Classes
-
-
+Return the endpoint to a string.
 
 =head1 See Also
 
+=over 2
 
+=item * L<Mojo::UserAgent::Transactor|SPVM::Mojo::UserAgent::Transactor>
 
+=item * L<Mojo::UserAgent|SPVM::Mojo::UserAgent>
 
-=head1 Repository
+=item * L<SPVM::Mojolicious>
 
-
-
-=head1 Author
-
-Yuki Kimoto C<kimoto.yuki@gmail.com>
+=back
 
 =head1 Copyright & License
 
