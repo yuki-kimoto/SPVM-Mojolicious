@@ -34,6 +34,14 @@ Mojo::UserAgent::CookieJar class in L<SPVM> is a minimalistic and relaxed cookie
     say $cookie->value;
   }
 
+=head1 Interfaces
+
+=over 2
+
+=item * L<Stringable|SPVM::Stringable>
+
+=back
+
 =head1 Fields
 
 =head2 ignore

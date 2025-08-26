@@ -21,6 +21,14 @@ Mojo::Cookie class in L<SPVM> an abstract base class for HTTP cookie containers,
     
   }
 
+=head1 Interfaces
+
+=over 2
+
+=item * L<Stringable|SPVM::Stringable>
+
+=back
+
 =head1 Fields
 
 =head2 name

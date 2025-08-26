@@ -9,6 +9,9 @@ class Mojo::UserAgent::CookieJar {
   use Mojo::Path;
   use Mojo::UserAgent::CookieJar::Callback::Ignore;
   
+  # Interfaces
+  interface Stringable;
+  
   # Class Variables
   our $COMMENT : string;
   INIT {
