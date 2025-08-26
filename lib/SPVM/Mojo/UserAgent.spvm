@@ -133,9 +133,39 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
   # TODO
   # has server : Mojo::UserAgent::Server;
   
-  has socket_options : rw object[];
+  has socket_options : rw Hash
+    get {
+      unless (exists $self->{socket_options}) {
+        $self->{socket_options} = Hash->new;
+      }
+      
+      return $self->{socket_options};
+    }
+    set ($_ : object of object[]|Hash) {
+      if ($_ isa object[]) {
+        $self->{socket_options} = Hash->new((object[])$_);
+      }
+      elsif ($_ isa Hash) {
+        $self->{socket_options} = (Hash)$_;
+      }
+      elsif (!$_) {
+        $self->{socket_options} = undef;
+      }
+      else {
+        die "socket_options option must be an any object array or a Hash object.";
+      }
+    }
+  ;
   
-  has tls_options : rw object[];
+  has tls_options : rw Hash
+    get {
+      unless (exists $self->{tls_options}) {
+        $self->{tls_options} = Hash->new;
+      }
+      
+      return $self->{tls_options};
+    }
+  ;
   
   has transactor : rw Mojo::UserAgent::Transactor;
   
@@ -358,7 +388,6 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
       $options_h->set(address => $host);
       $options_h->set(port => $port);
     }
-    $options_h->set(socket_options => $self->socket_options);
     
     # TLS
     my $tls = $proto eq "https";
@@ -379,11 +408,10 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
       $options_h->set(PeerPort => &_port($options_h));
       $options_h->delete("port");
       
-      my $socket_options = (object[])$options_h->get("socket_options");
+      my $socket_options = $self->socket_options;
       if ($socket_options) {
-        for (my $i = 0; $i < @$socket_options; $i += 2) {
-          my $key = (string)$socket_options->[$i];
-          my $value = $socket_options->[$i + 1];
+        for my $key (@{$socket_options->keys}) {
+          my $value = $socket_options->get($key);
           $options_h->set($key => $value);
         }
       }
