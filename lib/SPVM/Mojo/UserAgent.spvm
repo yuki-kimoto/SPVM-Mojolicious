@@ -249,9 +249,9 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     # Reuse connection
     {
       my $_ = $self->transactor->endpoint($tx);
-      my $proto = (string)$_->[0];
-      my $host = (string)$_->[1];
-      my $port = (int)$_->[2];
+      my $proto = $_->protocol;
+      my $host = $_->host;
+      my $port = $_->port;
       my $endpoint = "$proto:$host:$port";
       
       if ($handle = $self->_dequeue($endpoint)) {
@@ -280,9 +280,9 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     my $t = $self->transactor;
     
     my $_ = $t->peer($tx);
-    my $proto = (string)$_->[0];
-    my $host = (string)$_->[1];
-    my $port = (int)$_->[2];
+    my $proto = $_->protocol;
+    my $host = $_->host;
+    my $port = $_->port;
     
     unless ($proto eq "http" || $proto eq "https" || $proto eq "http+unix") {
       die "Unsupported protocol: $proto";
@@ -437,9 +437,9 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     
     if ($tx->is_websocket) {
       my $_ = $self->transactor->endpoint($tx);
-      my $proto = (string)$_->[0];
-      my $host = (string)$_->[1];
-      my $port = (int)$_->[2];
+      my $proto = $_->protocol;
+      my $host = $_->host;
+      my $port = $_->port;
       my $endpoint = "$proto:$host:$port";
       
       $self->_dequeue($endpoint);
@@ -482,9 +482,9 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     }
     
     my $_ = $self->transactor->endpoint($tx);
-    my $proto = (string)$_->[0];
-    my $host = (string)$_->[1];
-    my $port = (int)$_->[2];
+    my $proto = $_->protocol;
+    my $host = $_->host;
+    my $port = $_->port;
     my $endpoint = "$proto:$host:$port";
     
     $self->_dequeue($endpoint);

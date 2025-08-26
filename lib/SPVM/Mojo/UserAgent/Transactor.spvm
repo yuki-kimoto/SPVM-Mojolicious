@@ -75,7 +75,7 @@ class Mojo::UserAgent::Transactor {
     die "Not implemented.";
   }
   
-  private static method _proxy : object[] ($tx : Mojo::Transaction, $proto : string, $host : string, $port : int) {
+  private static method _proxy : Mojo::UserAgent::Transactor::Endpoint ($tx : Mojo::Transaction, $proto : string, $host : string, $port : int) {
     
     my $req = $tx->req;
     if ($req->via_proxy && (my $proxy = $req->proxy)) {
@@ -85,10 +85,20 @@ class Mojo::UserAgent::Transactor {
         $proxy_port = $proto eq "https" ? 443 : 80;
       }
       
-      return [(object)$proxy->protocol, $proxy->ihost, $proxy_port];
+      my $endpoint = Mojo::UserAgent::Transactor::Endpoint->new;
+      $endpoint->set_protocol($proxy->protocol);
+      $endpoint->set_host($proxy->ihost);
+      $endpoint->set_port($proxy_port);
+      
+      return $endpoint;
     }
     
-    return [(object)$proto, $host, $port];
+    my $endpoint = Mojo::UserAgent::Transactor::Endpoint->new;
+    $endpoint->set_protocol($proto);
+    $endpoint->set_host($host);
+    $endpoint->set_port($port);
+    
+    return $endpoint;
   }
   
   # Instance Methods
@@ -274,7 +284,7 @@ class Mojo::UserAgent::Transactor {
     return $new;
   }
   
-  method endpoint : object[] ($tx : Mojo::Transaction) {
+  method endpoint : Mojo::UserAgent::Transactor::Endpoint ($tx : Mojo::Transaction) {
     
     # Basic endpoint
     my $req   = $tx->req;
@@ -296,7 +306,12 @@ class Mojo::UserAgent::Transactor {
       return &_proxy($tx, $proto, $host, $port) ;
     }
     
-    return [(object)$proto, $host, $port];
+    my $endpoint = Mojo::UserAgent::Transactor::Endpoint->new;
+    $endpoint->set_protocol($proto);
+    $endpoint->set_host($host);
+    $endpoint->set_port($port);
+    
+    return $endpoint;
   }
   
   method upgrade : Mojo::Transaction::WebSocket ($tx : Mojo::Transaction::HTTP) {
@@ -322,12 +337,12 @@ class Mojo::UserAgent::Transactor {
     return $ws;
   }
   
-  method peer : object[] ($tx : Mojo::Transaction::HTTP) {
+  method peer : Mojo::UserAgent::Transactor::Endpoint ($tx : Mojo::Transaction::HTTP) {
     
-    my $_ = $self->endpoint($tx);
-    my $proto = (string)$_->[0];
-    my $host = (string)$_->[1];
-    my $port = (int)$_->[2];
+    my $endpoint = $self->endpoint($tx);
+    my $proto = $endpoint->protocol;
+    my $host = $endpoint->host;
+    my $port = $endpoint->port;
     
     return &_proxy($tx, $proto, $host, $port);
   }
