@@ -120,7 +120,15 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     }
   ;
   
-  has request_timeout : rw double;
+  has request_timeout : rw double
+    get {
+      unless (exists $self->{request_timeout}) {
+        $self->{request_timeout} = length(my $_ = Sys->env("SPVM_MOJO_REQUEST_TIMEOUT")) ? (double)$_ : 0.0;
+      }
+      
+      return $self->{request_timeout};
+    }
+  ;
   
   # TODO
   # has server : Mojo::UserAgent::Server;
@@ -145,8 +153,6 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     $self->{max_response_size} = -1;
     
     $self->{connect_timeout} = length(my $_ = Sys->env("SPVM_MOJO_CONNECT_TIMEOUT")) ? (double)$_ : 0.0;
-    
-    $self->{request_timeout} = length(my $_ = Sys->env("SPVM_MOJO_REQUEST_TIMEOUT")) ? (double)$_ : 0.0;
     
     $self->{transactor} = Mojo::UserAgent::Transactor->new;
     
