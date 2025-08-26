@@ -48,9 +48,25 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
   
   has connect_timeout : rw double;
   
-  has cookie_jar : rw Mojo::UserAgent::CookieJar;
+  has cookie_jar : rw Mojo::UserAgent::CookieJar
+    get {
+      unless (exists $self->{cookie_jar}) {
+        $self->{cookie_jar} = Mojo::UserAgent::CookieJar->new;
+      }
+      
+      return $self->{cookie_jar};
+    }
+  ;
   
-  has inactivity_timeout : rw double;
+  has inactivity_timeout : rw double
+    get {
+      unless (exists $self->{inactivity_timeout}) {
+        $self->{inactivity_timeout} = length(my $_ = Sys->env("SPVM_MOJO_INACTIVITY_TIMEOUT")) ? (double)$_ : 40.0;
+      }
+      
+      return $self->{inactivity_timeout};
+    }
+  ;
   
   has insecure : rw byte;
   
@@ -70,7 +86,15 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
   
   has max_redirects : rw int;
   
-  has proxy : rw Mojo::UserAgent::Proxy;
+  has proxy : rw Mojo::UserAgent::Proxy
+    get {
+      unless (exists $self->{proxy}) {
+        $self->{proxy} = Mojo::UserAgent::Proxy->new;
+      }
+      
+      return $self->{proxy};
+    }
+  ;
   
   has request_timeout : rw double;
   
@@ -98,15 +122,9 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     
     $self->{connect_timeout} = length(my $_ = Sys->env("SPVM_MOJO_CONNECT_TIMEOUT")) ? (double)$_ : 0.0;
     
-    $self->{inactivity_timeout} = length(my $_ = Sys->env("SPVM_MOJO_INACTIVITY_TIMEOUT")) ? (double)$_ : 0.0;
-    
     $self->{request_timeout} = length(my $_ = Sys->env("SPVM_MOJO_REQUEST_TIMEOUT")) ? (double)$_ : 0.0;
     
     $self->{max_connections} = 5;
-    
-    $self->{proxy} = Mojo::UserAgent::Proxy->new;
-    
-    $self->{cookie_jar} = Mojo::UserAgent::CookieJar->new;
     
     $self->{insecure} = (byte)(length(my $_ = Sys->env("SPVM_MOJO_INSECURE")) ? (int)$_ : 0);
     
