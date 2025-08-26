@@ -40,7 +40,7 @@ Generate query string, C<application/x-www-form-urlencoded> or C<multipart/form-
 
   $t->tx(PATCH => "http://example.com" => [(object)json => {a => "b"}]);
 
-Generate JSON content with L<Mojo::JSON>. See L</"tx"> for more.
+Generate JSON content with L<JSON|SPVM::JSON>. See L</"tx"> for more.
 
 =head2 multipart
 
@@ -79,7 +79,7 @@ Create a new L<Mojo::UserAgent::Transactor|SPVM::Mojo::UserAgent::Transactor> ob
 
 =head2 add_generator
 
-C<method add_generator : void ($name : string, $cb : Mojo::UserAgent::Transactor::Callback::Generator);>
+C<method add_generator : void ($name : string, $cb : L<Mojo::UserAgent::Transactor::Callback::Generator|SPVM::Mojo::UserAgent::Transactor::Callback::Generator>);>
 
 Register a content generator.
 
@@ -93,23 +93,19 @@ Not yet implemented.
 
 =head2 endpoint
 
-C<method endpoint : Mojo::UserAgent::Transactor::Endpoint ($tx : Mojo::Transaction);>
+C<method endpoint : L<Mojo::UserAgent::Transactor::Endpoint|SPVM::Mojo::UserAgent::Transactor::Endpoint> ($tx : Mojo::Transaction);>
 
 Actual endpoint for transaction.
 
-=head2 upgrade
-
-C<method upgrade : Mojo::Transaction::WebSocket ($tx : Mojo::Transaction::HTTP);>
-
 =head2 peer
 
-C<method peer : Mojo::UserAgent::Transactor::Endpoint ($tx : Mojo::Transaction::HTTP);>
+C<method peer : L<Mojo::UserAgent::Transactor::Endpoint|SPVM::Mojo::UserAgent::Transactor::Endpoint> ($tx : L<Mojo::Transaction::HTTP|SPVM::Mojo::Transaction::HTTP>);>
 
 Actual peer for transaction.
 
 =head2 proxy_connect
 
-C<method proxy_connect : Mojo::Transaction::HTTP ($old : Mojo::Transaction::HTTP);>
+C<method proxy_connect : L<Mojo::Transaction::HTTP|SPVM::Mojo::Transaction::HTTP> ($old : L<Mojo::Transaction::HTTP|SPVM::Mojo::Transaction::HTTP>);>
 
 =head2 promisify
 
@@ -117,16 +113,16 @@ Not yet implemented.
 
 =head2 redirect
 
-C<method redirect : Mojo::Transaction::HTTP ($old : Mojo::Transaction::HTTP);>
+C<method redirect : L<Mojo::Transaction::HTTP|SPVM::Mojo::Transaction::HTTP> ($old : L<Mojo::Transaction::HTTP|SPVM::Mojo::Transaction::HTTP>);>
 
-Build L<Mojo::Transaction::HTTP> follow-up request for C<301>, C<302>, C<303>, C<307> or C<308> redirect response if
+Build L<Mojo::Transaction::HTTP|SPVM::Mojo::Transaction::HTTP> follow-up request for C<301>, C<302>, C<303>, C<307> or C<308> redirect response if
 possible.
 
 =head2 tx
 
 C<method tx : Mojo::Transaction::HTTP ($method : string, $url : object of string|Mojo::URL, $args1 : object = undef, $args2 : object = undef);>
 
-Versatile general purpose L<Mojo::Transaction::HTTP> transaction builder for requests, with support for
+Versatile general purpose L<Mojo::Transaction::HTTP|SPVM::Mojo::Transaction::HTTP> transaction builder for requests, with support for
 L</"Generators">.
 
 Examples:
@@ -154,7 +150,7 @@ Examples:
   my $tx = $t->tx(PUT => "http://example.com");
   $tx->req->content->asset((my $_ = Mojo::Asset::File->new, $_->set_path("/foo.txt"), $_));
 
-The C<json> content generator uses L<Mojo::JSON> for encoding and sets the content type to C<application/json>.
+The C<json> content generator uses L<JSON|SPVM::JSON> for encoding and sets the content type to C<application/json>.
 
   # POST request with "application/json" content
   my $tx = $t->tx(POST => "http://example.com" => [(object)json => {a => "b", c => [1, 2, 3]]});
@@ -188,8 +184,8 @@ for file uploads.
   # POST request with multiple files sharing the same name
   my $tx = $t->tx(POST => "http://example.com" => [(object)form => {mytext => [{content => "first"}, {content => "second"}]]});
 
-The C<file> value should contain the path to the file you want to upload or an asset object, like L<Mojo::Asset::File>
-or L<Mojo::Asset::Memory>.
+The C<file> value should contain the path to the file you want to upload or an asset object, like L<Mojo::Asset::File|SPVM::Mojo::Asset::Memory>
+or L<Mojo::Asset::Memory|SPVM::Mojo::Asset::Memory>.
 
   # POST request with upload streamed from file
   my $tx = $t->tx(POST => "http://example.com" => [(object)form => {mytext => {file => "/foo.txt"}]});
@@ -250,7 +246,9 @@ as headers.
 
 =head2 upgrade
 
-Not yet implemented.
+C<method upgrade : L<Mojo::Transaction::WebSocket|SPVM::Mojo::Transaction::WebSocket> ($tx : L<Mojo::Transaction::HTTP|SPVM::Mojo::Transaction::HTTP>);>
+
+Build L<Mojo::Transaction::WebSocket|SPVM::Mojo::Transaction::WebSocket> follow-up transaction for WebSocket handshake if possible.
 
 =head1 See Also
 

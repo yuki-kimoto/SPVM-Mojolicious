@@ -58,7 +58,7 @@ Create a new L<Mojo::UserAgent::Transactor::Endpoint|SPVM::Mojo::UserAgent::Tran
 
 =head2 to_string
 
-C<method to_string ();>
+C<method to_string : string ();>
 
 Return the endpoint to a string.
 
