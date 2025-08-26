@@ -6,7 +6,7 @@ package SPVM::Mojo::UserAgent::Transactor;
 
 =head1 Name
 
-SPVM::Mojo::UserAgent::Transactor - Short Description
+SPVM::Mojo::UserAgent::Transactor - User agent transactor
 
 =head1 Description
 
