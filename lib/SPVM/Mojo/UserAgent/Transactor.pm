@@ -97,7 +97,7 @@ C<method proxy_connect : Mojo::Transaction::HTTP ($old : Mojo::Transaction::HTTP
 
 =head2 endpoint
 
-C<method endpoint : object[] ($tx : Mojo::Transaction);>
+C<method endpoint : Mojo::UserAgent::Transactor::Endpoint ($tx : Mojo::Transaction);>
 
 Actual endpoint for transaction.
 
@@ -107,7 +107,7 @@ C<method upgrade : Mojo::Transaction::WebSocket ($tx : Mojo::Transaction::HTTP);
 
 =head2 peer
 
-C<method peer : object[] ($tx : Mojo::Transaction::HTTP);>
+C<method peer : Mojo::UserAgent::Transactor::Endpoint ($tx : Mojo::Transaction::HTTP);>
 
 =head2 redirect
 
