@@ -19,34 +19,39 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     READ_BUFFER_SIZE = 4086,
   }
   
-  # Class Variables
+  # Undocumented Class Variables
   our $DEBUG : ro byte;
   INIT {
-    if (length(my $_ = Sys->env("SPVM_MOJO_CLIENT_DEBUG"))) {
-      $DEBUG = (byte)$_;
-    }
+    $DEBUG = length(my $_ = Sys->env("SPVM_MOJO_CLIENT_DEBUG")) ? (byte)$_ : (byte)0;
   }
   
   # Fields
-  has max_response_size : rw int;
-  
-  has connect_timeout : rw double;
-  
-  has inactivity_timeout : rw double;
-  
-  has request_timeout : rw double;
-  
-  has max_connections : rw int;
-  
-  has key : rw string;
-  
   has ca : rw string;
   
   has cert : rw string;
   
+  has connect_timeout : rw double;
+  
+  has cookie_jar : rw Mojo::UserAgent::CookieJar;
+  
+  has inactivity_timeout : rw double;
+  
   has insecure : rw byte;
   
+  has max_response_size : rw int;
+  
+  has key : rw string;
+  
+  has max_connections : rw int;
+  
   has max_redirects : rw int;
+  
+  has proxy : rw Mojo::UserAgent::Proxy;
+  
+  has request_timeout : rw double;
+  
+  # TODO
+  # has server : Mojo::UserAgent::Server;
   
   has socket_options : rw object[];
   
@@ -54,10 +59,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
   
   has transactor : rw Mojo::UserAgent::Transactor;
   
-  has proxy : rw Mojo::UserAgent::Proxy;
-  
-  has cookie_jar : rw Mojo::UserAgent::CookieJar;
-  
+  # Uncodumented Fields
   has keep_alive_sockets_list : List of object[]; # endpoint and socket pairs 
   
   # Undocumented Fields
