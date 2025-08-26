@@ -30,7 +30,7 @@ class Mojo::UserAgent::Transactor {
     }
   ;
   
-  has generators : rw Hash
+  has generators : rw Hash of Mojo::UserAgent::Transactor::Callback::Generator
     get {
       unless (exists $self->{generators}) {
         $self->{generators} = Hash->new({
@@ -63,22 +63,39 @@ class Mojo::UserAgent::Transactor {
   }
   
   private static method _form : void () {
-    
+    die "Not implemented.";
   }
   
   private static method _json : void () {
-    
+    die "Not implemented.";
   }
   
   private static method _multipart : void () {
-    
+    die "Not implemented.";
   }
   
-  method add_generator : void ($name : string, $cb : Callback) {
+  private static method _proxy : object[] ($tx : Mojo::Transaction, $proto : string, $host : string, $port : int) {
+    
+    my $req = $tx->req;
+    if ($req->via_proxy && (my $proxy = $req->proxy)) {
+      
+      my $proxy_port  = $proxy->port;
+      unless ($proxy_port > 0) {
+        $proxy_port = $proto eq "https" ? 443 : 80;
+      }
+      
+      return [(object)$proxy->protocol, $proxy->ihost, $proxy_port];
+    }
+    
+    return [(object)$proto, $host, $port];
+  }
+  
+  # Instance Methods
+  method add_generator : void ($name : string, $cb : Mojo::UserAgent::Transactor::Callback::Generator) {
     
     $self->{generators}->set($name, $cb);
   }
-
+  
   method tx : Mojo::Transaction::HTTP ($method : string, $url : object of string|Mojo::URL, $args1 : object = undef, $args2 : object = undef) {
     
     # Method and URL
@@ -120,11 +137,24 @@ class Mojo::UserAgent::Transactor {
     
     # Generator
     if ($args1 isa object[] && !(is_options $args1)) {
+      my $generator_args = (object[])$args1;
+      
       my $name = $args1->(object[])->[0]->(string);
-      my $arg = $args1->(object[])->[1]->(object);
       
       my $cb = (Mojo::UserAgent::Transactor::Callback::Generator)$self->{generators}->get($name);
-      $cb->($self, $tx, $arg);
+      
+      if (@$generator_args > 1) {
+        $cb->($self, $tx, $generator_args->[1]);
+      }
+      elsif (@$generator_args > 2) {
+        $cb->($self, $tx, $generator_args->[1], $generator_args->[2]);
+      }
+      elsif (@$generator_args > 3) {
+        $cb->($self, $tx, $generator_args->[1], $generator_args->[2], $generator_args->[3]);
+      }
+      else {
+        die "Too many argument for a generator.";
+      }
     }
     else {
       $req->set_body((string)$args1);
@@ -263,22 +293,6 @@ class Mojo::UserAgent::Transactor {
     
     if ($proto eq "http" && !$req->is_handshake && !$socks) {
       return &_proxy($tx, $proto, $host, $port) ;
-    }
-    
-    return [(object)$proto, $host, $port];
-  }
-  
-  private static method _proxy : object[] ($tx : Mojo::Transaction, $proto : string, $host : string, $port : int) {
-    
-    my $req = $tx->req;
-    if ($req->via_proxy && (my $proxy = $req->proxy)) {
-      
-      my $proxy_port  = $proxy->port;
-      unless ($proxy_port > 0) {
-        $proxy_port = $proto eq "https" ? 443 : 80;
-      }
-      
-      return [(object)$proxy->protocol, $proxy->ihost, $proxy_port];
     }
     
     return [(object)$proto, $host, $port];
