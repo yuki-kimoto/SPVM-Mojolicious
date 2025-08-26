@@ -100,7 +100,15 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     }
   ;
   
-  has max_redirects : rw int;
+  has max_redirects : rw int
+    get {
+      unless (exists $self->{max_redirects}) {
+        $self->{max_redirects} = length(my $_ = Sys->env("SPVM_MOJO_MAX_REDIRECTS")) ? (int)$_ : 0;
+      }
+      
+      return $self->{max_redirects};
+    }
+  ;
   
   has proxy : rw Mojo::UserAgent::Proxy
     get {
@@ -139,8 +147,6 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     $self->{connect_timeout} = length(my $_ = Sys->env("SPVM_MOJO_CONNECT_TIMEOUT")) ? (double)$_ : 0.0;
     
     $self->{request_timeout} = length(my $_ = Sys->env("SPVM_MOJO_REQUEST_TIMEOUT")) ? (double)$_ : 0.0;
-    
-    $self->{max_redirects} = length(my $_ = Sys->env("SPVM_MOJO_MAX_REDIRECTS")) ? (int)$_ : 0;
     
     $self->{transactor} = Mojo::UserAgent::Transactor->new;
     
