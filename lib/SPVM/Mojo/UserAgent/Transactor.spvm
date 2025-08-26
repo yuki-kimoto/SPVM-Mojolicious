@@ -32,7 +32,15 @@ class Mojo::UserAgent::Transactor {
   
   has generators : rw Hash;
   
-  has name : rw string;
+  has name : rw string
+    get {
+      unless (exists $self->{name}) {
+        $self->{name} = "Mojolicious (SPVM)";
+      }
+      
+      return $self->{name};
+    }
+  ;
   
   # Class Methods
   static method new : Mojo::UserAgent::Transactor () {
@@ -46,8 +54,6 @@ class Mojo::UserAgent::Transactor {
     });
     
     $self->{generators} = $generators;
-    
-    $self->{name} = "SPVM::Mojolicious";
     
     return $self;
   }
