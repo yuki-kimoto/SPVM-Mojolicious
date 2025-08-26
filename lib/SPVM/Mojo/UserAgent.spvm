@@ -202,8 +202,6 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     
     my $self = new Mojo::UserAgent;
     
-    $self->{max_response_size} = -1;
-    
     $self->{keep_alive_sockets_list} = List->new(new object[0]);
     
     $self->{connections_h} = (Hash of IO::Socket)Hash->new;
