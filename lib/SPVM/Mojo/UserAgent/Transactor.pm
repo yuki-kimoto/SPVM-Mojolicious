@@ -87,21 +87,19 @@ Examples:
 
   $t->add_generator(foo => method : void ($t : Mojo::UserAgent::Transactor, $tx : Mojo::Transaction, $arg : object) {});
 
-=head2 tx
+=head2 download
 
-C<method tx : Mojo::Transaction::HTTP ($method : string, $url : object of string|Mojo::URL, $args1 : object = undef, $args2 : object = undef);>
+Not yet implemented.
 
 =head2 proxy_connect
 
 C<method proxy_connect : Mojo::Transaction::HTTP ($old : Mojo::Transaction::HTTP);>
 
-=head2 redirect
-
-C<method redirect : Mojo::Transaction::HTTP ($old : Mojo::Transaction::HTTP);>
-
 =head2 endpoint
 
 C<method endpoint : object[] ($tx : Mojo::Transaction);>
+
+Actual endpoint for transaction.
 
 =head2 upgrade
 
@@ -110,6 +108,14 @@ C<method upgrade : Mojo::Transaction::WebSocket ($tx : Mojo::Transaction::HTTP);
 =head2 peer
 
 C<method peer : object[] ($tx : Mojo::Transaction::HTTP);>
+
+=head2 redirect
+
+C<method redirect : Mojo::Transaction::HTTP ($old : Mojo::Transaction::HTTP);>
+
+=head2 tx
+
+C<method tx : Mojo::Transaction::HTTP ($method : string, $url : object of string|Mojo::URL, $args1 : object = undef, $args2 : object = undef);>
 
 =head1 See Also
 

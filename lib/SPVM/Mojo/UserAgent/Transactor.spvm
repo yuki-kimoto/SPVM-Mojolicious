@@ -18,6 +18,7 @@ class Mojo::UserAgent::Transactor {
   use Mojo::WebSocket;
   use Sys;
   use Mojo::UserAgent::Transactor::Callback::Generator;
+  use Mojo::UserAgent::Transactor::Endpoint;
   
   # Fields
   has compressed : rw byte
