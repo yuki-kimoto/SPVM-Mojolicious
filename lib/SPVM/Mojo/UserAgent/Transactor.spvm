@@ -30,23 +30,22 @@ class Mojo::UserAgent::Transactor {
     }
   ;
   
-  has name : rw string;
+  has generators : rw Hash;
   
-  # Undocumented Fields
-  has generators_h : Hash;
+  has name : rw string;
   
   # Class Methods
   static method new : Mojo::UserAgent::Transactor () {
     
     my $self = new Mojo::UserAgent::Transactor;
     
-    my $generators_h = Hash->new({
+    my $generators = Hash->new({
       form => method : void () { &_form; },
       json => method : void () { &_json; },
       multipart => method : void () { &_multipart; },
     });
     
-    $self->{generators_h} = $generators_h;
+    $self->{generators} = $generators;
     
     $self->{name} = "SPVM::Mojolicious";
     
@@ -67,7 +66,7 @@ class Mojo::UserAgent::Transactor {
   
   method add_generator : void ($name : string, $cb : Callback) {
     
-    $self->{generators_h}->set($name, $cb);
+    $self->{generators}->set($name, $cb);
   }
 
   method tx : Mojo::Transaction::HTTP ($method : string, $url : object of string|Mojo::URL, $options : object[] = undef) {
@@ -113,7 +112,7 @@ class Mojo::UserAgent::Transactor {
       my $name = (string)$generator->[0];
       my $args = (object[])$generator->[1];
       
-      my $cb = (Mojo::UserAgent::Transactor::Callback::Generator)$self->{generators_h}->get("$name");
+      my $cb = (Mojo::UserAgent::Transactor::Callback::Generator)$self->{generators}->get("$name");
       $cb->($self, $tx, $args);
     }
     
