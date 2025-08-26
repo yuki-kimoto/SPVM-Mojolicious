@@ -20,20 +20,25 @@ class Mojo::UserAgent::Transactor {
   use Mojo::UserAgent::Transactor::Callback::Generator;
   
   # Fields
-  has compressed : rw byte;
-  
-  has generators_h : Hash;
+  has compressed : rw byte
+    get {
+      unless (exists $self->{compressed}) {
+        $self->{compressed} = (length (my $_ = Sys->env("SPVM_MOJO_GZIP")) ? (byte)$_ : (byte)1);
+      }
+      
+      return $self->{compressed};
+    }
+  ;
   
   has name : rw string;
+  
+  # Undocumented Fields
+  has generators_h : Hash;
   
   # Class Methods
   static method new : Mojo::UserAgent::Transactor () {
     
     my $self = new Mojo::UserAgent::Transactor;
-    
-    my $compressed = (byte)(length (my $_ = Sys->env("SPVM_MOJO_GZIP")) ? (int)$_ : 1);
-    
-    $self->{compressed} = $compressed;
     
     my $generators_h = Hash->new({
       form => method : void () { &_form; },
