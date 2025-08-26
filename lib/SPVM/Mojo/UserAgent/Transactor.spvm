@@ -79,15 +79,7 @@ class Mojo::UserAgent::Transactor {
     $self->{generators}->set($name, $cb);
   }
 
-  method tx : Mojo::Transaction::HTTP ($method : string, $url : object of string|Mojo::URL, $options : object[] = undef) {
-    
-    my $options_h = Hash->new($options);
-    
-    my $generator = (object[])$options_h->get("generator");
-    
-    my $headers_options = (object[])$options_h->get("headers");
-    
-    my $body = $options_h->get_string("body");
+  method tx : Mojo::Transaction::HTTP ($method : string, $url : object of string|Mojo::URL, $args1 : object = undef, $args2 : object = undef) {
     
     # Method and URL
     my $tx  = Mojo::Transaction::HTTP->new;
@@ -110,24 +102,32 @@ class Mojo::UserAgent::Transactor {
     # Headers (we identify ourselves and accept gzip compression)
     my $headers = $req->headers;
     
-    $headers->from_hash(Hash->new($headers_options));
+    my $args1_used = 0;
+    if (is_options $args1) {
+      $headers->from_hash(Hash->new((object[])$args1));
+      $args1_used = 1;
+    }
+    
     unless ($headers->user_agent) {
       $headers->set_user_agent($self->name);
     }
     if    (!$self->compressed)         { $tx->res->content->set_auto_decompress(0); }
     elsif (!$headers->accept_encoding) { $headers->set_accept_encoding("gzip"); }
     
-    # Generator
-    if ($generator) {
-      my $name = (string)$generator->[0];
-      my $args = (object[])$generator->[1];
-      
-      my $cb = (Mojo::UserAgent::Transactor::Callback::Generator)$self->{generators}->get("$name");
-      $cb->($self, $tx, $args);
+    if ($args1_used) {
+      $args1 = $args2;
     }
     
-    if ($body) {
-      $req->set_body($body);
+    # Generator
+    if ($args1 isa object[] && !(is_options $args1)) {
+      my $name = $args1->(object[])->[0]->(string);
+      my $arg = $args1->(object[])->[1]->(object);
+      
+      my $cb = (Mojo::UserAgent::Transactor::Callback::Generator)$self->{generators}->get($name);
+      $cb->($self, $tx, $arg);
+    }
+    else {
+      $req->set_body((string)$args1);
     }
     
     return $tx;
