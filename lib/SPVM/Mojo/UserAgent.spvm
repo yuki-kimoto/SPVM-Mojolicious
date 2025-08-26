@@ -142,7 +142,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
       return $self->{socket_options};
     }
     set ($_ : object of object[]|Hash) {
-      if ($_ isa object[]) {
+      if (is_options $_) {
         $self->{socket_options} = Hash->new((object[])$_);
       }
       elsif ($_ isa Hash) {
@@ -152,7 +152,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
         $self->{socket_options} = undef;
       }
       else {
-        die "socket_options option must be an any object array or a Hash object.";
+        die "socket_options option must be options or a Hash object.";
       }
     }
   ;
@@ -164,6 +164,20 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
       }
       
       return $self->{tls_options};
+    }
+    set ($_ : object of object[]|Hash) {
+      if (is_options $_) {
+        $self->{tls_options} = Hash->new((object[])$_);
+      }
+      elsif ($_ isa Hash) {
+        $self->{tls_options} = (Hash)$_;
+      }
+      elsif (!$_) {
+        $self->{tls_options} = undef;
+      }
+      else {
+        die "tls_options option must be options or a Hash object.";
+      }
     }
   ;
   
