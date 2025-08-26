@@ -447,7 +447,7 @@ EOS
       $tx->req->content->set_headers($headers);
     }
     
-    $tx = $self->connect($tx);
+    $tx = $self->_connect($tx);
     
     $self->write_request($tx);
     
@@ -458,7 +458,7 @@ EOS
     return $tx;
   }
   
-  method connect : Mojo::Transaction::HTTP ($tx : Mojo::Transaction::HTTP)  {
+  private method _connect : Mojo::Transaction::HTTP ($tx : Mojo::Transaction::HTTP)  {
     
     my $handle = (IO::Socket)undef;
     
@@ -734,7 +734,7 @@ EOS
     }
     
     # TLS upgrade before starting the real transaction
-    $tx = $self->connect($old);
+    $tx = $self->_connect($old);
     
     return $tx;
   }
