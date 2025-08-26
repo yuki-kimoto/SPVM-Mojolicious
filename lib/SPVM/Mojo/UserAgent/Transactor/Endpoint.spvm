@@ -23,7 +23,7 @@ class Mojo::UserAgent::Transactor::Endpoint {
   }
   
   # Instance Methods
-  method to_string () {
+  method to_string : string () {
     
     my $proto = $self->protocol;
     my $host = $self->host;
