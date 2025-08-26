@@ -419,12 +419,12 @@ EOS
     
     my $req = $tx->req;
     
-    $tx = $self->request($tx);
+    $tx = $self->_request($tx);
     
     return $tx;
   }
   
-  private method request : Mojo::Transaction::HTTP ($tx : Mojo::Transaction::HTTP)  {
+  private method _request : Mojo::Transaction::HTTP ($tx : Mojo::Transaction::HTTP)  {
     
     my $method = $tx->req->method;
     
