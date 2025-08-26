@@ -65,7 +65,11 @@ Meant to be overloaded in a child class.
 
 =head1 See Also
 
-L<SPVM::Mojolicious>
+=over 2
+
+=item * L<SPVM::Mojolicious>
+
+=back
 
 =head1 Copyright & License
 
