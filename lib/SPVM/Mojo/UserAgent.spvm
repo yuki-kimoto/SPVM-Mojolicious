@@ -68,7 +68,15 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     }
   ;
   
-  has insecure : rw byte;
+  has insecure : rw byte
+    get {
+      unless (exists $self->{insecure}) {
+        $self->{insecure} = length(my $_ = Sys->env("SPVM_MOJO_INSECURE")) ? (byte)$_ : (byte)0;
+      }
+      
+      return $self->{insecure};
+    }
+  ;
   
   has max_response_size : rw int;
   
@@ -82,7 +90,15 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     }
   ;
   
-  has max_connections : rw int;
+  has max_connections : rw int
+    get {
+      unless (exists $self->{max_connections}) {
+        $self->{max_connections} = 5;
+      }
+      
+      return $self->{max_connections};
+    }
+  ;
   
   has max_redirects : rw int;
   
@@ -123,10 +139,6 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     $self->{connect_timeout} = length(my $_ = Sys->env("SPVM_MOJO_CONNECT_TIMEOUT")) ? (double)$_ : 0.0;
     
     $self->{request_timeout} = length(my $_ = Sys->env("SPVM_MOJO_REQUEST_TIMEOUT")) ? (double)$_ : 0.0;
-    
-    $self->{max_connections} = 5;
-    
-    $self->{insecure} = (byte)(length(my $_ = Sys->env("SPVM_MOJO_INSECURE")) ? (int)$_ : 0);
     
     $self->{max_redirects} = length(my $_ = Sys->env("SPVM_MOJO_MAX_REDIRECTS")) ? (int)$_ : 0;
     
