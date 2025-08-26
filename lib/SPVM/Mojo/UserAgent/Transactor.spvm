@@ -30,7 +30,19 @@ class Mojo::UserAgent::Transactor {
     }
   ;
   
-  has generators : rw Hash;
+  has generators : rw Hash
+    get {
+      unless (exists $self->{generators}) {
+        $self->{generators} = Hash->new({
+          form => method : void () { &_form; },
+          json => method : void () { &_json; },
+          multipart => method : void () { &_multipart; },
+        });
+      }
+      
+      return $self->{generators};
+    }
+  ;
   
   has name : rw string
     get {
@@ -46,14 +58,6 @@ class Mojo::UserAgent::Transactor {
   static method new : Mojo::UserAgent::Transactor () {
     
     my $self = new Mojo::UserAgent::Transactor;
-    
-    my $generators = Hash->new({
-      form => method : void () { &_form; },
-      json => method : void () { &_json; },
-      multipart => method : void () { &_multipart; },
-    });
-    
-    $self->{generators} = $generators;
     
     return $self;
   }
