@@ -142,7 +142,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
       return $self->{socket_options};
     }
     set ($_ : object of object[]|Hash) {
-      if (is_options $_) {
+      if ($_ isa object[]) {
         $self->{socket_options} = Hash->new((object[])$_);
       }
       elsif ($_ isa Hash) {
@@ -152,7 +152,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
         $self->{socket_options} = undef;
       }
       else {
-        die "socket_options option must be options or a Hash object.";
+        die "The type of socket_options option must be object[] or Hash.";
       }
     }
   ;
@@ -176,12 +176,20 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
         $self->{tls_options} = undef;
       }
       else {
-        die "tls_options option must be options or a Hash object.";
+        die "The type of tls_options option must be object[] or Hash.";
       }
     }
   ;
   
-  has transactor : rw Mojo::UserAgent::Transactor;
+  has transactor : rw Mojo::UserAgent::Transactor
+    get {
+      unless (exists $self->{transactor}) {
+        $self->{transactor} = Mojo::UserAgent::Transactor->new;
+      }
+      
+      return $self->{transactor};
+    }
+  ;
   
   # Uncodumented Fields
   has keep_alive_sockets_list : List of object[]; # endpoint and socket pairs 
@@ -195,10 +203,6 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     my $self = new Mojo::UserAgent;
     
     $self->{max_response_size} = -1;
-    
-    $self->{connect_timeout} = length(my $_ = Sys->env("SPVM_MOJO_CONNECT_TIMEOUT")) ? (double)$_ : 0.0;
-    
-    $self->{transactor} = Mojo::UserAgent::Transactor->new;
     
     $self->{keep_alive_sockets_list} = List->new(new object[0]);
     
