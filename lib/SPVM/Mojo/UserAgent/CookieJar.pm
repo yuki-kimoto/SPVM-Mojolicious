@@ -111,7 +111,7 @@ C<method empty : void ();>
 Empty the jar.
 
 =head2 find
-  
+
 C<method find : L<Mojo::Cookie::Request|SPVM::Mojo::Cookie::Request>[] ($url : L<Mojo::URL|SPVM::Mojo::URL>);>
 
 Find L<Mojo::Cookie::Request|SPVM::Mojo::Cookie::Request> objects in the jar for L<Mojo::URL|SPVM::Mojo::URL> object.
@@ -128,7 +128,7 @@ Examples:
 Not implemented.
 
 =head2 prepare
-  
+
 C<method prepare : void ($tx : L<Mojo::Transaction::HTTP|SPVM::Mojo::Transaction::HTTP>);>
 
 Prepare request cookies for transaction.
