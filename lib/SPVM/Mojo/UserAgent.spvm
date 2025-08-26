@@ -453,7 +453,7 @@ EOS
     
     $self->read_response($tx);
     
-    $tx = $self->finish($tx);
+    $tx = $self->_finish($tx);
     
     return $tx;
   }
@@ -620,7 +620,7 @@ EOS
     $tx->set_res($res);
   }
   
-  method finish : Mojo::Transaction::HTTP ($tx : Mojo::Transaction) {
+  private method _finish : Mojo::Transaction::HTTP ($tx : Mojo::Transaction) {
     
     # Premature connection close
     $tx->closed;
