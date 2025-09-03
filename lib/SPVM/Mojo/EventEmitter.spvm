@@ -55,9 +55,9 @@ class Mojo::EventEmitter {
   
   method once : Mojo::Callback ($name : string, $cb : Mojo::Callback) {
     
-    my $wrapper = [$that : Mojo::EventEmitter = $self, $cb : Mojo::Callback] method : object ($name : string, $args : object[]) {
+    my $wrapper = [$that : Mojo::EventEmitter = $self, $cb : Mojo::Callback] method : object ($name : string) {
       $that->unsubscribe($name => $self);
-      $cb->($that, $args);
+      $cb->($that);
     };
     weaken $wrapper->{that};
     
