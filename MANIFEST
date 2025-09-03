@@ -101,6 +101,10 @@ lib/SPVM/Mojolicious/Routes.pm
 lib/SPVM/Mojolicious/Routes.spvm
 lib/SPVM/Mojolicious/Routes/Match.pm
 lib/SPVM/Mojolicious/Routes/Match.spvm
+lib/SPVM/Mojolicious/Routes/Pattern.pm
+lib/SPVM/Mojolicious/Routes/Pattern.spvm
+lib/SPVM/Mojolicious/Routes/Route.pm
+lib/SPVM/Mojolicious/Routes/Route.spvm
 lib/SPVM/Mojolicious/Static.pm
 lib/SPVM/Mojolicious/Static.spvm
 LICENSE
