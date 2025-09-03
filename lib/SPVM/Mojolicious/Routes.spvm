@@ -4,6 +4,61 @@
 class Mojolicious::Routes {
   version_from Mojolicious;
   
+  use Hash;
+  use Mojo::Cache;
+  
+  # Fields
+  has cache : rw Mojo::Cache
+    get {
+      unless (exists $self->{cache}) {
+        $self->{cache} = Mojo::Cache->new;
+      }
+      
+      return $self->{cache};
+    }
+  ;
+  
+  has conditions : rw Hash
+    get {
+      unless (exists $self->{conditions}) {
+        $self->{conditions} = Hash->new;
+      }
+      
+      return $self->{conditions};
+    }
+  ;
+  
+  has shortcuts : rw Hash
+    get {
+      unless (exists $self->{shortcuts}) {
+        $self->{shortcuts} = Hash->new;
+      }
+      
+      return $self->{shortcuts};
+    }
+  ;
+  
+  has types : rw Hash
+    get {
+      unless (exists $self->{types}) {
+        $self->{types} = Hash->new;
+        $self->{types}->set(num => "[0-9]+");
+      }
+      
+      return $self->{types};
+    }
+  ;
+  
+  has namespaces : rw string[]
+    get {
+      unless (exists $self->{namespaces}) {
+        $self->{namespaces} = new string[0];
+      }
+      
+      return $self->{namespaces};
+    }
+  ;
+  
   # Class Methods
   static method new : Mojolicious::Routes () {
     
