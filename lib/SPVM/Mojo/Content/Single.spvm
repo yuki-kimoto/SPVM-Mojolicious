@@ -33,7 +33,7 @@ class Mojo::Content::Single extends Mojo::Content {
   ;
   
   # Undocumented Fields
-  has read : Mojo::Callback;
+  has read : Mojo::EventEmitter::Callback;
   
   has body_size : int;
   
