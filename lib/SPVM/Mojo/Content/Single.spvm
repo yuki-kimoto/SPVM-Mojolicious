@@ -44,7 +44,7 @@ class Mojo::Content::Single extends Mojo::Content {
     
     $self->init;
     
-    $self->{read} = method : void ($that : Mojo::Content::Single, $chunk : string){
+    $self->{read} = method : object ($that : Mojo::Content::Single, $chunk : string){
       $that->set_asset($that->asset->add_chunk($chunk));
     };
     

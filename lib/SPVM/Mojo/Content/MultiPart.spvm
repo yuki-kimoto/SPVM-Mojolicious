@@ -29,7 +29,7 @@ class Mojo::Content::MultiPart extends Mojo::Content {
     
     my $self = new Mojo::Content::MultiPart;
     
-    $self->on(read => method : void ($that : Mojo::Content::MultiPart, $chunk : string) {
+    $self->on(read => method : object ($that : Mojo::Content::MultiPart, $chunk : string) {
       $that->_read($chunk);
     });
     
