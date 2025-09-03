@@ -79,16 +79,17 @@ class Mojolicious::Static {
   }
   
   method file_path : string ($file : string) {
-
-=pod
-
-    my ($self, $file) = @_;
-    $file = "/$file" unless $file =~ /^\//;
-    return $file unless my $prefix = $self->prefix;
+    
+    unless (Re->m($file, "^\/")) {
+      $file = "/$file";
+    }
+    
+    my $prefix = $self->prefix;
+    unless ($prefix) {
+      return $file ;
+    }
+    
     return "$prefix$file";
-
-=cut
-
   }
 
 }
