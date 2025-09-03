@@ -3,4 +3,16 @@
 
 class Mojolicious::Routes::Match {
   version_from Mojolicious;
+  
+  # Fields
+  has root : rw Mojolicious::Routes;
+  
+  # Class Methods
+  static method new : Mojolicious::Routes::Match () {
+    
+    my $self = new Mojolicious::Routes::Match;
+    
+    return $self;
+  }
+  
 }

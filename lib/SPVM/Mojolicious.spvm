@@ -3,4 +3,16 @@
 
 class Mojolicious {
   version "0.016";
+  
+  use Mojolicious::Routes;
+  
+  # Fields
+  has routes : rw Mojolicious::Routes
+    get {
+      unless (exists $self->{routes}) {
+        $self->{routes} = Mojolicious::Routes->new;
+      }
+    }
+  ;
+  
 }

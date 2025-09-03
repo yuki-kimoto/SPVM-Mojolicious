@@ -9,6 +9,40 @@ class Mojolicious::Controller {
   use Mojo::URL;
   use Mojo::Util;
   use Mojolicious::Routes::Match;
+  use Mojolicious;
+  use Mojo::Transaction;
   
+  our $ABSOLUTE : string;
+  INIT {
+    $ABSOLUTE = "^(?:[^:/?#]+:|//|#)";
+  }
+  
+  has app : rw Mojolicious
+    set {
+      $self->{app} = $_;
+      weaken $self->{app};
+    }
+  ;
+  
+  has tx : rw Mojo::Transaction
+    set {
+      $self->{tx} = $_;
+      weaken $self->{tx};
+    }
+  ;
+  
+  has match : rw Mojolicious::Routes::Match
+    get {
+      unless (exists $self->{match}) {
+        my $match = Mojolicious::Routes::Match->new;
+        
+        $match->set_root($self->app->routes);
+        
+        $self->{match} = $match;
+      }
+      
+      return $self->{match};
+    }
+  ;
   
 }
