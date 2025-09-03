@@ -3,4 +3,12 @@
 
 class Mojolicious::Controller {
   version_from Mojolicious;
+  
+  use Digest::SHA;
+  use Mojo::ByteStream;
+  use Mojo::URL;
+  use Mojo::Util;
+  use Mojolicious::Routes::Match;
+  
+  
 }

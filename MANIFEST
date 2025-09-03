@@ -13,6 +13,8 @@ lib/SPVM/Mojo/Asset/File.pm
 lib/SPVM/Mojo/Asset/File.spvm
 lib/SPVM/Mojo/Asset/Memory.pm
 lib/SPVM/Mojo/Asset/Memory.spvm
+lib/SPVM/Mojo/ByteStream.pm
+lib/SPVM/Mojo/ByteStream.spvm
 lib/SPVM/Mojo/Collection.pm
 lib/SPVM/Mojo/Collection.spvm
 lib/SPVM/Mojo/Content.pm
@@ -95,6 +97,8 @@ lib/SPVM/Mojolicious.pm
 lib/SPVM/Mojolicious.spvm
 lib/SPVM/Mojolicious/Controller.pm
 lib/SPVM/Mojolicious/Controller.spvm
+lib/SPVM/Mojolicious/Routes/Match.pm
+lib/SPVM/Mojolicious/Routes/Match.spvm
 lib/SPVM/Mojolicious/Static.pm
 lib/SPVM/Mojolicious/Static.spvm
 LICENSE

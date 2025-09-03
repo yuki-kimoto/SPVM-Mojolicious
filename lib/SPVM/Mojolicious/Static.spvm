@@ -9,6 +9,7 @@ class Mojolicious::Static {
   use Mojo::Date;
   use Mojo::File;
   use Mojo::Util;
+  use Mojolicious::Controller;
   
   # Fields
   has asset_dir : rw string
