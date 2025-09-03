@@ -3,4 +3,54 @@
 
 class Mojolicious::Static {
   version_from Mojolicious;
+  
+  use Mojo::Asset::File;
+  use Mojo::Asset::Memory;
+  use Mojo::Date;
+  use Mojo::File;
+  use Mojo::Util;
+  
+  # Fields
+  has asset_dir : rw string
+    get {
+      unless (exists $self->{asset_dir}) {
+        $self->{asset_dir} = "assets";
+      }
+      
+      return $self->{asset_dir};
+    }
+  ;
+  
+  has classes : rw string[]
+    get {
+      unless (exists $self->{classes}) {
+        $self->{classes} = ["main"];
+      }
+      
+      return $self->{classes};
+    }
+  ;
+  
+  has extra : rw Hash of string
+    get {
+      unless (exists $self->{extra}) {
+        $self->{extra} = Hash->new;
+      }
+      
+      return $self->{extra};
+    }
+  ;
+  
+  has paths : rw string[]
+    get {
+      unless (exists $self->{paths}) {
+        $self->{paths} = new string[0];
+      }
+      
+      return $self->{paths};
+    }
+  ;
+  
+  has prefix : rw string;
+  
 }
