@@ -1,3 +1,6 @@
+0.018 2025-09-04
+  [Changes]
+    * Rename Mojo::EventEmitter::Callback to Mojo::Callback and improve it.
 0.017 2025-09-03
   [Requirement Changes]
     * Require SPVM::Compress::Raw::Zlib 0.003.
