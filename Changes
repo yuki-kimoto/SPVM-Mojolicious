@@ -1,3 +1,6 @@
+0.017 2025-09-03
+  [Requirement Changes]
+    * Require SPVM::Compress::Raw::Zlib 0.003.
 0.016 2025-08-26
     * Improve Mojo::UserAgent classes.
 0.015 2025-08-25

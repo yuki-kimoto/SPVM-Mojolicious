@@ -68,6 +68,7 @@ WriteMakefile(
     'SPVM::IO::Socket::SSL' => '0.010',
     'SPVM::Math' => '1.006',
     'SPVM::Digest::SHA' => '0.065',
+    'SPVM::Compress::Raw::Zlib' => '0.003',
   },
   TEST_REQUIRES => {
     
