@@ -2,9 +2,5 @@
 # MIT License
 
 class Mojolicious::Routes::Route {
-  version_from Mojolicious;
-  
-  use Mojo::Util;
-  use Mojolicious::Routes::Pattern;
   
 }
