@@ -53,4 +53,42 @@ class Mojolicious::Static {
   
   has prefix : rw string;
   
+  # Undocumented Fields
+  has assets : Hash;
+  
+  # Class Methods
+  static method new : Mojolicious::Static () {
+    
+    my $self = new Mojolicious::Static;
+    
+    return $self;
+  }
+  
+  # Instance Methods
+  method asset_path : string ($asset : string) {
+    
+    unless (Re->m($asset, "^\/")) {
+      $asset = "/$asset";
+    }
+    
+    $self->{assets} //= Hash->new;
+    
+    my $assets = $self->{assets};
+    
+    return $self->file_path("/" . $self->asset_dir . ($assets->get_string($asset) // $asset));
+  }
+  
+  method file_path : string ($file : string) {
+
+=pod
+
+    my ($self, $file) = @_;
+    $file = "/$file" unless $file =~ /^\//;
+    return $file unless my $prefix = $self->prefix;
+    return "$prefix$file";
+
+=cut
+
+  }
+
 }
