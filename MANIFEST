@@ -93,6 +93,8 @@ lib/SPVM/Mojo/WebSocket/Frame.pm
 lib/SPVM/Mojo/WebSocket/Frame.spvm
 lib/SPVM/Mojolicious.pm
 lib/SPVM/Mojolicious.spvm
+lib/SPVM/Mojolicious/Static.pm
+lib/SPVM/Mojolicious/Static.spvm
 LICENSE
 Makefile.PL
 MANIFEST			This list of files
