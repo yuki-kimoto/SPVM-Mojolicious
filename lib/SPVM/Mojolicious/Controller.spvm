@@ -11,6 +11,8 @@ class Mojolicious::Controller {
   use Mojolicious::Routes::Match;
   use Mojolicious;
   use Mojo::Transaction;
+  use Mojo::Message::Request;
+  use Mojo::Message::Response;
   
   our $ABSOLUTE : string;
   INIT {
@@ -46,5 +48,9 @@ class Mojolicious::Controller {
   ;
   
   has stash : rw Hash;
+  
+  has req : rw Mojo::Message::Request;
+  
+  has res : rw Mojo::Message::Response;
   
 }
