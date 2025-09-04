@@ -76,7 +76,7 @@ class Mojolicious::Routes {
   }
   
   static method _render : string ($c : Mojolicious::Controller) {
-
+  
 =pod
 
     my $stash = $c->stash;
@@ -152,4 +152,7 @@ class Mojolicious::Routes {
 
   }
   
+  method lookup : Mojolicious::Routes ($name : string) {
+    
+  }
 }

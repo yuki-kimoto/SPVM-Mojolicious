@@ -46,6 +46,52 @@ class Mojolicious::Routes::Match {
     $self->_match($self->root, $c, $options);
   }
   
+  method path_for : Hash ($arg1 : object, $arg2 : object = undef) {
+
+=pod
+
+    my $name = (string)undef;
+    if ($arg1 isa string) {
+      $name = (string)$arg1;
+      $arg1 = $arg2;
+    }
+    
+    my $values = (object[])undef;
+    if ($arg1 isa object[]) {
+      $values = (object[])$arg1;
+    }
+    
+    # Current route
+    my $route = undef;
+    my $current) = !$name || $name eq "current";
+    
+    if ($current) {
+      unless ($route = $self->endpoint) {
+        return Hash->new;
+      }
+    }
+    
+    # Find endpoint
+    else {
+      unless ($route = $self->root->lookup($name)) {
+        return Hash->new({path => $name});
+      }
+    }
+    
+    # Merge values (clear format)
+    my $captures    = $self->stack->[-1] // {};
+    my %merged      = (%$captures, format => undef, %values);
+    my $pattern     = $route->pattern;
+    my $constraints = $pattern->constraints;
+    $merged{format} = ($current ? $captures->{format} : undef) // $pattern->defaults->{format}
+      if !exists $values{format} && $constraints->{format} && $constraints->{format} ne '1';
+    
+    return {path => $route->render(\%merged), websocket => $route->has_websocket};
+
+=cut
+
+  }
+  
   private method _match : void ($r : Mojolicious::Routes, $c : Mojolicious::Controller, $options : Hash) {
     
 =pod
