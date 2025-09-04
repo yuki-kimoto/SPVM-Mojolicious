@@ -7,6 +7,11 @@ class Mojolicious::Routes {
   use Hash;
   use Mojo::Cache;
   use Mojolicious::Routes::Callback::Condition;
+  use Mojo::DynamicMethods;
+  use Mojo::DynamicMethods::Callback;
+  
+  # Interfaces
+  interface Mojo::DynamicMethods;
   
   # Fields
   has cache : rw Mojo::Cache
@@ -19,7 +24,7 @@ class Mojolicious::Routes {
     }
   ;
   
-  has conditions : rw Hash
+  has conditions : rw Hash of Mojolicious::Routes::Callback::Condition
     get {
       unless (exists $self->{conditions}) {
         $self->{conditions} = Hash->new;
@@ -29,7 +34,7 @@ class Mojolicious::Routes {
     }
   ;
   
-  has shortcuts : rw Hash
+  has shortcuts : rw Hash of Mojo::DynamicMethods::Callback
     get {
       unless (exists $self->{shortcuts}) {
         $self->{shortcuts} = Hash->new;
@@ -69,10 +74,24 @@ class Mojolicious::Routes {
   }
   
   # Instance Methods
+  method dynamic_methods : Hash of Hash of Mojo::DynamicMethods::Callback () {
+    return $self->shortcuts;
+  }
+  
   method add_condition : void ($name : string, $cb : Mojolicious::Routes::Callback::Condition) {
     
     $self->conditions->set($name, $cb);
   }
   
+  method add_shortcut : void ($name : string, $cb : Mojo::DynamicMethods::Callback) {
+    $self->conditions->set($name, $cb);
+  }
   
+  method call : object ($name : string, $arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
+    
+    my $ret = $self->Mojo::DynamicMethods::call($name, $arg1, $arg2, $arg3);
+    
+    return $ret;
+  }
+
 }
