@@ -45,4 +45,6 @@ class Mojolicious::Controller {
     }
   ;
   
+  has stash : rw Hash;
+  
 }

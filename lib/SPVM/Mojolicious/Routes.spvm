@@ -10,6 +10,7 @@ class Mojolicious::Routes {
   use Mojo::DynamicMethods;
   use Mojo::DynamicMethods::Callback;
   use Regex;
+  use Mojolicious::Controller;
   
   # Interfaces
   interface Mojo::DynamicMethods;
@@ -74,6 +75,28 @@ class Mojolicious::Routes {
     return $self;
   }
   
+  static method _render : string ($c : Mojolicious::Controller) {
+
+=pod
+
+    my $stash = $c->stash;
+    
+    if ($stash->get_int("mojo.rendered")) {
+      return undef;
+    }
+    
+    my $rendered = $c->render_maybe;
+    
+    unless ($rendered) {
+      unless ($stash->get_int("mojo.routed")) {
+       die "Route without action and nothing to render";
+      }
+    }
+
+=cut
+
+  }
+  
   # Instance Methods
   method dynamic_methods : Hash of Hash of Mojo::DynamicMethods::Callback () {
     return $self->shortcuts;
@@ -99,5 +122,34 @@ class Mojolicious::Routes {
     
     $self->types->set($name, $type);
   }
+  
+  method continue : void ($c : Mojolicious::Controller) {
 
+=pod
+
+    my $match    = $c->match;
+    my $stack    = $match->stack;
+    my $position = $match->position;
+    
+    my $field = $stack->[$position];
+    unless ($field) {
+      return &_render($c);
+    }
+    
+    # Merge captures into stash
+    my $stash = $c->stash;
+    @{$stash->{'mojo.captures'} //= {}}{keys %$field} = values %$field;
+    @$stash{keys %$field} = values %$field;
+    
+    my $continue;
+    my $last = !$stack->[++$position];
+    if (my $cb = $field->{cb}) { $continue = $self->_callback($c, $cb, $last) }
+    else                       { $continue = $self->_controller($c, $field, $last) }
+    $match->position($position);
+    $self->continue($c) if $last || $continue;
+
+=cut
+
+  }
+  
 }

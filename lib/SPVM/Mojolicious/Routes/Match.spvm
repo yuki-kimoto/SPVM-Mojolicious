@@ -7,6 +7,12 @@ class Mojolicious::Routes::Match {
   # Fields
   has root : rw Mojolicious::Routes;
   
+  has endpoint : rw Mojolicious::Routes;
+  
+  has position : int;
+  
+  has stack : rw object[];
+  
   # Class Methods
   static method new : Mojolicious::Routes::Match () {
     
