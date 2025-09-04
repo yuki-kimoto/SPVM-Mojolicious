@@ -9,6 +9,7 @@ class Mojolicious::Routes {
   use Mojolicious::Routes::Callback::Condition;
   use Mojo::DynamicMethods;
   use Mojo::DynamicMethods::Callback;
+  use Regex;
   
   # Interfaces
   interface Mojo::DynamicMethods;
@@ -44,11 +45,11 @@ class Mojolicious::Routes {
     }
   ;
   
-  has types : rw Hash
+  has types : rw Hash of object of string|Regex|string[]|Regex[]|object[]
     get {
       unless (exists $self->{types}) {
         $self->{types} = Hash->new;
-        $self->{types}->set(num => "[0-9]+");
+        $self->{types}->set(num => [Regex->new("[0-9]+")]);
       }
       
       return $self->{types};
@@ -92,6 +93,11 @@ class Mojolicious::Routes {
     my $ret = $self->Mojo::DynamicMethods::call($name, $arg1, $arg2, $arg3);
     
     return $ret;
+  }
+  
+  method add_type : void ($name : string, $type : object of string|Regex|string[]|Regex[]|object[]) {
+    
+    $self->types->set($name, $type);
   }
 
 }
