@@ -8,7 +8,6 @@ class Mojolicious::Routes::Callback::Condition : interface_t {
   use Mojolicious::Controller;
   use Hash;
   
-  require method : void (
-  
+  required method : void ($routes : Mojolicious::Routes, $c : Mojolicious::Controller, $captures : Hash of string, $arg : object);
   
 }

@@ -101,6 +101,8 @@ lib/SPVM/Mojolicious/Controller.pm
 lib/SPVM/Mojolicious/Controller.spvm
 lib/SPVM/Mojolicious/Routes.pm
 lib/SPVM/Mojolicious/Routes.spvm
+lib/SPVM/Mojolicious/Routes/Callback/Condition.pm
+lib/SPVM/Mojolicious/Routes/Callback/Condition.spvm
 lib/SPVM/Mojolicious/Routes/Match.pm
 lib/SPVM/Mojolicious/Routes/Match.spvm
 lib/SPVM/Mojolicious/Routes/Pattern.pm

@@ -6,6 +6,7 @@ class Mojolicious::Routes {
   
   use Hash;
   use Mojo::Cache;
+  use Mojolicious::Routes::Callback::Condition;
   
   # Fields
   has cache : rw Mojo::Cache
@@ -66,5 +67,12 @@ class Mojolicious::Routes {
     
     return $self;
   }
+  
+  # Instance Methods
+  method add_condition : void ($name : string, $cb : Mojolicious::Routes::Callback::Condition) {
+    
+    $self->conditions->set($name, $cb);
+  }
+  
   
 }
