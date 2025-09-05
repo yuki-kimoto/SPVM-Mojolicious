@@ -6,6 +6,9 @@ class Mojolicious::Types {
   
   use Hash;
   use Mojolicious::Controller;
+  use Re;
+  use Sort;
+  use StringList;
   
   # Fields
   has mapping : rw Hash of string[]
@@ -77,29 +80,58 @@ class Mojolicious::Types {
     $headers->set_content_type($type // "application/octet-stream");
   }
   
-  method detect : void () {
-
-=pod
-
-    my ($self, $accept) = @_;
+  method detect : string[] ($accept : string) {
     
     # Extract and prioritize MIME types
-    my %types;
-    /^\s*([^,; ]+)(?:\s*\;\s*q\s*=\s*(\d+(?:\.\d+)?))?\s*$/i and $types{lc $1} = $2 // 1 for split /,/, $accept // "";
-    my @detected = sort { $types{$b} <=> $types{$a} } sort keys %types;
-
-    # Detect extensions from MIME types
-    my %reverse;
-    my $mapping = $self->mapping;
-    for my $ext (sort keys %$mapping) {
-      my @types = @{$mapping->{$ext}};
-      push @{$reverse{$_}}, $ext for map { s/\;.*$//; lc $_ } @types;
+    my $types = Hash->new;
+    
+    for my $accept_value (@{Fn->split(",", $accept // "")}) {
+      
+      if (my $m = Re->m($accept_value, ["^\s*([^,; ]+)(?:\s*\;\s*q\s*=\s*(\d+(?:\.\d+)?))?\s*$", "i"])) {
+        
+        my $type_lc = Fn->lc($m->cap1);
+        
+        my $q = $m->cap2 ? (int)$m->cap2 : 1;
+        
+        $types->set($type_lc => $q);
+      }
     }
     
-    return [map { @{$reverse{$_} // []} } @detected];
-
-=cut
-
+    my $detected = $types->keys;
+    
+    Sort->sort_object($detected, [$types : Hash] method : int ($a : object, $b : object) {
+      return $types->get_int((string)$b) <=> $types->get_int((string)$a);
+    });
+    
+    # Detect extensions from MIME types
+    my $reverse = Hash->new;
+    my $mapping = $self->mapping;
+    
+    my $mapping_keys = $mapping->keys;
+    Sort->sort_string_asc($mapping_keys);
+    
+    for my $ext (@$mapping_keys) {
+      my $types = (string[])$mapping->get($ext);
+      
+      for my $type (@$types) {
+        
+        Re->s(my $_ = [$type], "\;.*$", "");
+        $type = $_->[0];
+        
+        $type = Fn->lc($type);
+        
+        $reverse->set($type => Array->merge_string((string[])$reverse->get($type), [$type]));
+      }
+    }
+    
+    my $exts_list = StringList->new;
+    for my $detected_type (@$detected) {
+      my $ext = $reverse->get_string($detected_type);
+      
+      $exts_list->push($ext);
+    }
+    
+    return $exts_list->to_array;
   }
   
   method file_type : string ($file : string) {
