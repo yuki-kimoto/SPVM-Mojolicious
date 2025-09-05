@@ -5,6 +5,7 @@ class Mojolicious {
   version "0.016";
   
   use Mojolicious::Routes;
+  use Mojo::Log;
   
   # Fields
   has routes : rw Mojolicious::Routes
@@ -14,5 +15,7 @@ class Mojolicious {
       }
     }
   ;
+  
+  has log : rw Mojo::Log;
   
 }
