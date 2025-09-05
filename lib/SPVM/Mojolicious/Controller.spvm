@@ -13,6 +13,7 @@ class Mojolicious::Controller {
   use Mojo::Transaction;
   use Mojo::Message::Request;
   use Mojo::Message::Response;
+  use Mojo::Log;
   
   our $ABSOLUTE : string;
   INIT {
@@ -74,27 +75,37 @@ class Mojolicious::Controller {
   method continue : void () {
     $self->app->routes->continue($self);
   }
-
-=pod
-
-  method cookie {
-    my ($self, $name) = (shift, shift);
-
-    # Response cookie
-    if (@_) {
-
-      # Cookie too big
-      my $cookie = {name => $name, value => shift, %{shift // {}}};
-      $self->helpers->log->error(qq{Cookie "$name" is bigger than 4KiB}) if length $cookie->{value} > 4096;
-
-      $self->res->cookies($cookie);
-      return $self;
-    }
-
+  
+  method cookie : string ($name : string) {
+    
     # Request cookies
-    return undef unless my $cookie = $self->req->cookie($name);
+    my $cookie = $self->req->cookie($name);
+    unless ($cookie) {
+      return undef;
+    }
+    
     return $cookie->value;
   }
+  
+  method set_cookie : void ($name : string, $value : string, $attrs : object[] = undef) {
+    
+    # Response cookie
+    # Cookie too big
+    my $cookie = Mojo::Cookie::Response->new(Fn->merge_options({name => $name, value => $value}, $attrs));
+    
+    if (length $cookie->value > 4096) {
+      $self->log->error("Cookie '$name' is bigger than 4KiB") ;
+    }
+    
+    $self->res->set_cookies($name, [$cookie]);
+  }
+  
+  # Originally helpers
+  method log : Mojo::Log () {
+    die "Not implemented.";
+  }
+  
+=pod
 
   method encrypted_cookie {
     my ($self, $name, $value, $options) = @_;
@@ -125,7 +136,7 @@ class Mojolicious::Controller {
       }
       if (defined $decrypted) { push @results, $decrypted }
 
-      else { $self->helpers->log->trace(qq{Cookie "$name" is not encrypted}) }
+      else { $self->log->trace(qq{Cookie "$name" is not encrypted}) }
     }
 
     return \@results;
@@ -165,10 +176,10 @@ class Mojolicious::Controller {
         }
         if ($valid) { push @results, $value }
 
-        else { $self->helpers->log->trace(qq{Cookie "$name" has bad signature}) }
+        else { $self->log->trace(qq{Cookie "$name" has bad signature}) }
       }
 
-      else { $self->helpers->log->trace(qq{Cookie "$name" is not signed}) }
+      else { $self->log->trace(qq{Cookie "$name" is not signed}) }
     }
 
     return \@results;
@@ -256,7 +267,7 @@ class Mojolicious::Controller {
 
       # Disable auto rendering and stop timer
       my $app = $self->render_later->app;
-      $self->helpers->log->trace(method {
+      $self->log->trace(method {
         my $timing  = $self->helpers->timing;
         my $elapsed = $timing->elapsed("mojo.timer") // 0;
         my $rps     = $timing->rps($elapsed)         // "??";
