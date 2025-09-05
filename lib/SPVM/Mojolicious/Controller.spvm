@@ -50,7 +50,7 @@ class Mojolicious::Controller {
   
   has stash : rw Hash;
   
-  # Originally helper
+  # Originally stash mojo.log
   has log : rw Mojo::Log
     get {
       unless (exists $self->{log}) {
@@ -60,6 +60,9 @@ class Mojolicious::Controller {
       return $self->{log};
     }
   ;
+  
+  # Originally stash mojo.captures
+  has captures : Hash;
   
   method req : Mojo::Message::Request () {
     
@@ -125,24 +128,32 @@ class Mojolicious::Controller {
     
     return $values;
   }
-
-=pod
-
-  method every_param {
-    my ($self, $name) = @_;
-
+  
+  method every_param : string[] ($name : string) {
+    
     # Captured unreserved values
-    my $captures = $self->stash->{"mojo.captures"} //= {};
-    if (exists $captures->{$name} && !$self->app->routes->is_reserved($name)) {
-      my $value = $captures->{$name};
-      return ref $value eq "ARRAY" ? $value : [$value];
+    my $captures = $self->{captures} //= Hash->new;
+    
+    if ($captures->exists($name) && !$self->app->routes->is_reserved($name)) {
+      my $value = $captures->get("$name");
+      
+      return $value isa string[] ? (string[])$value : [(string)$value];
     }
-
+    
     # Uploads or param values
     my $req     = $self->req;
-    my $uploads = $req->every_upload($name);
-    return @$uploads ? $uploads : $req->every_param($name);
+    
+    return $req->every_param($name);
   }
+  
+  method every_upload : Mojo::Upload[] ($name : string) {
+    
+    my $uploads = $self->req->every_upload($name);
+    
+    return $uploads;
+  }
+
+=pod
 
   method every_signed_cookie {
     my ($self, $name) = @_;

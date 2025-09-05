@@ -1,7 +1,7 @@
 # Copyright (c) 2025 Yuki Kimoto
 # MIT License
 
-class Mojolicious::Routes {
+class Mojolicious::Routes extends Mojolicious::Routes::Route {
   version_from Mojolicious;
   
   use Hash;
