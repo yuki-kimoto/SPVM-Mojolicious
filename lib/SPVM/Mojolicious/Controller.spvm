@@ -49,9 +49,27 @@ class Mojolicious::Controller {
   
   has stash : rw Hash;
   
-  has req : rw Mojo::Message::Request;
+  method req : Mojo::Message::Request () {
+    
+    my $tx = $self->tx;
+    
+    unless ($tx) {
+      die "Transaction already destroyed";
+    }
+    
+    return $tx->req;
+  }
   
-  has res : rw Mojo::Message::Response;
+  method res : Mojo::Message::Response () {
+    
+    my $tx = $self->tx;
+    
+    unless ($tx) {
+      die "Transaction already destroyed";
+    }
+    
+    return $tx->res;
+  }
 
 =pod
 
