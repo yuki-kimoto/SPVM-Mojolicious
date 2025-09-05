@@ -70,10 +70,12 @@ class Mojolicious::Controller {
     
     return $tx->res;
   }
+  
+  method continue : void () {
+    $self->app->routes->continue($self);
+  }
 
 =pod
-
-  method continue { $_[0]->app->routes->continue($_[0]) }
 
   method cookie {
     my ($self, $name) = (shift, shift);
