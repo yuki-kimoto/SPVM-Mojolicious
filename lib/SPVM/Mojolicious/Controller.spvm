@@ -111,9 +111,22 @@ class Mojolicious::Controller {
     $self->res->set_cookies($name, [$cookie]);
   }
   
-=pod
+  method every_cookie : string[] ($name : string) {
+    
+    my $every_cookies = $self->req->every_cookie($name);
+    
+    my $every_cookies_length = @$every_cookies;
+    
+    my $values = new string[$every_cookies_length];
+    
+    for (my $i = 0; $i < $every_cookies_length; $i++) {
+      $values->[$i] = $every_cookies->[$i]->value;
+    }
+    
+    return $values;
+  }
 
-  method every_cookie { [map { $_->value } @{shift->req->every_cookie(shift)}] }
+=pod
 
   method every_param {
     my ($self, $name) = @_;
