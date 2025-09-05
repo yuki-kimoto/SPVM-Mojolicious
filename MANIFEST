@@ -115,6 +115,10 @@ lib/SPVM/Mojolicious/Routes/Route.pm
 lib/SPVM/Mojolicious/Routes/Route.spvm
 lib/SPVM/Mojolicious/Sessions.pm
 lib/SPVM/Mojolicious/Sessions.spvm
+lib/SPVM/Mojolicious/Sessions/Callback/Deserialize.pm
+lib/SPVM/Mojolicious/Sessions/Callback/Deserialize.spvm
+lib/SPVM/Mojolicious/Sessions/Callback/Serialize.pm
+lib/SPVM/Mojolicious/Sessions/Callback/Serialize.spvm
 lib/SPVM/Mojolicious/Static.pm
 lib/SPVM/Mojolicious/Static.spvm
 lib/SPVM/Mojolicious/Types.pm

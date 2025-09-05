@@ -6,6 +6,8 @@ class Mojolicious::Sessions {
   
   use JSON;
   use Mojo::Util;
+  use Mojolicious::Sessions::Callback::Serialize;
+  use Mojolicious::Sessions::Callback::Deserialize;
   
   # Fields
   has cookie_domain : rw string;
@@ -44,10 +46,12 @@ class Mojolicious::Sessions {
     }
   ;
   
-  has deserialize : rw Callback
+  has deserialize : rw Mojolicious::Sessions::Callback::Deserialize
     get {
       unless (exists $self->{deserialize}) {
-        $self->{deserialize} = undef;
+        $self->{deserialize} = method : object ($json : string) {
+          return JSON->new->decode($json);
+        };
       }
       
       return $self->{deserialize};
@@ -64,10 +68,12 @@ class Mojolicious::Sessions {
     }
   ;
   
-  has serialize : rw Callback
+  has serialize : rw Mojolicious::Sessions::Callback::Serialize
     get {
       unless (exists $self->{serialize}) {
-        $self->{serialize} = undef;
+        $self->{serialize} = method : string ($data : object) {
+          return JSON->new->encode($data);
+        };
       }
       
       return $self->{serialize};
