@@ -8,6 +8,7 @@ class Mojolicious::Sessions {
   use Mojo::Util;
   use Mojolicious::Sessions::Callback::Serialize;
   use Mojolicious::Sessions::Callback::Deserialize;
+  use Mojolicious::Controller;
   
   # Fields
   has cookie_domain : rw string;
@@ -80,5 +81,71 @@ class Mojolicious::Sessions {
     }
   ;
   
+  # Class Methods
+  static method new : Mojolicious::Sessions () {
+    
+    my $self = new Mojolicious::Sessions;
+    
+    return $self;
+  }
   
+  # Instance Methods
+  method load : void ($c : Mojolicious::Controller) {
+    
+    # FUTURE
+    if ($self->encrypted) {
+      die "Encrypted cookie is not supported.";
+    }
+    
+    my $value = $c->signed_cookie($self->cookie_name);
+    
+    unless ($value) {
+      return;
+    }
+    
+    Re->s(my $_ = [$value], ["-", "g"], "=");
+    $value = $_->[0];
+    
+    my $session = (Hash)$self->deserialize->(Mojo::Util->b64_decode($value));
+    unless ($session) {
+      return;
+    }
+    
+    my $exists_expiration = $session->exists("expiration");
+    
+    my $exists_expires = $session->exists("expires");
+    
+    # "expiration" value is inherited
+    my $expiration = $exists_expiration ? $session->get_int("expiration") : $self->default_expiration;
+    
+    my $expires =  $session->get_long("expires");
+    $session->delete("expires");
+    
+    if (!$expires && $expiration) {
+      return;
+    }
+    
+    
+    if ($exists_expires && $expires <= Sys->time) {
+      return;
+    }
+    
+    my $session_keys = $session->keys;
+    
+    my $session_keys_length = @$session_keys;
+    
+    $c->set_active_session($session_keys_length);
+    
+    unless ($session_keys_length) {
+      return;
+    }
+    
+    $c->set_session($session);
+    
+    if ($session->get("new_flash")) {
+      $session->set(flash => $session->delete("new_flash"));
+    }
+  }
+  
+
 }

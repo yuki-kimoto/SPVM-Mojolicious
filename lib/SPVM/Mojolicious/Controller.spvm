@@ -64,6 +64,10 @@ class Mojolicious::Controller {
   # Originally stash mojo.captures
   has captures : Hash;
   
+  has active_session : rw int;
+  
+  has session : rw Hash;
+  
   method req : Mojo::Message::Request () {
     
     my $tx = $self->tx;
@@ -151,6 +155,21 @@ class Mojolicious::Controller {
     my $uploads = $self->req->every_upload($name);
     
     return $uploads;
+  }
+
+  method signed_cookie : string ($name : string) {
+
+=pod
+
+    # Request cookie
+    return $self->every_signed_cookie($name)->[-1] unless defined $value;
+
+    # Response cookie
+    my $sum = Digest::SHA::hmac_sha256_hex("$name=$value", $self->app->secrets->[0]);
+    return $self->cookie($name, "$value--$sum", $options);
+
+=cut
+
   }
 
 =pod
@@ -309,17 +328,6 @@ class Mojolicious::Controller {
     @$session{keys %$values} = values %$values;
 
     return $self;
-  }
-
-  method signed_cookie {
-    my ($self, $name, $value, $options) = @_;
-
-    # Request cookie
-    return $self->every_signed_cookie($name)->[-1] unless defined $value;
-
-    # Response cookie
-    my $sum = Digest::SHA::hmac_sha256_hex("$name=$value", $self->app->secrets->[0]);
-    return $self->cookie($name, "$value--$sum", $options);
   }
 
   method stash { Mojo::Util::_stash(stash => @_) }
