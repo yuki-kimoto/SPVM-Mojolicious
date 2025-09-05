@@ -113,6 +113,8 @@ lib/SPVM/Mojolicious/Routes/Pattern.pm
 lib/SPVM/Mojolicious/Routes/Pattern.spvm
 lib/SPVM/Mojolicious/Routes/Route.pm
 lib/SPVM/Mojolicious/Routes/Route.spvm
+lib/SPVM/Mojolicious/Sessions.pm
+lib/SPVM/Mojolicious/Sessions.spvm
 lib/SPVM/Mojolicious/Static.pm
 lib/SPVM/Mojolicious/Static.spvm
 lib/SPVM/Mojolicious/Types.pm

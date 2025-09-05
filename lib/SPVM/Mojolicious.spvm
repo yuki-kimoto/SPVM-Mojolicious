@@ -6,6 +6,7 @@ class Mojolicious {
   
   use Mojolicious::Routes;
   use Mojo::Log;
+  use Mojolicious::Sessions;
   
   # Fields
   has routes : rw Mojolicious::Routes
