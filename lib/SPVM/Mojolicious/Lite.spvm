@@ -1,6 +1,67 @@
 # Copyright (c) 2025 Yuki Kimoto
 # MIT License
 
-class Mojolicious::Lite erxtends Mojolicious {
+class Mojolicious::Lite extends Mojolicious {
+  
+  use FindBin;
+  use Re;
+  use Mojo::File;
+  
   version_from Mojolicious;
+  
+  # Class Method
+  static method new : Mojolicious::Lite () {
+    
+    my $home = FindBin->Bin;
+    
+    my $exe = FindBin->Script;
+    
+    my $moniker = Mojo::File->path($exe)->basename;
+    
+    Re->s(my $_ = [$moniker], "\.(pl|pm|t)$", "");
+    $moniker = $_->[0];
+    
+    my $self = new Mojolicious::Lite;
+    
+    $self->set_moniker($moniker);
+    
+    
+  }
+  
 }
+
+__END__
+
+sub import {
+
+  # Initialize routes without namespaces
+  my $routes = $app->routes->namespaces([]);
+  $app->static->classes->[0] = $app->renderer->classes->[0] = $caller;
+
+  # The Mojolicious::Lite DSL
+  my $root = $routes;
+  for my $name (qw(any get options patch post put websocket)) {
+    monkey_patch $caller, $name, sub { $routes->$name(@_) }
+  }
+  monkey_patch($caller, $_, sub {$app}) for qw(new app);
+  monkey_patch $caller, del   => sub { $routes->delete(@_) };
+  monkey_patch $caller, group => sub (&) {
+    (my $old, $root) = ($root, $routes);
+    shift->();
+    ($routes, $root) = ($root, $old);
+  };
+  monkey_patch $caller,
+    helper => sub { $app->helper(@_) },
+    hook   => sub { $app->hook(@_) },
+    plugin => sub { $app->plugin(@_) },
+    under  => sub { $routes = $root->under(@_) };
+
+  # Make sure there's a default application for testing
+  Mojo::UserAgent::Server->app($app) unless Mojo::UserAgent::Server->app;
+
+  # Lite apps are strict!
+  unshift @_, 'Mojo::Base', '-strict';
+  goto &Mojo::Base::import;
+}
+
+

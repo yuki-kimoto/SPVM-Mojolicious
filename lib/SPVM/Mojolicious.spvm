@@ -19,4 +19,5 @@ class Mojolicious {
   
   has log : rw Mojo::Log;
   
+  has moniker : rw string;
 }
