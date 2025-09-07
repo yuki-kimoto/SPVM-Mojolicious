@@ -21,9 +21,12 @@ class Mojolicious::Lite extends Mojolicious {
     Re->s(my $_ = [$moniker], "\.(pl|pm|t)$", "");
     $moniker = $_->[0];
     
-    my $self = new Mojolicious::Lite;
+    my $app = new Mojolicious::Lite;
     
-    $self->set_moniker($moniker);
+    $app->set_moniker($moniker);
+    
+    my $routes = $app->routes;
+    $routes->set_namespaces(new string[0]);
     
     
   }
