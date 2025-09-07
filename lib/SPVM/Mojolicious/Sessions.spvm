@@ -148,4 +148,46 @@ class Mojolicious::Sessions {
   }
   
 
+  method store : void ($c : Mojolicious::Controller) {
+
+    # Make sure session was active
+    my $session = $c->session;
+    unless ($session) {
+      return;
+    }
+    
+    unless (@$session->keys || $c->active_session) {
+      return;
+    }
+    
+    die "TODO";
+    
+=pod
+
+    # Don't reset flash for static files
+    my $old = delete $session->{flash};
+    $session->{new_flash} = $old if $stash->{'mojo.static'};
+    delete $session->{new_flash} unless keys %{$session->{new_flash}};
+
+    # Generate "expires" value from "expiration" if necessary
+    my $expiration = $session->{expiration} // $self->default_expiration;
+    my $default    = delete $session->{expires};
+    $session->{expires} = $default || time + $expiration if $expiration || $default;
+
+    my $value = b64_encode $self->serialize->($session), '';
+    $value =~ y/=/-/;
+    my $options = {
+      domain   => $self->cookie_domain,
+      expires  => $session->{expires},
+      httponly => 1,
+      path     => $self->cookie_path,
+      samesite => $self->samesite,
+      secure   => $self->secure
+    };
+    my $method = $self->encrypted ? 'encrypted_cookie' : 'signed_cookie';
+    $c->$method($self->cookie_name, $value, $options);
+
+=cut
+
+  }
 }
