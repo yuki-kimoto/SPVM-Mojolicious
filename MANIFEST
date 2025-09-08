@@ -105,6 +105,8 @@ lib/SPVM/Mojo/WebSocket/Frame.pm
 lib/SPVM/Mojo/WebSocket/Frame.spvm
 lib/SPVM/Mojolicious.pm
 lib/SPVM/Mojolicious.spvm
+lib/SPVM/Mojolicious/Commands.pm
+lib/SPVM/Mojolicious/Commands.spvm
 lib/SPVM/Mojolicious/Controller.pm
 lib/SPVM/Mojolicious/Controller.spvm
 lib/SPVM/Mojolicious/Lite.pm
