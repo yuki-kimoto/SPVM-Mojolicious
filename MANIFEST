@@ -47,6 +47,8 @@ lib/SPVM/Mojo/Headers.pm
 lib/SPVM/Mojo/Headers.spvm
 lib/SPVM/Mojo/Home.pm
 lib/SPVM/Mojo/Home.spvm
+lib/SPVM/Mojo/Loader.pm
+lib/SPVM/Mojo/Loader.spvm
 lib/SPVM/Mojo/Log.pm
 lib/SPVM/Mojo/Log.spvm
 lib/SPVM/Mojo/Log/Callback/Format.pm
