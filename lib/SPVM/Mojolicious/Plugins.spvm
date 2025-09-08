@@ -50,9 +50,37 @@ class Mojolicious::Plugins extends Mojo::EventEmitter {
       return undef;
     }
     else {
-      return $wrapper->($cb);
+      return $wrapper->(undef);
     }
     
+  }
+  
+  method emit_hook : void ($name : string, $arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
+    
+    my $subscribers = $self->subscribers($name);
+    
+    my $subscribers_length = @$subscribers;
+    
+    for (my $i = 0; $i < $subscribers_length; $i++) {
+      
+      my $cb = $subscribers->[$i];
+      
+      $cb->($self, $arg1, $arg2, $arg3);
+    }
+  }
+  
+  method emit_hook_reverse : void ($name : string, $arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
+    
+    my $subscribers = $self->subscribers($name);
+    
+    my $subscribers_length = @$subscribers;
+    
+    for (my $i = $subscribers_length - 1; $i >= 0; $i--) {
+      
+      my $cb = $subscribers->[$i];
+      
+      $cb->($self, $arg1, $arg2, $arg3);
+    }
   }
   
   
@@ -62,18 +90,6 @@ class Mojolicious::Plugins extends Mojo::EventEmitter {
 __END__
 
 TODO
-
-sub emit_hook {
-  my $self = shift;
-  for my $cb (@{$self->subscribers(shift)}) { $cb->(@_) }
-  return $self;
-}
-
-sub emit_hook_reverse {
-  my $self = shift;
-  for my $cb (reverse @{$self->subscribers(shift)}) { $cb->(@_) }
-  return $self;
-}
 
 sub load_plugin {
   my ($self, $name) = @_;
