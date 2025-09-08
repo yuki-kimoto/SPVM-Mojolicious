@@ -6,11 +6,14 @@ class Mojolicious::Lite extends Mojolicious {
   use FindBin;
   use Re;
   use Mojo::File;
+  use Mojolicious::Routes;
   
   version_from Mojolicious;
   
   # Fields
   has routes : rw Mojolicious::Routes;
+  
+  has root : rw Mojolicious::Routes;
   
   # Class Method
   static method new : Mojolicious::Lite () {
@@ -33,51 +36,75 @@ class Mojolicious::Lite extends Mojolicious {
     
     $app->{routes} = $routes;
     
+    $app->{root} = $routes;
+    
     return $app;
   }
   
   # Instance Methods
-  method any : void ($arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef, $arg4 : object = undef) {
+  method any : Mojolicious::Routes ($arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef, $arg4 : object = undef) {
     
     my $routes = $self->routes;
     
     $routes->any($arg1, $arg2, $arg3, $arg4);
   }
   
+  method del : Mojolicious::Routes ($arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
+    
+    my $routes = $self->routes;
+    
+    $routes->delete($arg1, $arg2, $arg3);
+  }
+  
+  method get : Mojolicious::Routes ($arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
+    
+    my $routes = $self->routes;
+    
+    $routes->get($arg1, $arg2, $arg3);
+  }
+  
+  method options : Mojolicious::Routes ($arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
+    
+    my $routes = $self->routes;
+    
+    $routes->options($arg1, $arg2, $arg3);
+  }
+  
+  method patch : Mojolicious::Routes ($arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
+    
+    my $routes = $self->routes;
+    
+    $routes->patch($arg1, $arg2, $arg3);
+  }
+  
+  method post : Mojolicious::Routes ($arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
+    
+    my $routes = $self->routes;
+    
+    $routes->post($arg1, $arg2, $arg3);
+  }
+  
+  method put : Mojolicious::Routes ($arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
+    
+    my $routes = $self->routes;
+    
+    $routes->put($arg1, $arg2, $arg3);
+  }
+  
+  method under : Mojolicious::Routes ($arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
+    
+    my $root = $self->root;
+    
+    $self->{routes} = $root->under($arg1, $arg2, $arg3);
+  }
+  
 }
 
 __END__
 
-sub import {
+TODO
 
-  # Initialize routes without namespaces
-  my $routes = $app->routes->namespaces([]);
-  $app->static->classes->[0] = $app->renderer->classes->[0] = $caller;
-
-  # The Mojolicious::Lite DSL
-  my $root = $routes;
-  for my $name (qw(any get options patch post put websocket)) {
-    monkey_patch $caller, $name, sub { $routes->$name(@_) }
-  }
-  monkey_patch($caller, $_, sub {$app}) for qw(new app);
-  monkey_patch $caller, del   => sub { $routes->delete(@_) };
-  monkey_patch $caller, group => sub (&) {
-    (my $old, $root) = ($root, $routes);
-    shift->();
-    ($routes, $root) = ($root, $old);
-  };
   monkey_patch $caller,
     helper => sub { $app->helper(@_) },
     hook   => sub { $app->hook(@_) },
     plugin => sub { $app->plugin(@_) },
-    under  => sub { $routes = $root->under(@_) };
-
-  # Make sure there's a default application for testing
-  Mojo::UserAgent::Server->app($app) unless Mojo::UserAgent::Server->app;
-
-  # Lite apps are strict!
-  unshift @_, 'Mojo::Base', '-strict';
-  goto &Mojo::Base::import;
-}
-
-
