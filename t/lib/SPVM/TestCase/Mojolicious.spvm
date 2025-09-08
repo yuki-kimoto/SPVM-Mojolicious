@@ -6,6 +6,7 @@ class TestCase::Mojolicious {
   use Mojolicious::Static;
   use Mojolicious::Types;
   use Mojolicious::Lite;
+  use Mojolicious::Plugin;
   
   static method test : int () {
     
