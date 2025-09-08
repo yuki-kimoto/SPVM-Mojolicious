@@ -106,12 +106,3 @@ class Mojolicious::Lite extends Mojolicious {
   }
   
 }
-
-__END__
-
-TODO
-
-  monkey_patch $caller,
-    helper => sub { $app->helper(@_) },
-    hook   => sub { $app->hook(@_) },
-    plugin => sub { $app->plugin(@_) },
