@@ -9,6 +9,9 @@ class Mojolicious::Lite extends Mojolicious {
   
   version_from Mojolicious;
   
+  # Fields
+  has routes : rw Mojolicious::Routes;
+  
   # Class Method
   static method new : Mojolicious::Lite () {
     
@@ -28,7 +31,17 @@ class Mojolicious::Lite extends Mojolicious {
     my $routes = $app->routes;
     $routes->set_namespaces(new string[0]);
     
+    $app->{routes} = $routes;
     
+    return $app;
+  }
+  
+  # Instance Methods
+  method any : void ($arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef, $arg4 : object = undef) {
+    
+    my $routes = $self->routes;
+    
+    $routes->any($arg1, $arg2, $arg3, $arg4);
   }
   
 }
