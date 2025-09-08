@@ -197,4 +197,9 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     return (Mojolicious::Routes)$self->SUPER::under($arg1, $arg2, $arg3);
   }
   
+  method websocket : Mojolicious::Routes ($arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
+    
+    return (Mojolicious::Routes)$self->SUPER::websocket($arg1, $arg2, $arg3);
+  }
+  
 }

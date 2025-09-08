@@ -4,6 +4,9 @@
 class Mojolicious::Routes::Route {
   version_from Mojolicious;
   
+  # Undocumented Fields
+  has websocket : byte;
+  
   # Instance Methods
   method is_reserved : int ($name : string) {
     die "Not implemeneted.";
@@ -22,35 +25,44 @@ class Mojolicious::Routes::Route {
       $methods = new string[0];
     }
     
-    $self->_generate_route($methods, $arg1, $arg2, $arg3);
+    return $self->_generate_route($methods, $arg1, $arg2, $arg3);
   }
   
   method delete : Mojolicious::Routes::Route ($arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
-    $self->_generate_route(DELETE => $arg1, $arg2, $arg3);
+    return $self->_generate_route(DELETE => $arg1, $arg2, $arg3);
   }
   
   method get : Mojolicious::Routes::Route ($arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
-    $self->_generate_route(GET => $arg1, $arg2, $arg3);
+    return $self->_generate_route(GET => $arg1, $arg2, $arg3);
   }
   
   method options : Mojolicious::Routes::Route ($arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
-    $self->_generate_route(OPTIONS => $arg1, $arg2, $arg3);
+    return $self->_generate_route(OPTIONS => $arg1, $arg2, $arg3);
   }
   
   method patch : Mojolicious::Routes::Route ($arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
-    $self->_generate_route(PATCH => $arg1, $arg2, $arg3);
+    return $self->_generate_route(PATCH => $arg1, $arg2, $arg3);
   }
   
   method post : Mojolicious::Routes::Route ($arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
-    $self->_generate_route(POST => $arg1, $arg2, $arg3);
+    return $self->_generate_route(POST => $arg1, $arg2, $arg3);
   }
   
   method put : Mojolicious::Routes::Route ($arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
-    $self->_generate_route(PUT => $arg1, $arg2, $arg3);
+    return $self->_generate_route(PUT => $arg1, $arg2, $arg3);
   }
   
   method under : Mojolicious::Routes::Route ($arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
-    $self->_generate_route(under => $arg1, $arg2, $arg3);
+    return $self->_generate_route(under => $arg1, $arg2, $arg3);
+  }
+  
+  method websocket : Mojolicious::Routes::Route ($arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
+    
+    my $route = $self->get($arg1, $arg2, $arg3);
+    
+    $route->{websocket} = 1;
+    
+    return $route;
   }
   
   private method _generate_route : Mojolicious::Routes::Route ($method : object of string|string[], $arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
