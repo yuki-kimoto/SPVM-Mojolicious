@@ -107,6 +107,8 @@ lib/SPVM/Mojolicious/Lite.pm
 lib/SPVM/Mojolicious/Lite.spvm
 lib/SPVM/Mojolicious/Plugin.pm
 lib/SPVM/Mojolicious/Plugin.spvm
+lib/SPVM/Mojolicious/Plugins.pm
+lib/SPVM/Mojolicious/Plugins.spvm
 lib/SPVM/Mojolicious/Routes.pm
 lib/SPVM/Mojolicious/Routes.spvm
 lib/SPVM/Mojolicious/Routes/Callback/Condition.pm
