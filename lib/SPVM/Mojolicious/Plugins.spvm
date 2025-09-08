@@ -3,16 +3,25 @@
 
 class Mojolicious::Plugins extends Mojo::EventEmitter {
   version_from Mojolicious;
+  
+  use Mojo::Loader;
+  
+  # Fields
+  has namespaces : rw string[]
+    get {
+      if (exists $self->{namespaces}) {
+        $self->{namespaces} = ["Mojolicious::Plugin"];
+      }
+      
+      return $self->{namespaces};
+    }
+  ;
+  
 }
 
 __END__
 
 TODO
-
-use Mojo::Loader qw(load_class);
-use Mojo::Util   qw(camelize);
-
-has namespaces => sub { ['Mojolicious::Plugin'] };
 
 sub emit_chain {
   my ($self, $name, @args) = @_;
