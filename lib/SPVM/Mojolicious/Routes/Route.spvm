@@ -7,6 +7,73 @@ class Mojolicious::Routes::Route {
   use Mojo::Util;
   use Mojolicious::Routes::Pattern;
   
+  # Class Variables
+  # Reserved stash values
+  our $RESERVED : Hash of string;
+  INIT {
+    
+    my $reserved = [
+      "action",
+      "app",
+      "cb",
+      "controller",
+      "data",
+      "extends",
+      "format",
+      "handler",
+      "inline",
+      "json",
+      "layout",
+      "namespace",
+      "path",
+      "status",
+      "template",
+      "text",
+      "variant",
+    ];
+    
+    $RESERVED = Hash->new_from_keys($reserved => 1);
+  }
+  
+  # Fields
+  has inline : rw byte;
+  
+  has partial : rw byte;
+  
+  has children : rw Mojolicious::Routes::Route[]
+    get {
+      unless (exists $self->{children}) {
+        $self->{children} = new Mojolicious::Routes::Route[0];
+      }
+      
+      return $self->{children};
+    }
+  ;
+  
+  has parent : rw Mojolicious::Routes::Route
+    get {
+      unless (exists $self->{parent}) {
+        $self->{parent} = undef;
+      }
+      
+      return $self->{parent};
+    }
+    set {
+      $self->{parent} = $_;
+      weaken $self->{parent};
+    }
+  ;
+  
+  has pattern : rw Mojolicious::Routes::Pattern
+    get {
+      unless (exists $self->{pattern}) {
+        $self->{pattern} = Mojolicious::Routes::Pattern->new;
+      }
+      
+      return $self->{pattern};
+    }
+  ;
+  
   # Undocumented Fields
   has websocket : byte;
   
@@ -78,17 +145,6 @@ class Mojolicious::Routes::Route {
 __END__
 
 TODO
-
-has [qw(inline partial)];
-has 'children' => sub { [] };
-has parent     => undef, weak => 1;
-has pattern    => sub { Mojolicious::Routes::Pattern->new };
-
-# Reserved stash values
-my %RESERVED = map { $_ => 1 } (
-  qw(action app cb controller data extends format handler inline json layout namespace path status template text),
-  qw(variant)
-);
 
 sub BUILD_DYNAMIC {
   my ($class, $method, $dyn_methods) = @_;
