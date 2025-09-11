@@ -305,18 +305,25 @@ class Mojolicious::Routes::Route {
     return $self->inline ? 0 : !$self->children_list->length;
   }
   
+  method parse : void ($args : object...) {
+    
+    my $pattern = $self->pattern;
+    
+    $pattern->parse($args);
+    
+    my $name = $pattern->unparsed // "";
+    
+    Re->s(my $_ = [$name], ["\W+", "g"], "");
+    $name = $_->[0];
+    
+    $self->{name} = $name;
+  }
+
 }
 
 __END__
 
 TODO
-
-sub parse {
-  my $self = shift;
-  $self->{name} = $self->pattern->parse(@_)->unparsed // '';
-  $self->{name} =~ s/\W+//g;
-  return $self;
-}
 
 sub render {
   my ($self, $values) = @_;

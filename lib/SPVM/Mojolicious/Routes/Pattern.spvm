@@ -9,6 +9,8 @@ class Mojolicious::Routes::Pattern {
   
   has types : rw Hash of object of string|Regex|string[]|Regex[]|object[];
   
+  has unparsed : rw string;
+
   # Class Methods
   static method new : Mojolicious::Routes::Pattern () {
     
@@ -17,4 +19,9 @@ class Mojolicious::Routes::Pattern {
     return $self;
   }
   
+  # Instance Methods
+  method parse : void ($args : object...) {
+    die "TODO";
+  }
+
 }
