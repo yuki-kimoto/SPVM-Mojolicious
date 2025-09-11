@@ -109,7 +109,32 @@ class Mojolicious::Routes::Route {
       return $self->{has_websocket};
     }
   ;
-
+  
+  has methods : rw string[]
+    get {
+      unless (exists $self->{methods}) {
+        $self->{methods} = new string[0];
+      }
+      
+      return $self->{methods};
+    }
+    set ($_ : object of string|string[]) {
+      
+      my $methods = (string[])undef;
+      if ($_ isa string) {
+        $methods = [(string)$_];
+      }
+      elsif ($_ isa string[]) {
+        $methods = (string[])$_;
+      }
+      else {
+        die "The methods field value must be a string, a string array.";
+      }
+      
+      $self->{methods} = $methods;
+    }
+  ;
+  
   # Undocumented Fields
   has websocket : byte;
   
@@ -275,21 +300,16 @@ class Mojolicious::Routes::Route {
     return !!$RESERVED->get($name);
   }
   
+  method is_endpoint : int () {
+    
+    return $self->inline ? 0 : !$self->children_list->length;
+  }
+  
 }
 
 __END__
 
 TODO
-
-sub is_endpoint { $_[0]->inline ? undef : !@{$_[0]->children} }
-
-sub methods {
-  my $self = shift;
-  return $self->{methods} unless @_;
-  my $methods = [map uc($_), @{ref $_[0] ? $_[0] : [@_]}];
-  $self->{methods} = $methods if @$methods;
-  return $self;
-}
 
 sub parse {
   my $self = shift;
