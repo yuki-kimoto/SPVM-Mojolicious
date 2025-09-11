@@ -116,10 +116,6 @@ class Mojolicious::Routes::Route {
   has custom : string;
   
   # Instance Methods
-  method is_reserved : int ($name : string) {
-    die "Not implemeneted.";
-  }
-  
   method any : Mojolicious::Routes::Route ($args : object...) {
     
     my $methods = (string[])undef;
@@ -274,7 +270,11 @@ class Mojolicious::Routes::Route {
     
     return !!$self->{websocket};
   }
-
+  
+  method is_reserved : int ($name : string) {
+    return !!$RESERVED->get($name);
+  }
+  
 }
 
 __END__
@@ -282,8 +282,6 @@ __END__
 TODO
 
 sub is_endpoint { $_[0]->inline ? undef : !@{$_[0]->children} }
-
-sub is_reserved { !!$RESERVED{$_[1]} }
 
 sub methods {
   my $self = shift;
