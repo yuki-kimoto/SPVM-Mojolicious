@@ -91,6 +91,25 @@ class Mojolicious::Routes::Route {
     }
   ;
   
+  has has_websocket : ro int
+    get {
+      unless (exists $self->{has_websocket}) {
+        my $chain_list = $self->_chain;
+        
+        my $has_websocket = 0;
+        for (my $i = 0; $i < $chain_list->length; $i++) {
+          my $child = (Mojolicious::Routes::Route)$chain_list->get($i);
+          
+          if ($child->is_websocket) {
+            $has_websocket = 1;
+          }
+        }
+      }
+      
+      return $self->{has_websocket};
+    }
+  ;
+
   # Undocumented Fields
   has websocket : byte;
   
@@ -251,36 +270,26 @@ class Mojolicious::Routes::Route {
     return !!$self->{custom};
   }
   
+  method is_websocket : int () {
+    
+    return !!$self->{websocket};
+  }
+
 }
 
 __END__
 
 TODO
 
-sub has_websocket {
-  my $self = shift;
-  return $self->{has_websocket} if exists $self->{has_websocket};
-  return $self->{has_websocket} = grep { $_->is_websocket } @{$self->_chain};
-}
-
 sub is_endpoint { $_[0]->inline ? undef : !@{$_[0]->children} }
 
 sub is_reserved { !!$RESERVED{$_[1]} }
-
-sub is_websocket { !!shift->{websocket} }
 
 sub methods {
   my $self = shift;
   return $self->{methods} unless @_;
   my $methods = [map uc($_), @{ref $_[0] ? $_[0] : [@_]}];
   $self->{methods} = $methods if @$methods;
-  return $self;
-}
-
-sub name {
-  my $self = shift;
-  return $self->{name} unless @_;
-  @$self{qw(name custom)} = (shift, 1);
   return $self;
 }
 
