@@ -131,6 +131,10 @@ class Mojolicious::Routes::Route {
         die "The methods field value must be a string, a string array.";
       }
       
+      for (my $i = 0; $i < @$methods; $i++) {
+        $methods->[$i] = Fn->lc($methods->[$i]);
+      }
+      
       $self->{methods} = $methods;
     }
   ;
