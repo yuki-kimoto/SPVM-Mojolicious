@@ -3,6 +3,12 @@
 
 class Mojolicious::Routes::Pattern {
   
+  use Mojolicious::Types;
+  
+  # Fields
+  
+  has types : rw Hash of object of string|Regex|string[]|Regex[]|object[];
+  
   # Class Methods
   static method new : Mojolicious::Routes::Pattern () {
     
