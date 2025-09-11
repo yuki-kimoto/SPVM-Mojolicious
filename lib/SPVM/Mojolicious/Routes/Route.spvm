@@ -322,18 +322,30 @@ class Mojolicious::Routes::Route {
     
     $self->{name} = $name;
   }
+  
+  method render : string ($values : object[]) {
+    
+    my $chain_list = $self->_chain;
+    
+    my $pattern_strings_list = StringList->new;
+    for (my $i = 0; $i < $chain_list->length; $i++) {
+      my $_ = (Mojolicious::Routes::Route)$chain_list->get($i);
+      
+      my $pattern_string = $_->pattern->render($values, !$_->children_list->length && !$_->partial);
+      
+      $pattern_strings_list->push($pattern_string);
+    }
+    
+    my $path = Fn->join("", $pattern_strings_list->to_array);
+    
+    return length $path ? $path : "/";
+  }
 
 }
 
 __END__
 
 TODO
-
-sub render {
-  my ($self, $values) = @_;
-  my $path = join '', map { $_->pattern->render($values, !@{$_->children} && !$_->partial) } @{$self->_chain};
-  return $path || '/';
-}
 
 sub requires {
   my $self = shift;

@@ -23,5 +23,10 @@ class Mojolicious::Routes::Pattern {
   method parse : void ($args : object...) {
     die "TODO";
   }
+  
+  method render : string ($values : object[], $endpoint : int = 0) {
+    
+    die "TODO";
+  }
 
 }
