@@ -139,6 +139,25 @@ class Mojolicious::Routes::Route {
     }
   ;
   
+  has requires : rw object[]
+    get {
+      unless (exists $self->{methods}) {
+        $self->{requires} = new object[0];
+      }
+      
+      return $self->{requires};
+    }
+    set {
+      unless ($_) {
+        die "The requires field value must be defined.";
+      }
+      
+      $self->{requires} = $_;
+      
+      $self->root->cache->set_max_keys(0);
+    }
+  ;
+
   # Undocumented Fields
   has websocket : byte;
   
@@ -340,25 +359,12 @@ class Mojolicious::Routes::Route {
     
     return length $path ? $path : "/";
   }
-
+  
 }
 
 __END__
 
 TODO
-
-sub requires {
-  my $self = shift;
-
-  # Routes with conditions can't be cached
-  return $self->{requires} unless @_;
-  my $conditions = ref $_[0] eq 'ARRAY' ? $_[0] : [@_];
-  return $self unless @$conditions;
-  $self->{requires} = $conditions;
-  $self->root->cache->max_keys(0);
-
-  return $self;
-}
 
 sub suggested_method {
   my $self = shift;
