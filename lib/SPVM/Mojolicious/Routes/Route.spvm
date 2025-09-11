@@ -83,8 +83,18 @@ class Mojolicious::Routes::Route {
     }
   ;
   
+  has name : rw string
+    set {
+      $self->{name} = $_;
+      
+      $self->{custom} = 1;
+    }
+  ;
+  
   # Undocumented Fields
   has websocket : byte;
+  
+  has custom : string;
   
   # Instance Methods
   method is_reserved : int ($name : string) {
@@ -196,16 +206,56 @@ class Mojolicious::Routes::Route {
     
     return $chain;
   }
-
+  
+  method find : Mojolicious::Routes::Route ($name : string) {
+    return (Mojolicious::Routes::Route)$self->_index->get($name);
+  }
+  
+  private method _index : Hash () {
+    
+    my $auto = Hash->new;
+    
+    my $custom = Hash->new;
+    
+    my $children_list = $self->children_list->clone;
+    
+    while (my $child = (Mojolicious::Routes::Route)$children_list->shift) {
+      if   ($child->has_custom_name) {
+        unless ($custom->get($child->name)) {
+          $custom->set($child->name, $child);
+        }
+      }
+      else {
+        unless ($auto->get($child->name)) {
+          $auto->set($child->name, $child);
+        }
+      }
+      
+      $children_list->push_($child->children);
+    }
+    
+    my $ret = Hash->new;
+    
+    for my $key (@{$auto->keys}) {
+      $ret->set($key, $auto->get($key));
+    }
+    
+    for my $key (@{$custom->keys}) {
+      $ret->set($key, $custom->get($key));
+    }
+    
+    return $ret;
+  }
+  
+  method has_custom_name : int () {
+    return !!$self->{custom};
+  }
+  
 }
 
 __END__
 
 TODO
-
-sub find { shift->_index->{shift()} }
-
-sub has_custom_name { !!shift->{custom} }
 
 sub has_websocket {
   my $self = shift;
@@ -330,20 +380,6 @@ sub _generate_route {
   $methods eq 'under' ? $route->inline(1) : $route->methods($methods);
 
   return defined $name ? $route->name($name) : $route;
-}
-
-sub _index {
-  my $self = shift;
-
-  my (%auto, %custom);
-  my @children = (@{$self->children});
-  while (my $child = shift @children) {
-    if   ($child->has_custom_name) { $custom{$child->name} ||= $child }
-    else                           { $auto{$child->name}   ||= $child }
-    push @children, @{$child->children};
-  }
-
-  return {%auto, %custom};
 }
 
 sub _route {
