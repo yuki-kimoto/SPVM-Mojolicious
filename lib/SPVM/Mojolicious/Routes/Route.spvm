@@ -203,13 +203,7 @@ __END__
 
 TODO
 
-sub any { shift->_generate_route(ref $_[0] eq 'ARRAY' ? shift : [], @_) }
-
-sub delete { shift->_generate_route(DELETE => @_) }
-
 sub find { shift->_index->{shift()} }
-
-sub get { shift->_generate_route(GET => @_) }
 
 sub has_custom_name { !!shift->{custom} }
 
@@ -240,24 +234,11 @@ sub name {
   return $self;
 }
 
-sub options { shift->_generate_route(OPTIONS => @_) }
-
 sub parse {
   my $self = shift;
   $self->{name} = $self->pattern->parse(@_)->unparsed // '';
   $self->{name} =~ s/\W+//g;
   return $self;
-}
-
-sub patch { shift->_generate_route(PATCH => @_) }
-sub post  { shift->_generate_route(POST  => @_) }
-sub put   { shift->_generate_route(PUT   => @_) }
-
-sub remove {
-  my $self = shift;
-  return $self unless my $parent = $self->parent;
-  @{$parent->children} = grep { $_ ne $self } @{$parent->children};
-  return $self->parent(undef);
 }
 
 sub render {
@@ -318,20 +299,6 @@ sub to {
 
 sub to_string {
   join '', map { $_->pattern->unparsed // '' } @{shift->_chain};
-}
-
-sub under { shift->_generate_route(under => @_) }
-
-sub websocket {
-  my $route = shift->get(@_);
-  $route->{websocket} = 1;
-  return $route;
-}
-
-sub _chain {
-  my @chain = (my $parent = shift);
-  unshift @chain, $parent while $parent = $parent->parent;
-  return \@chain;
 }
 
 sub _generate_route {
