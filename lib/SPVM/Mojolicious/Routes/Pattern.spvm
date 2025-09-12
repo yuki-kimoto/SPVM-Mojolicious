@@ -13,6 +13,10 @@ class Mojolicious::Routes::Pattern {
   
   has defaults : rw Hash;
   
+  has placeholders : rw string[];
+  
+  has constraints : rw Hash;
+  
   # Class Methods
   static method new : Mojolicious::Routes::Pattern () {
     
