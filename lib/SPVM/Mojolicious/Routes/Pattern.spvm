@@ -10,7 +10,9 @@ class Mojolicious::Routes::Pattern {
   has types : rw Hash of object of string|Regex|string[]|Regex[]|object[];
   
   has unparsed : rw string;
-
+  
+  has defaults : rw Hash;
+  
   # Class Methods
   static method new : Mojolicious::Routes::Pattern () {
     

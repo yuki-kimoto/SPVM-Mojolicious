@@ -364,36 +364,50 @@ class Mojolicious::Routes::Route {
     
     die "TODO";
   }
+  
+  method to : void ($args : object...)  {
+    
+    my $pattern = $self->pattern;
+    
+    unless (@$args > 0) {
+      die "Too few arguments.";
+    }
+    
+    my $_ = Mojo::Util->_options($args);
+    my $shortcut = $_->[0];
+    my $default_h = Hash->new((object[])$_->[1]);
+    
+    if ($shortcut) {
+      
+      die "TODO";
+
+=pod
+
+      # Application
+      if (ref $shortcut || $shortcut =~ /^[\w:]+$/) { $defaults{app} = $shortcut }
+      
+      # Controller and action
+      elsif ($shortcut =~ /^([\w\-:]+)?\#(\w+)?$/) {
+        $defaults{controller} = $1 if defined $1;
+        $defaults{action}     = $2 if defined $2;
+      }
+
+=cut
+
+    }
+    
+    for my $key (@{$default_h->keys}) {
+      my $value = $default_h->get($key);
+      $pattern->defaults->set($key, $value);
+    }
+  }
 
 }
+
 
 __END__
 
 TODO
-
-sub to {
-  my $self = shift;
-
-  my $pattern = $self->pattern;
-  return $pattern->defaults unless @_;
-  my ($shortcut, %defaults) = Mojo::Util::_options(@_);
-
-  if ($shortcut) {
-
-    # Application
-    if (ref $shortcut || $shortcut =~ /^[\w:]+$/) { $defaults{app} = $shortcut }
-
-    # Controller and action
-    elsif ($shortcut =~ /^([\w\-:]+)?\#(\w+)?$/) {
-      $defaults{controller} = $1 if defined $1;
-      $defaults{action}     = $2 if defined $2;
-    }
-  }
-
-  @{$pattern->defaults}{keys %defaults} = values %defaults;
-
-  return $self;
-}
 
 sub to_string {
   join '', map { $_->pattern->unparsed // '' } @{shift->_chain};
