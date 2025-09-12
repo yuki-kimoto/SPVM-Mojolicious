@@ -45,7 +45,16 @@ class Mojolicious::Routes::Pattern {
   
   has placeholders_list : rw StringList;
   
-  has tree : rw List of string[];
+  has tree : rw string[][]
+    get {
+      return (string[][])$self->tree_list->to_array;
+    }
+    set {
+      $self->set_tree_list(List->new($_));
+    }
+  ;
+  
+  has tree_list : rw List of string[];
   
   # Class Methods
   static method new : Mojolicious::Routes::Pattern () {
