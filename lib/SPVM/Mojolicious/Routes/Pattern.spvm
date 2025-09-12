@@ -43,7 +43,7 @@ class Mojolicious::Routes::Pattern {
   
   has placeholders_list : rw StringList;
   
-  has tree : rw string[][]
+  has tree : rw object[]
     get {
       return (string[][])$self->tree_list->to_array;
     }
@@ -52,7 +52,7 @@ class Mojolicious::Routes::Pattern {
     }
   ;
   
-  has tree_list : rw List of string[];
+  has tree_list : rw List;
   
   has quote_end : rw string
     get {
@@ -108,6 +108,41 @@ class Mojolicious::Routes::Pattern {
     }
     
     return $self;
+  }
+  
+  private static method _compile_req : string ($req : object of string|string[]) {
+    
+    if ($req isa string) {
+      return "(" . (string)$req . ")";
+    }
+    
+    my $reqs = Array->copy_string_address((string[])$req);
+    
+    Sort->sort_string_desc($reqs);
+    
+    for (my $i = 0; $i < @$reqs; $i++) {
+      $reqs->[$i] = "\Q" . $reqs->[$i] . "\E";
+    }
+    
+    return "(" . Fn->join("|", $reqs) . ")";
+  }
+  
+  private static method _compile_format : string ($format : object of string|string[], $has_default : int) {
+    
+    # No regex
+    unless ($format) {
+      return "";
+    }
+    
+    # Default regex
+    if ($format isa string && (string)$format eq "1") {
+      return "/?(?:\.([^/]+))?$" ;
+    }
+    
+    # Compile custom regex
+    my $regex = "\." . &_compile_req($format);
+    
+    return $has_default ? "/?(?:$regex)?\$" : "/?$regex\$";
   }
   
   # Instance Methods
@@ -168,57 +203,6 @@ class Mojolicious::Routes::Pattern {
     return $captures_h;
   }
 
-  private method _compile : void ($detect : int) {
-
-=pod
-
-    my $constraints = $self->constraints;
-    my $defaults    = $self->defaults;
-    my $types       = $self->types;
-
-    my $block    = my $regex = '';
-    my $optional = 1;
-    for my $token (reverse @{$self->tree}) {
-      my ($op, $value, $type) = @$token;
-      my $part = '';
-
-      # Text
-      if ($op eq 'text') { ($part, $optional) = (quotemeta $value, 0) }
-
-      # Slash
-      elsif ($op eq 'slash') {
-        $regex = ($optional ? "(?:/$block)?" : "/$block") . $regex;
-        ($block, $optional) = ('', 1);
-        next;
-      }
-
-      # Placeholder
-      else {
-        if ($value->[1]) { $part = _compile_req($types->{$value->[1]} // '?!') }
-        else             { $part = $type ? $type eq 'relaxed' ? '([^/]+)' : '(.+)' : '([^/.]+)' }
-
-        # Custom regex
-        if (my $c = $constraints->{$value->[0]}) { $part = _compile_req($c) }
-
-        # Optional placeholder
-        exists $defaults->{$value->[0]} ? ($part .= '?') : ($optional = 0);
-      }
-
-      $block = $part . $block;
-    }
-
-    # Not rooted with a slash
-    $regex = $block . $regex if $block;
-
-    # Format
-    $regex .= _compile_format($constraints->{format}, exists $defaults->{format}) if $detect;
-
-    $self->regex(qr/^$regex/ps);
-
-=cut
-
-  }
-
   method parse : void ($args : object...) {
   
     my $args_list = List->new($args);
@@ -241,6 +225,80 @@ class Mojolicious::Routes::Pattern {
     $self->_tokenize($pattern);
   }
   
+  private method _compile : void ($detect : int) {
+
+    my $constraints = $self->constraints;
+    
+    my $types       = $self->types;
+    
+    my $defaults    = $self->defaults;
+    
+    my $block    = my $regex = "";
+    
+    my $optional = 1;
+    
+    for (my $i = $self->tree_list->length - 1; $i >= 0; $i--) {
+      my $token = (object[])$self->tree_list->get($i);
+      
+      my $op = (string)$token->[0];
+      my $value = $token->[1];
+      my $type = (string)$token->[2];
+      
+      my $part = "";
+      
+      # Text
+      if ($op eq "text") {
+        $part = "\Q" . (string)$value . "\E";
+        $optional = 0;
+      }
+      
+      # Slash
+      elsif ($op eq "slash") {
+        $regex = ($optional ? "(?:/$block)?" : "/$block") . $regex;
+        $block = "";
+        $optional = 1;
+        next;
+      }
+      
+      # Placeholder
+      else {
+        my $value = (string[])$value;
+        if (@$value > 1) {
+          $part = &_compile_req($types->get($value->[1]) // "?!");
+        }
+        else {
+          $part = $type ? $type eq "relaxed" ? "([^/]+)" : "(.+)" : "([^/.]+)";
+        }
+        
+        # Custom regex
+        if (my $c = $constraints->get($value->[0])) { $part = &_compile_req($c); }
+        
+        # Optional placeholder
+        if ($defaults->exists($value->[0])) {
+          $part .= "?";
+        }
+        else {
+          $optional = 0;
+        }
+      }
+      
+      $block = $part . $block;
+    }
+
+    # Not rooted with a slash
+    if ($block) {
+      $regex = $block . $regex;
+    }
+    
+    # Format
+    if ($detect) {
+      $regex .= &_compile_format($constraints->get("format"), $defaults->exists("format")) ;
+    }
+    
+    $self->set_regex(Regex->new($regex));
+
+  }
+
   method _tokenize : void ($pattern : string) {
     
     die "TODO";
@@ -304,7 +362,7 @@ class Mojolicious::Routes::Pattern {
     
     die "TODO";
   }
-
+  
 }
 
 __END__
@@ -340,25 +398,5 @@ sub render {
 
   # Format can be optional
   return $endpoint && $format ? "$str.$format" : $str;
-}
-
-sub _compile_format {
-  my ($format, $has_default) = @_;
-
-  # No regex
-  return '' unless $format;
-
-  # Default regex
-  return '/?(?:\.([^/]+))?$' if $format eq '1';
-
-  # Compile custom regex
-  my $regex = '\.' . _compile_req($format);
-  return $has_default ? "/?(?:$regex)?\$" : "/?$regex\$";
-}
-
-sub _compile_req {
-  my $req = shift;
-  return "($req)" if ref $req ne 'ARRAY';
-  return '(' . join('|', map {quotemeta} reverse sort @$req) . ')';
 }
 
