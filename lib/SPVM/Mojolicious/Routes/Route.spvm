@@ -401,6 +401,23 @@ class Mojolicious::Routes::Route {
       $pattern->defaults->set($key, $value);
     }
   }
+  
+  method to_string : string () {
+    
+    my $chain_list = $self->_chain;
+    
+    my $pattern_unparseds_list = StringList->new;
+    
+    for (my $i = 0; $i < $chain_list->length; $i++) {
+      my $chain = (Mojolicious::Routes::Route)$chain_list->get($i);
+      
+      my $pattern_unparsed = $chain->pattern->unparsed // "";
+      
+      $pattern_unparseds_list->push($pattern_unparsed);
+    }
+    
+    return Fn->join("", $pattern_unparseds_list->to_array);
+  }
 
 }
 
@@ -408,10 +425,6 @@ class Mojolicious::Routes::Route {
 __END__
 
 TODO
-
-sub to_string {
-  join '', map { $_->pattern->unparsed // '' } @{shift->_chain};
-}
 
 sub _generate_route {
   my ($self, $methods, @args) = @_;
