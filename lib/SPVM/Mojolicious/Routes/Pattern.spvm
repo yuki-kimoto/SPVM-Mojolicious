@@ -107,6 +107,114 @@ class Mojolicious::Routes::Pattern {
   }
   
   # Instance Methods
+  method match : Hash ($path : string, $detect : int = 0) {
+    
+    my $captures = $self->match_partial(my $_ = [$path], $detect);
+    $path = $_->[0];
+    
+    return !$path || $path eq "/" ? $captures : undef;
+  }
+  
+  method match_partial : Hash ($pathref : string[], $detect : int = 0) {
+    
+    # Compile on demand
+    unless ($self->{regex}) {
+      $self->_compile($detect);
+    }
+    
+    my $captures_length = 0;
+    my $match_start = -1;
+    my $match_length = -1;
+    my $captures_list = (StringList)undef;
+    if (my $m = $self->regex->match($pathref->[0])) {
+      $captures_length = $m->captures_length;
+      $match_start = $m->match_start;
+      $match_length = $m->match_length;
+      
+      $captures_list = StringList->new;
+      
+      for (my $i = 0; $i < $captures_length; $i++) {
+        $captures_list->push($m->captures($i));
+      }
+    }
+    
+    unless ($captures_length) {
+      return undef;
+    }
+    
+    $pathref->[0] = Fn->substr($pathref->[0], $match_start, $match_length);
+    
+    my $captures_h = Hash->new($self->defaults->to_array);
+    my $placeholders_list = StringList->new($self->placeholders);
+    $placeholders_list->push("format");
+    
+    for my $placeholder (@{$placeholders_list->to_array}) {
+      
+      unless ($captures_list->length) {
+        last;
+      }
+      
+      my $capture = $captures_list->shift;
+      
+      if ($capture) {
+        $captures_h->set($placeholder, $capture);
+      }
+    }
+    
+    return $captures_h;
+  }
+
+  private method _compile : void ($detect : int) {
+
+=pod
+
+    my $constraints = $self->constraints;
+    my $defaults    = $self->defaults;
+    my $types       = $self->types;
+
+    my $block    = my $regex = '';
+    my $optional = 1;
+    for my $token (reverse @{$self->tree}) {
+      my ($op, $value, $type) = @$token;
+      my $part = '';
+
+      # Text
+      if ($op eq 'text') { ($part, $optional) = (quotemeta $value, 0) }
+
+      # Slash
+      elsif ($op eq 'slash') {
+        $regex = ($optional ? "(?:/$block)?" : "/$block") . $regex;
+        ($block, $optional) = ('', 1);
+        next;
+      }
+
+      # Placeholder
+      else {
+        if ($value->[1]) { $part = _compile_req($types->{$value->[1]} // '?!') }
+        else             { $part = $type ? $type eq 'relaxed' ? '([^/]+)' : '(.+)' : '([^/.]+)' }
+
+        # Custom regex
+        if (my $c = $constraints->{$value->[0]}) { $part = _compile_req($c) }
+
+        # Optional placeholder
+        exists $defaults->{$value->[0]} ? ($part .= '?') : ($optional = 0);
+      }
+
+      $block = $part . $block;
+    }
+
+    # Not rooted with a slash
+    $regex = $block . $regex if $block;
+
+    # Format
+    $regex .= _compile_format($constraints->{format}, exists $defaults->{format}) if $detect;
+
+    $self->regex(qr/^$regex/ps);
+
+=cut
+
+  }
+
   method parse : void ($args : object...) {
     die "TODO";
   }
@@ -119,31 +227,6 @@ class Mojolicious::Routes::Pattern {
 }
 
 __END__
-
-sub match {
-  my ($self, $path, $detect) = @_;
-  my $captures = $self->match_partial(\$path, $detect);
-  return !$path || $path eq '/' ? $captures : undef;
-}
-
-sub match_partial {
-  my ($self, $pathref, $detect) = @_;
-
-  # Compile on demand
-  $self->_compile($detect) unless $self->{regex};
-
-  return undef unless my @captures = $$pathref =~ $self->regex;
-  $$pathref = ${^POSTMATCH};
-  @captures = () if $#+ == 0;
-  my $captures = {%{$self->defaults}};
-  for my $placeholder (@{$self->placeholders}, 'format') {
-    last unless @captures;
-    my $capture = shift @captures;
-    $captures->{$placeholder} = $capture if defined $capture;
-  }
-
-  return $captures;
-}
 
 sub new { @_ > 1 ? shift->SUPER::new->parse(@_) : shift->SUPER::new }
 
@@ -189,53 +272,6 @@ sub render {
 
   # Format can be optional
   return $endpoint && $format ? "$str.$format" : $str;
-}
-
-sub _compile {
-  my ($self, $detect) = @_;
-
-  my $constraints = $self->constraints;
-  my $defaults    = $self->defaults;
-  my $types       = $self->types;
-
-  my $block    = my $regex = '';
-  my $optional = 1;
-  for my $token (reverse @{$self->tree}) {
-    my ($op, $value, $type) = @$token;
-    my $part = '';
-
-    # Text
-    if ($op eq 'text') { ($part, $optional) = (quotemeta $value, 0) }
-
-    # Slash
-    elsif ($op eq 'slash') {
-      $regex = ($optional ? "(?:/$block)?" : "/$block") . $regex;
-      ($block, $optional) = ('', 1);
-      next;
-    }
-
-    # Placeholder
-    else {
-      if ($value->[1]) { $part = _compile_req($types->{$value->[1]} // '?!') }
-      else             { $part = $type ? $type eq 'relaxed' ? '([^/]+)' : '(.+)' : '([^/.]+)' }
-
-      # Custom regex
-      if (my $c = $constraints->{$value->[0]}) { $part = _compile_req($c) }
-
-      # Optional placeholder
-      exists $defaults->{$value->[0]} ? ($part .= '?') : ($optional = 0);
-    }
-
-    $block = $part . $block;
-  }
-
-  # Not rooted with a slash
-  $regex = $block . $regex if $block;
-
-  # Format
-  $regex .= _compile_format($constraints->{format}, exists $defaults->{format}) if $detect;
-
-  $self->regex(qr/^$regex/ps);
 }
 
 sub _compile_format {
