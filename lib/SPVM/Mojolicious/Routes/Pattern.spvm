@@ -301,63 +301,97 @@ class Mojolicious::Routes::Pattern {
 
   method _tokenize : void ($pattern : string) {
     
-    die "TODO";
-
-=pod
-
-    my $placeholders = $self->placeholders;
+    my $placeholders_list = $self->placeholders_list;
     my $type_start   = $self->type_start;
     my $quote_end    = $self->quote_end;
     my $quote_start  = $self->quote_start;
     my $start        = $self->placeholder_start;
     my $relaxed      = $self->relaxed_start;
     my $wildcard     = $self->wildcard_start;
-
-    my (@tree, $spec, $more);
-    for my $char (split //, $pattern) {
-
+    
+    my $tree_list = List->new;
+    my $spec = 0;
+    my $more = 0;
+    for (my $i = 0; $i < length $pattern; $i++) {
+      my $char = Fn->substr($pattern, $i, 1);
+      
       # Quoted
-      if    ($char eq $quote_start) { push @tree, ['placeholder', ''] if ++$spec }
-      elsif ($char eq $quote_end)   { $spec = $more = 0 }
-
+      if ($char eq $quote_start) {
+        if (++$spec) {
+          $tree_list->push([(object)"placeholder", "", undef]);
+        }
+      }
+      elsif ($char eq $quote_end)   { $spec = $more = 0; }
+      
       # Placeholder
-      elsif (!$more && $char eq $start) { push @tree, ['placeholder', ''] unless $spec++ }
-
+      elsif (!$more && $char eq $start) {
+        unless ($spec++) {
+          $tree_list->push([(object)"placeholder", "", undef]);
+        }
+      }
+      
       # Relaxed or wildcard (upgrade when quoted)
       elsif (!$more && ($char eq $relaxed || $char eq $wildcard)) {
-        push @tree, ['placeholder', ''] unless $spec++;
-        $tree[-1][2] = $char eq $relaxed ? 'relaxed' : 'wildcard';
+        unless ($spec++) {
+          $tree_list->push([(object)"placeholder", "", undef]);
+        }
+        $tree_list->get($tree_list->length - 1)->(object[])->[2] = $char eq $relaxed ? "relaxed" : "wildcard";
       }
-
+      
       # Slash
-      elsif ($char eq '/') {
-        push @tree, ['slash'];
+      elsif ($char eq "/") {
+        $tree_list->push([(object)"slash", undef, undef]);
         $spec = $more = 0;
       }
-
+      
       # Placeholder
-      elsif ($spec && ++$more) { $tree[-1][1] .= $char }
+      elsif ($spec && ++$more) {
+        my $_ = $tree_list->get($tree_list->length - 1)->(object[])->[1]->(string);
+        $tree_list->get($tree_list->length - 1)->(object[])->[1] =  $_ . $char;
+      }
 
       # Text (optimize slash+text and *+text+slash+text)
-      elsif ($tree[-1][0] eq 'text')                                         { $tree[-1][-1] .= $char }
-      elsif (!$tree[-2] && $tree[-1][0] eq 'slash')                          { @tree = (['text', "/$char"]) }
-      elsif ($tree[-2] && $tree[-2][0] eq 'text' && $tree[-1][0] eq 'slash') { pop @tree && ($tree[-1][-1] .= "/$char") }
-      else                                                                   { push @tree, ['text', $char] }
+      elsif ($tree_list->get($tree_list->length - 1)->(object[])->[0]->(string) eq "text") {
+        my $_ = $tree_list->get($tree_list->length - 1)->(object[])->[$tree_list->length - 1]->(string);
+        $tree_list->get($tree_list->length - 1)->(object[])->[$tree_list->length - 1] = $_ . $char;
+      }
+      elsif (!$tree_list->get($tree_list->length - 2) && $tree_list->get($tree_list->length - 1)->(object[])->[0]->(string) eq "slash") {
+        $tree_list = List->new(["text", "/$char"]);
+      }
+      elsif ($tree_list->get($tree_list->length - 2) && $tree_list->get($tree_list->length - 2)->(object[])->[0]->(string) eq "text" && $tree_list->get($tree_list->length - 1)->(object[])->[0]->(string) eq "slash") {
+        if ($tree_list->length) {
+          $tree_list->pop;
+          my $_ = $tree_list->get($tree_list->length - 1)->(object[])->[$tree_list->length]->(string);
+          $tree_list->get($tree_list->length - 1)->(object[])->[$tree_list->length - 1] = "$_/$char";
+        }
+      }
+      else {
+        $tree_list->push([(object)"text", $char, undef]);
+      }
     }
 
     # Placeholder types
-    for my $token (reverse @tree) {
-      next unless $token->[0] eq 'placeholder';
-      $token->[1] = $token->[1] =~ /^(.+)\Q$type_start\E(.+)$/ ? [$1, $2] : [$token->[1]];
-      unshift @$placeholders, $token->[1][0];
+    for (my $i = $tree_list->length - 1; $i >= 0; $i--) {
+      my $token = (object[])$tree_list->get($i);
+      unless ($token->[0]->(string) eq "placeholder") {
+        next;
+      }
+      
+      if (my $m = Re->m($token->[1], "^(.+)\Q$type_start\E(.+)$")) {
+        $token->[1] = [(object)$m->cap1, $m->cap2, undef];
+      }
+      else {
+        $token->[1] = [(object)$token->[1], undef, undef];
+      }
+      
+      $placeholders_list->unshift($token->[1]->(object[])->[0]->(string));
     }
-
-    return $self->unparsed($pattern)->tree(\@tree);
-
-=cut
-
+    
+    $self->set_unparsed($pattern);
+    
+    $self->set_tree_list($tree_list);
   }
-
+  
   method render : string ($values : object[], $endpoint : int = 0) {
     
     die "TODO";
