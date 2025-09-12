@@ -34,7 +34,16 @@ class Mojolicious::Routes::Pattern {
   
   has unparsed : rw string;
   
-  has placeholders : rw string[];
+  has placeholders : virtual rw string[]
+    get {
+      return $self->placeholders_list->to_array;
+    }
+    set {
+      $self->set_placeholders_list(StringList->new($_));
+    }
+  ;
+  
+  has placeholders_list : rw StringList;
   
   has tree : rw List of string[];
   
