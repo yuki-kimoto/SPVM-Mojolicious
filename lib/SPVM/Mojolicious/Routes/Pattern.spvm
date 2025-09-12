@@ -352,8 +352,11 @@ class Mojolicious::Routes::Pattern {
 
       # Text (optimize slash+text and *+text+slash+text)
       elsif ($tree_list->get($tree_list->length - 1)->(object[])->[0]->(string) eq "text") {
-        my $_ = $tree_list->get($tree_list->length - 1)->(object[])->[$tree_list->length - 1]->(string);
-        $tree_list->get($tree_list->length - 1)->(object[])->[$tree_list->length - 1] = $_ . $char;
+        
+        my $token = $tree_list->get($tree_list->length - 1)->(object[]);
+        
+        my $_ = $token->[@$token - 1]->(string);
+        $token->[@$token - 1] = $_ . $char;
       }
       elsif (!$tree_list->get($tree_list->length - 2) && $tree_list->get($tree_list->length - 1)->(object[])->[0]->(string) eq "slash") {
         $tree_list = List->new(["text", "/$char"]);
@@ -362,7 +365,8 @@ class Mojolicious::Routes::Pattern {
         if ($tree_list->length) {
           $tree_list->pop;
           my $_ = $tree_list->get($tree_list->length - 1)->(object[])->[$tree_list->length]->(string);
-          $tree_list->get($tree_list->length - 1)->(object[])->[$tree_list->length - 1] = "$_/$char";
+          my $token = $tree_list->get($tree_list->length - 1)->(object[]);
+          $token->[@$token - 1] = "$_/$char";
         }
       }
       else {
