@@ -449,7 +449,7 @@ class Mojolicious::Routes::Route {
       elsif ($arg isa string) { $name = (string)$arg; }
       
       # Callback
-      elsif ($arg isa Mojo::EventEmitter::Callback) { $defaults->set("cb", $arg); }
+      elsif ($arg isa Mojo::Callback) { $defaults->set("cb", $arg); }
       
       # Defaults
       elsif (is_options $arg) {
