@@ -396,45 +396,50 @@ class Mojolicious::Routes::Pattern {
     $self->set_tree_list($tree_list);
   }
   
-  method render : string ($values : object[], $endpoint : int = 0) {
+  method render : string ($values : Hash, $endpoint : int) {
     
-    die "TODO";
-  }
-  
-}
-
-__END__
-
-sub render {
-  my ($self, $values, $endpoint) = @_;
-
-  # Placeholders can only be optional without a format
-  my $optional = !(my $format = $values->{format});
-
-  my $str = '';
-  for my $token (reverse @{$self->tree}) {
-    my ($op, $value) = @$token;
-    my $part = '';
-
-    # Text
-    if ($op eq 'text') { ($part, $optional) = ($value, 0) }
-
-    # Slash
-    elsif ($op eq 'slash') { $part = '/' unless $optional }
-
-    # Placeholder
-    else {
-      my $name    = $value->[0];
-      my $default = $self->defaults->{$name};
-      $part = $values->{$name} // $default // '';
-      if    (!defined $default || ($default ne $part)) { $optional = 0 }
-      elsif ($optional)                                { $part     = '' }
+    # Placeholders can only be optional without a format
+    my $optional = !(my $format = $values->get_string("format"));
+    
+    my $str = "";
+    my $tree_list = $self->tree_list;
+    for (my $i = $tree_list->length - 1; $i >= 0; $i--) {
+      my $token = (object[])$tree_list->get($i);
+      
+      my $op = (string)$token->[0];
+      my $value = $token->[1];
+      
+      my $part = "";
+      
+      # Text
+      if ($op eq "text") {
+        $part = (string)$value;
+        $optional = 0;
+      }
+      
+      # Slash
+      elsif ($op eq "slash") {
+        unless ($optional) {
+          $part = "/";
+        }
+      }
+      
+      # Placeholder
+      else {
+        my $name    = $value->(object[])->[0]->(string);
+        my $default = $self->defaults->get_string($name);
+        
+        $part = $values->get_string($name) // $default // "";
+        
+        if    (!$default || ($default ne $part)) { $optional = 0; }
+        elsif ($optional)                                { $part     = ""; }
+      }
+      
+      $str = $part . $str;
     }
-
-    $str = $part . $str;
+    
+    # Format can be optional
+    return $endpoint && $format ? "$str.$format" : $str;
   }
 
-  # Format can be optional
-  return $endpoint && $format ? "$str.$format" : $str;
 }
-

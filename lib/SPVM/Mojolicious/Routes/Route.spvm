@@ -346,7 +346,7 @@ class Mojolicious::Routes::Route {
     $self->{name} = $name;
   }
   
-  method render : string ($values : object[]) {
+  method render : string ($values : Hash) {
     
     my $chain_list = $self->_chain;
     
