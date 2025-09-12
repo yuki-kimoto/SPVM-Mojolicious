@@ -360,24 +360,16 @@ class Mojolicious::Routes::Route {
     return length $path ? $path : "/";
   }
   
+  method suggested_method : string () {
+    
+    die "TODO";
+  }
+
 }
 
 __END__
 
 TODO
-
-sub suggested_method {
-  my $self = shift;
-
-  my %via;
-  for my $route (@{$self->_chain}) {
-    next unless my @via = @{$route->methods // []};
-    %via = map { $_ => 1 } keys %via ? grep { $via{$_} } @via : @via;
-  }
-
-  return 'POST' if $via{POST} && !$via{GET};
-  return $via{GET} ? 'GET' : (sort keys %via)[0] || 'GET';
-}
 
 sub to {
   my $self = shift;
