@@ -99,9 +99,13 @@ class Mojolicious::Routes::Pattern {
   ;
   
   # Class Methods
-  static method new : Mojolicious::Routes::Pattern () {
+  static method new : Mojolicious::Routes::Pattern ($args : object...) {
     
     my $self = new Mojolicious::Routes::Pattern;
+    
+    if (@$args) {
+      $self->parse($args);
+    }
     
     return $self;
   }
