@@ -108,7 +108,7 @@ class Mojo::EventEmitter {
     }
   }
   
-  private method events : Hash of Mojo::Callback () {
+  private method events : Hash of List of Mojo::Callback () {
     
     unless ($self->{events}) {
       $self->{events} = Hash->new;
