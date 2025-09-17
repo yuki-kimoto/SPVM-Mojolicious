@@ -35,6 +35,11 @@ class Mojolicious::Routes::Match {
     }
   ;
   
+  # Undocumented Fields
+  has captures : Hash;
+  
+  has conditions : Hash;
+  
   # Class Methods
   static method new : Mojolicious::Routes::Match () {
     
@@ -111,63 +116,99 @@ class Mojolicious::Routes::Match {
     return Hash->new({path => $route->render($merged), websocket => $route->has_websocket});
   }
   
-  private method _match : void ($r : Mojolicious::Routes, $c : Mojolicious::Controller, $options : Hash) {
+  private method _match : int ($r : Mojolicious::Routes::Route, $c : Mojolicious::Controller, $options : Hash) {
     
-=pod
-
+    my $path_save = $options->get("path")->(string);
+    
     # Pattern
-    my $path    = $options->{path};
+    my $path = $path_save;
     my $partial = $r->partial;
     my $detect  = (my $endpoint = $r->is_endpoint) && !$partial;
-    return undef unless my $captures = $r->pattern->match_partial(\$path, $detect);
-    local $options->{path} = $path;
-    local @{$self->{captures} //= {}}{keys %$captures} = values %$captures;
+    my $captures = $r->pattern->match_partial(my $_ = [$path], $detect);
+    $path = $_->[0];
+    unless ($captures) {
+      return 0;
+    }
+    
+    $self->{captures} //= Hash->new;
+    my $captures_save = $self->{captures}->clone;
+    
+    Fn->defer([$options : Hash, $path_save : string, $captures_save : Hash] method : void () {
+      $options->set("path" => $path_save);
+      $options->set("captures" => $captures_save);
+    });
+    
+    $options->set(path => $path);
+    
+    for my $key (@{$captures->keys}) {
+      my $value = $captures->get($key);
+      $self->{captures}->set($key => $value);
+    }
+    
     $captures = $self->{captures};
-
+    
     # Method
     my $methods = $r->methods;
-    return undef if $methods && !grep { $_ eq $options->{method} } @$methods;
-
+    
+    if ($methods && !@{Fn->grep([$options : Hash]method : int ($_ : string) { $_ eq $options->get("method")->(string); }, $methods)}) {
+      return 0;
+    }
+    
     # Conditions
     if (my $over = $r->requires) {
-      my $conditions = $self->{conditions} ||= $self->root->conditions;
-      for (my $i = 0; $i < @$over; $i += 2) {
-        return undef unless my $condition = $conditions->{$over->[$i]};
-        return undef if !$condition->($r, $c, $captures, $over->[$i + 1]);
+      my $conditions = $self->{conditions} //= $self->root->conditions;
+      for my $key (@{$over->keys}) {
+        my $condition = (Mojolicious::Routes::Callback::Condition)$conditions->get($key);
+        unless ($condition) {
+          return 0;
+        }
+        if (!$condition->($r, $c, $captures, $over->get($key))) {
+          return 0;
+        }
       }
     }
-
+    
     # WebSocket
-    return undef if $r->is_websocket && !$options->{websocket};
-
+    if ($r->is_websocket && !$options->get_int("websocket")) {
+      return 0;
+    }
+    
     # Partial
-    my $empty = !length $path || $path eq '/';
+    my $empty = !length $path || $path eq "/";
     if ($partial) {
-      $captures->{path} = $path;
-      $self->endpoint($r);
+      $captures->set(path => $path);
+      $self->set_endpoint($r);
       $empty = 1;
     }
-
+    
     # Endpoint (or intermediate destination)
     if (($endpoint && $empty) || $r->inline) {
-      push @{$self->stack}, {%$captures};
+      $self->stack_list->push($captures->clone);
       if ($endpoint && $empty) {
-        my $format = $captures->{format};
-        if ($format) { $_->{format} = $format for @{$self->stack} }
-        return !!$self->endpoint($r);
+        my $format = $captures->get_string("format");
+        if ($format) {
+          for (my $i = 0; $i = $self->stack_list->length; $i++) {
+            my $captures = (Hash)$self->stack_list->get($i);
+            $captures->set(format => $format);
+          }
+        }
+        
+        $self->set_endpoint($r);
+        
+        return 1;
       }
-      delete @$captures{qw(app cb)};
+      $captures->delete("app");
+      $captures->delete("cb");
     }
-
+    
     # Match children
-    my $snapshot = $r->parent ? [@{$self->stack}] : [];
+    my $snapshot = $r->parent ? $self->stack_list->clone : List->new(new Hash[0]);
     for my $child (@{$r->children}) {
-      return 1 if $self->_match($child, $c, $options);
-      $self->stack([@$snapshot]);
+      if ($self->_match($child, $c, $options)) {
+        return 1;
+      }
+      $self->set_stack_list($snapshot);
     }
-
-=cut
-
   }
 
 }
