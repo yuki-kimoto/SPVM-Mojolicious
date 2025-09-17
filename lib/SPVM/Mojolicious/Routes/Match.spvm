@@ -5,28 +5,30 @@ class Mojolicious::Routes::Match {
   version_from Mojolicious;
   
   use Mojolicious::Controller;
+  use Mojolicious::Routes;
+  use Mojolicious::Routes::Route;
   
   # Fields
   has root : rw Mojolicious::Routes;
   
-  has endpoint : rw Mojolicious::Routes;
+  has endpoint : rw Mojolicious::Routes::Route;
   
   has position : int;
   
-  has stack : virtual rw object[]
+  has stack : virtual rw Hash[]
     
     get {
-      return $self->stack_list->to_array;
+      return (Hash[])$self->stack_list->to_array;
     }
     set {
       $self->set_stack_list(List->new($_));
     }
   ;
   
-  has stack_list : rw List
+  has stack_list : rw List of Hash
     get {
       unless (exists $self->{stack_list}) {
-        $self->{stack_list} = List->new;
+        $self->{stack_list} = List->new(new Hash[0]);
       }
       
       return $self->{stack_list};
@@ -46,24 +48,30 @@ class Mojolicious::Routes::Match {
     $self->_match($self->root, $c, $options);
   }
   
-  method path_for : Hash ($arg1 : object, $arg2 : object = undef) {
-
-=pod
-
-    my $name = (string)undef;
-    if ($arg1 isa string) {
-      $name = (string)$arg1;
-      $arg1 = $arg2;
-    }
+  static method _hash_merge : void ($self : Hash, $hash : Hash) {
     
-    my $values = (object[])undef;
-    if ($arg1 isa object[]) {
-      $values = (object[])$arg1;
+    for my $key (@{$hash->keys}) {
+      my $value = $hash->get($key);
+      $self->set($key, $value);
     }
+  }
+  
+  static method _hash_merge_options : void ($self : Hash, $options : object[]) {
+    
+    my $hash = Hash->new($options);
+    
+    &_hash_merge($self, $hash);
+  }
+  
+  method path_for : Hash ($args : object...) {
+    
+    my $_ = Mojo::Util->_options($args);
+    my $name = (string)$_->[0];
+    my $values = Hash->new((object[])$_->[1]);
     
     # Current route
-    my $route = undef;
-    my $current) = !$name || $name eq "current";
+    my $route = (Mojolicious::Routes::Route)undef;
+    my $current = !$name || $name eq "current";
     
     if ($current) {
       unless ($route = $self->endpoint) {
@@ -79,17 +87,28 @@ class Mojolicious::Routes::Match {
     }
     
     # Merge values (clear format)
-    my $captures    = $self->stack->[-1] // {};
-    my %merged      = (%$captures, format => undef, %values);
+    my $stack_list = $self->stack_list;
+    my $captures = (Hash)undef;
+    if ($stack_list->length > 0) {
+      $captures = (Hash)$stack_list->get($stack_list->length - 1) // Hash->new;
+    }
+    else {
+      $captures = Hash->new;
+    }
+    
+    my $merged = Hash->new;
+    &_hash_merge($merged, $captures);
+    &_hash_merge_options($merged, {format => undef});
+    &_hash_merge($merged, $captures);
+    
     my $pattern     = $route->pattern;
     my $constraints = $pattern->constraints;
-    $merged{format} = ($current ? $captures->{format} : undef) // $pattern->defaults->{format}
-      if !exists $values{format} && $constraints->{format} && $constraints->{format} ne '1';
     
-    return {path => $route->render(\%merged), websocket => $route->has_websocket};
-
-=cut
-
+    if (!$values->exists("format") && $constraints->get("format") && $constraints->get("format")->(string) ne "1") {
+      $merged->set("format", ($current ? $captures->get("format") : undef) // $pattern->defaults->get("format"));
+    }
+    
+    return Hash->new({path => $route->render($merged), websocket => $route->has_websocket});
   }
   
   private method _match : void ($r : Mojolicious::Routes, $c : Mojolicious::Controller, $options : Hash) {
