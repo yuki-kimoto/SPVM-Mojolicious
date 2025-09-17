@@ -99,7 +99,7 @@ class Mojolicious::Routes::Match {
     my $merged = Hash->new;
     &_hash_merge($merged, $captures);
     &_hash_merge_options($merged, {format => undef});
-    &_hash_merge($merged, $captures);
+    &_hash_merge($merged, $values);
     
     my $pattern     = $route->pattern;
     my $constraints = $pattern->constraints;
