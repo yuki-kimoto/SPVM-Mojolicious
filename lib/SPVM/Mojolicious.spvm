@@ -9,8 +9,6 @@ class Mojolicious {
   use Mojo::Log;
   use Mojo::Server;
   use Mojo::Util;
-  use Mojo::UserAgent;
-  use Mojolicious::Commands;
   use Mojolicious::Controller;
   use Mojolicious::Plugins;
   use Mojolicious::Renderer;
@@ -18,7 +16,6 @@ class Mojolicious {
   use Mojolicious::Sessions;
   use Mojolicious::Static;
   use Mojolicious::Types;
-
   
   # Fields
   has routes : rw Mojolicious::Routes
