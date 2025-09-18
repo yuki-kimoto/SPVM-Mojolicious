@@ -3,4 +3,13 @@
 
 class Mojolicious::Renderer {
   version_from Mojolicious;
+  
+  # Class Methods
+  static method new : Mojolicious::Renderer () {
+    
+    my $self = new Mojolicious::Renderer;
+    
+    return $self;
+  }
+  
 }

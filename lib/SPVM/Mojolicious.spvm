@@ -49,14 +49,6 @@ class Mojolicious {
     }
   ;
   
-  has routes : rw Mojolicious::Routes
-    get {
-      unless (exists $self->{routes}) {
-        $self->{routes} = Mojolicious::Routes->new;
-      }
-    }
-  ;
-  
   has mode : rw string
     get {
       unless (exists $self->{mode}) {
@@ -84,13 +76,28 @@ class Mojolicious {
     }
   ;
   
+  has renderer : rw Mojolicious::Renderer
+    get {
+      unless (exists $self->{renderer}) {
+        $self->{renderer} = Mojolicious::Renderer->new;
+      }
+      return $self->{renderer};
+    }
+  ;
+  
+  has routes : rw Mojolicious::Routes
+    get {
+      unless (exists $self->{routes}) {
+        $self->{routes} = Mojolicious::Routes->new;
+      }
+      return $self->{routes};
+    }
+  ;
+  
 }
 
 __END__
 
-has preload_namespaces => sub { [] };
-has renderer           => sub { Mojolicious::Renderer->new };
-has routes             => sub { Mojolicious::Routes->new };
 has secrets            => sub {
   my $self = shift;
 
