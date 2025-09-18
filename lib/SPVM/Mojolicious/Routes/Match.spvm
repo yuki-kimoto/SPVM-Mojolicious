@@ -53,21 +53,6 @@ class Mojolicious::Routes::Match {
     $self->_match($self->root, $c, $options);
   }
   
-  static method _hash_merge : void ($self : Hash, $hash : Hash) {
-    
-    for my $key (@{$hash->keys}) {
-      my $value = $hash->get($key);
-      $self->set($key, $value);
-    }
-  }
-  
-  static method _hash_merge_options : void ($self : Hash, $options : object[]) {
-    
-    my $hash = Hash->new($options);
-    
-    &_hash_merge($self, $hash);
-  }
-  
   method path_for : Hash ($args : object...) {
     
     my $_ = Mojo::Util->_options($args);
@@ -101,10 +86,9 @@ class Mojolicious::Routes::Match {
       $captures = Hash->new;
     }
     
-    my $merged = Hash->new;
-    &_hash_merge($merged, $captures);
-    &_hash_merge_options($merged, {format => undef});
-    &_hash_merge($merged, $values);
+    my $merged = $captures->clone;
+    $merged->merge_options({format => undef});
+    $merged->merge($values);
     
     my $pattern     = $route->pattern;
     my $constraints = $pattern->constraints;
