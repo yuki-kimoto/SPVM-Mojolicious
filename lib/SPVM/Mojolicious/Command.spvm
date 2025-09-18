@@ -70,6 +70,14 @@ class Mojolicious::Command {
     $self->_loud("  [chmod] $path " . Fn->sprintf("%lo", $mode));
   }
   
+  method chmod_rel_file : void ($path : string, $mode : int) {
+    $self->chmod_file($self->rel_file($path)->to_string, $mode);
+  }
+  
+  method rel_file : Mojo::File ($path : string) {
+    return Mojo::File->path->child(Fn->split("/", $path));
+  }
+  
   private method _loud : void ($msg : string) {
     
     unless ($self->quiet) {
@@ -80,8 +88,6 @@ class Mojolicious::Command {
 }
 
 __END__
-
-sub chmod_rel_file { $_[0]->chmod_file($_[0]->rel_file($_[1]), $_[2]) }
 
 sub create_dir {
   my ($self, $path) = @_;
@@ -95,8 +101,6 @@ sub create_rel_dir { $_[0]->create_dir($_[0]->rel_file($_[1])) }
 sub extract_usage { Mojo::Util::extract_usage((caller)[1]) }
 
 sub help { print shift->usage }
-
-sub rel_file { path->child(split(/\//, pop)) }
 
 sub render_data {
   my ($self, $name) = (shift, shift);
