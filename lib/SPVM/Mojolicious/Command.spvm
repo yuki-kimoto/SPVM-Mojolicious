@@ -54,15 +54,32 @@ class Mojolicious::Command {
   # Undocumented Fields
   has app_ref : Mojolicious;
   
+  # Class Methods
+  static method new : Mojolicious::Command () {
+    
+    my $self = new Mojolicious::Command;
+    
+    return $self;
+  }
+  
+  # Instance Methods
+  method chmod_file : void ($path : string, $mode : int) {
+    
+    Mojo::File->path($path)->chmod($mode);
+    
+    $self->_loud("  [chmod] $path " . Fn->sprintf("%lo", $mode));
+  }
+  
+  private method _loud : void ($msg : string) {
+    
+    unless ($self->quiet) {
+      say $msg;
+    }
+  }
+
 }
 
 __END__
-
-sub chmod_file {
-  my ($self, $path, $mode) = @_;
-  path($path)->chmod($mode);
-  return $self->_loud("  [chmod] $path " . sprintf('%lo', $mode));
-}
 
 sub chmod_rel_file { $_[0]->chmod_file($_[0]->rel_file($_[1]), $_[2]) }
 
@@ -109,10 +126,4 @@ sub write_file {
 }
 
 sub write_rel_file { $_[0]->write_file($_[0]->rel_file($_[1]), $_[2]) }
-
-sub _loud {
-  my ($self, $msg) = @_;
-  say $msg unless $self->quiet;
-  return $self;
-}
 
