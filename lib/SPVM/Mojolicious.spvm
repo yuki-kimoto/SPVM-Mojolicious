@@ -72,13 +72,22 @@ class Mojolicious {
   ;
   
   has moniker : rw string;
+  
+  has max_request_size : rw int;
+  
+  has plugins : rw Mojolicious::Plugins
+    get {
+      unless (exists $self->{plugins}) {
+        $self->{plugins} = Mojolicious::Plugins->new;
+      }
+      return $self->{plugins};
+    }
+  ;
+  
 }
 
 __END__
 
-has 'max_request_size';
-has moniker            => sub { Mojo::Util::decamelize ref shift };
-has plugins            => sub { Mojolicious::Plugins->new };
 has preload_namespaces => sub { [] };
 has renderer           => sub { Mojolicious::Renderer->new };
 has routes             => sub { Mojolicious::Routes->new };
