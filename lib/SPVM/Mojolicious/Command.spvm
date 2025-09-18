@@ -74,6 +74,17 @@ class Mojolicious::Command {
     $self->chmod_file($self->rel_file($path)->to_string, $mode);
   }
   
+  method create_dir : void ($path : string) {
+    if (Sys->d($path)) {
+      $self->_loud("  [exist] $path");
+      return;
+    }
+    
+    Mojo::File->path($path)->make_path;
+    
+    $self->_loud("  [mkdir] $path");
+  }
+  
   method rel_file : Mojo::File ($path : string) {
     return Mojo::File->path->child(Fn->split("/", $path));
   }
@@ -88,13 +99,6 @@ class Mojolicious::Command {
 }
 
 __END__
-
-sub create_dir {
-  my ($self, $path) = @_;
-  return $self->_loud("  [exist] $path") if -d $path;
-  path($path)->make_path;
-  return $self->_loud("  [mkdir] $path");
-}
 
 sub create_rel_dir { $_[0]->create_dir($_[0]->rel_file($_[1])) }
 
