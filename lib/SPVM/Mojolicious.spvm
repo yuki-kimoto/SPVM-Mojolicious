@@ -18,6 +18,17 @@ class Mojolicious {
   use Mojolicious::Types;
   
   # Fields
+  has home : rw Mojo::Home
+    get {
+      unless (exists $self->{home}) {
+        my $home = Mojo::Home->new;
+        $home->detect;
+        $self->{home} = $home;
+      }
+      return $self->{home};
+    }
+  ;
+  
   has routes : rw Mojolicious::Routes
     get {
       unless (exists $self->{routes}) {
@@ -30,3 +41,183 @@ class Mojolicious {
   
   has moniker : rw string;
 }
+
+__END__
+
+has log              => sub {
+  my $self = shift;
+
+  # Reduced log output outside of development mode
+  my $log = Mojo::Log->new;
+  return $log->level($ENV{MOJO_LOG_LEVEL}) if $ENV{MOJO_LOG_LEVEL};
+  return $self->mode eq 'development' ? $log : $log->level('info');
+};
+has 'max_request_size';
+has mode               => sub { $ENV{MOJO_MODE} || $ENV{PLACK_ENV} || 'development' };
+has moniker            => sub { Mojo::Util::decamelize ref shift };
+has plugins            => sub { Mojolicious::Plugins->new };
+has preload_namespaces => sub { [] };
+has renderer           => sub { Mojolicious::Renderer->new };
+has routes             => sub { Mojolicious::Routes->new };
+has secrets            => sub {
+  my $self = shift;
+
+  # Warn developers about insecure default
+  $self->log->trace('Your secret passphrase needs to be changed (see FAQ for more)');
+
+  # Default to moniker
+  return [$self->moniker];
+};
+has sessions  => sub { Mojolicious::Sessions->new };
+has static    => sub { Mojolicious::Static->new };
+has types     => sub { Mojolicious::Types->new };
+has ua        => sub { Mojo::UserAgent->new };
+has validator => sub { Mojolicious::Validator->new };
+
+our $CODENAME = 'Waffle';
+our $VERSION  = '9.42';
+
+sub BUILD_DYNAMIC {
+  my ($class, $method, $dyn_methods) = @_;
+
+  return sub {
+    my $self    = shift;
+    my $dynamic = $dyn_methods->{$self->renderer}{$method};
+    return $self->build_controller->$dynamic(@_) if $dynamic;
+    my $package = ref $self;
+    Carp::croak qq{Can't locate object method "$method" via package "$package"};
+  };
+}
+
+sub build_controller {
+  my ($self, $tx) = @_;
+
+  # Embedded application
+  my $stash = {};
+  if ($tx && (my $sub = $tx->can('stash'))) { ($stash, $tx) = ($tx->$sub, $tx->tx) }
+
+  # Build default controller
+  my $defaults = $self->defaults;
+  @$stash{keys %$defaults} = values %$defaults;
+  my $c = $self->controller_class->new(app => $self, stash => $stash, tx => $tx);
+  $c->{tx} ||= $self->build_tx;
+
+  return $c;
+}
+
+sub build_tx {
+  my $self = shift;
+
+  my $tx  = Mojo::Transaction::HTTP->new;
+  my $max = $self->max_request_size;
+  $tx->req->max_message_size($max) if defined $max;
+  $self->plugins->emit_hook(after_build_tx => $tx, $self);
+
+  return $tx;
+}
+
+sub config   { Mojo::Util::_stash(config   => @_) }
+sub defaults { Mojo::Util::_stash(defaults => @_) }
+
+sub dispatch {
+  my ($self, $c) = @_;
+
+  my $plugins = $self->plugins->emit_hook(before_dispatch => $c);
+
+  my $stash = $c->stash;
+  return if $stash->{'mojo.rendered'};
+
+  # Try to find a static file
+  my $tx = $c->tx;
+  $self->static->dispatch($c) and $plugins->emit_hook(after_static => $c) unless $tx->res->code;
+
+  # Start timer (ignore static files)
+  $c->helpers->log->trace(sub {
+    my $req    = $c->req;
+    my $method = $req->method;
+    my $path   = $req->url->path->to_abs_string;
+    $c->helpers->timing->begin('mojo.timer');
+    return qq{$method "$path"};
+  }) unless $stash->{'mojo.static'};
+
+  # Routes
+  $plugins->emit_hook(before_routes => $c);
+  $c->helpers->reply->not_found unless $tx->res->code || $self->routes->dispatch($c) || $tx->res->code;
+}
+
+sub handler {
+  my $self = shift;
+
+  # Dispatcher has to be last in the chain
+  ++$self->{dispatch}
+    and $self->hook(around_action   => \&_action)
+    and $self->hook(around_dispatch => sub { $_[1]->app->dispatch($_[1]) })
+    unless $self->{dispatch};
+
+  # Process with chain
+  my $c = $self->build_controller(@_);
+  $self->plugins->emit_chain(around_dispatch => $c);
+
+  # Delayed response
+  $c->helpers->log->trace('Nothing has been rendered, expecting delayed response (see FAQ for more)')
+    unless $c->stash->{'mojo.rendered'};
+}
+
+sub helper { shift->renderer->add_helper(@_) }
+
+sub hook { shift->plugins->on(@_) }
+
+sub new {
+  my $self = shift->SUPER::new((ref $_[0] ? %{shift()} : @_), @Mojo::Server::ARGS_OVERRIDE);
+
+  my $home = $self->home;
+  push @{$self->renderer->paths}, $home->child('templates')->to_string;
+  push @{$self->static->paths},   $home->child('public')->to_string;
+
+  # Default to controller and application namespace
+  my $controller = "@{[ref $self]}::Controller";
+  my $r          = $self->preload_namespaces([$controller])->routes->namespaces([$controller, ref $self]);
+
+  $self->plugin($_) for qw(HeaderCondition DefaultHelpers TagHelpers EPLRenderer EPRenderer);
+
+  # Exception handling should be first in chain
+  $self->hook(around_dispatch => \&_exception);
+
+  $self->startup;
+  $self->warmup;
+
+  return $self;
+}
+
+sub plugin {
+  my $self = shift;
+  $self->plugins->register_plugin(shift, $self, @_);
+}
+
+sub server { $_[0]->plugins->emit_hook(before_server_start => @_[1, 0]) }
+
+sub start {
+  my $self = shift;
+  $_->warmup for $self->static, $self->renderer;
+  return $self->commands->run(@_ ? @_ : @ARGV);
+}
+
+sub startup { }
+
+sub warmup { Mojo::Loader::load_classes $_ for @{shift->preload_namespaces} }
+
+sub _action {
+  my ($next, $c, $action, $last) = @_;
+  my $val = $action->($c);
+  $val->catch(sub { $c->helpers->reply->exception(shift) }) if Scalar::Util::blessed $val && $val->isa('Mojo::Promise');
+  return $val;
+}
+
+sub _die { CORE::die ref $_[0] ? $_[0] : Mojo::Exception->new(shift)->trace }
+
+sub _exception {
+  my ($next, $c) = @_;
+  local $SIG{__DIE__} = \&_die;
+  $c->helpers->reply->exception($@) unless eval { $next->(); 1 };
+}
+
