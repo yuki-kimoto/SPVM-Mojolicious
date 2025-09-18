@@ -4,9 +4,21 @@
 class Mojolicious {
   version "0.022";
   
-  use Mojolicious::Routes;
+  use Mojo::Home;
+  use Mojo::Loader;
   use Mojo::Log;
+  use Mojo::Server;
+  use Mojo::Util;
+  use Mojo::UserAgent;
+  use Mojolicious::Commands;
+  use Mojolicious::Controller;
+  use Mojolicious::Plugins;
+  use Mojolicious::Renderer;
+  use Mojolicious::Routes;
   use Mojolicious::Sessions;
+  use Mojolicious::Static;
+  use Mojolicious::Types;
+
   
   # Fields
   has routes : rw Mojolicious::Routes
