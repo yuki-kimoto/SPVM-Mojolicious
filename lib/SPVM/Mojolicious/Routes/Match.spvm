@@ -38,7 +38,7 @@ class Mojolicious::Routes::Match {
   # Undocumented Fields
   has captures : Hash;
   
-  has conditions : Hash;
+  has conditions : Hash of Mojolicious::Routes::Callback::Condition;
   
   # Class Methods
   static method new : Mojolicious::Routes::Match () {
@@ -95,7 +95,7 @@ class Mojolicious::Routes::Match {
     my $stack_list = $self->stack_list;
     my $captures = (Hash)undef;
     if ($stack_list->length > 0) {
-      $captures = (Hash)$stack_list->get($stack_list->length - 1) // Hash->new;
+      $captures = $stack_list->get($stack_list->length - 1) // Hash->new;
     }
     else {
       $captures = Hash->new;
@@ -158,7 +158,7 @@ class Mojolicious::Routes::Match {
     if (my $over = $r->requires) {
       my $conditions = $self->{conditions} //= $self->root->conditions;
       for my $key (@{$over->keys}) {
-        my $condition = (Mojolicious::Routes::Callback::Condition)$conditions->get($key);
+        my $condition = $conditions->get($key);
         unless ($condition) {
           return 0;
         }
@@ -188,7 +188,7 @@ class Mojolicious::Routes::Match {
         my $format = $captures->get_string("format");
         if ($format) {
           for (my $i = 0; $i = $self->stack_list->length; $i++) {
-            my $captures = (Hash)$self->stack_list->get($i);
+            my $captures = $self->stack_list->get($i);
             $captures->set(format => $format);
           }
         }
