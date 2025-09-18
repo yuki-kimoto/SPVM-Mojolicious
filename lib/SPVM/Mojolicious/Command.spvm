@@ -9,20 +9,54 @@ class Mojolicious::Command {
   use Mojo::Server;
   use Mojo::Template;
   
+  has app : rw Mojolicious
+    get {
+      unless (exists $self->{app}) {
+        $self->{app} = $self->{app_ref} = Mojo::Server->new->build_app("Mojo::HelloWorld");
+      }
+      return $self->{app};
+    }
+    set {
+      $self->{app} = $_;
+      weaken $self->{app};
+    }
+  ;
+  
+  has description : rw string
+    get {
+      unless (exists $self->{description}) {
+        $self->{description} = "No description";
+      }
+      return $self->{description};
+    }
+  ;
+  
+  has quiet : rw byte;
+  
+  has template : rw object[]
+    get {
+      unless (exists $self->{template}) {
+        $self->{template} = {vars => 1};
+      }
+      return $self->{template};
+    }
+  ;
+  
+  has usage : rw string
+    get {
+      unless (exists $self->{usage}) {
+        $self->{usage} = "Usage: APPLICATION\n";
+      }
+      return $self->{usage};
+    }
+  ;
+  
+  # Undocumented Fields
+  has app_ref : Mojolicious;
+  
 }
 
 __END__
-
-use Mojo::File   qw(path);
-use Mojo::Loader qw(data_section);
-use Mojo::Server;
-use Mojo::Template;
-
-has app => sub { $_[0]{app_ref} = Mojo::Server->new->build_app('Mojo::HelloWorld') }, weak => 1;
-has description => 'No description';
-has 'quiet';
-has template => sub { {vars => 1} };
-has usage    => "Usage: APPLICATION\n";
 
 sub chmod_file {
   my ($self, $path, $mode) = @_;
