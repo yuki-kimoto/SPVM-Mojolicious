@@ -16,6 +16,7 @@ class Mojolicious {
   use Mojolicious::Sessions;
   use Mojolicious::Static;
   use Mojolicious::Types;
+  use Sys;
   
   # Fields
   has home : rw Mojo::Home
@@ -29,6 +30,25 @@ class Mojolicious {
     }
   ;
   
+  has log  : rw Mojo::Log
+    get {
+      unless (exists $self->{log}) {
+        my $log = Mojo::Log->new;
+        
+        if (length (my $_ = Sys->env("SPVM_MOJO_LOG_LEVEL"))) {
+          $log->set_level($_);
+        }
+        else {
+          unless ($self->mode eq "development") {
+            $log->set_level("info");
+          }
+        }
+        
+        return $self->{log} = $log;
+      }
+    }
+  ;
+  
   has routes : rw Mojolicious::Routes
     get {
       unless (exists $self->{routes}) {
@@ -37,23 +57,26 @@ class Mojolicious {
     }
   ;
   
-  has log : rw Mojo::Log;
+  has mode : rw string
+    get {
+      unless (exists $self->{mode}) {
+        if (length (my $_ = Sys->env("SPVM_MOJO_MODE"))) {
+          $self->{mode} = $_;
+        }
+        else {
+          $self->{mode} = "development";
+        }
+      }
+      return $self->{mode};
+    }
+  ;
   
   has moniker : rw string;
 }
 
 __END__
 
-has log              => sub {
-  my $self = shift;
-
-  # Reduced log output outside of development mode
-  my $log = Mojo::Log->new;
-  return $log->level($ENV{MOJO_LOG_LEVEL}) if $ENV{MOJO_LOG_LEVEL};
-  return $self->mode eq 'development' ? $log : $log->level('info');
-};
 has 'max_request_size';
-has mode               => sub { $ENV{MOJO_MODE} || $ENV{PLACK_ENV} || 'development' };
 has moniker            => sub { Mojo::Util::decamelize ref shift };
 has plugins            => sub { Mojolicious::Plugins->new };
 has preload_namespaces => sub { [] };
