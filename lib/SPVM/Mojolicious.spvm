@@ -210,29 +210,18 @@ class Mojolicious {
   method plugin : void ($name : string, $options : object[] = undef) {
     $self->plugins->register_plugin($name, $self, $options);
   }
+  
+  method handler : void ($tx : Mojo::Transaction) {
+    
+    # Process with chain
+    my $c = $self->build_controller($tx);
+    $self->dispatch($c);
+  }
 
 }
 
 
 __END__
-
-sub handler {
-  my $self = shift;
-
-  # Dispatcher has to be last in the chain
-  ++$self->{dispatch}
-    and $self->hook(around_action   => \&_action)
-    and $self->hook(around_dispatch => sub { $_[1]->app->dispatch($_[1]) })
-    unless $self->{dispatch};
-
-  # Process with chain
-  my $c = $self->build_controller(@_);
-  $self->plugins->emit_chain(around_dispatch => $c);
-
-  # Delayed response
-  $c->helpers->log->trace('Nothing has been rendered, expecting delayed response (see FAQ for more)')
-    unless $c->stash->{'mojo.rendered'};
-}
 
 sub start {
   my $self = shift;
