@@ -145,6 +145,10 @@ class Mojolicious {
     
     my $self = new Mojolicious;
     
+    my $home = $self->home;
+    $self->renderer->paths_list->push($home->child("templates")->to_string);
+    $self->static->paths_list->push($home->child("public")->to_string);
+    
     return $self;
   }
   
@@ -228,28 +232,6 @@ sub handler {
   # Delayed response
   $c->helpers->log->trace('Nothing has been rendered, expecting delayed response (see FAQ for more)')
     unless $c->stash->{'mojo.rendered'};
-}
-
-sub new {
-  my $self = shift->SUPER::new((ref $_[0] ? %{shift()} : @_), @Mojo::Server::ARGS_OVERRIDE);
-
-  my $home = $self->home;
-  push @{$self->renderer->paths}, $home->child('templates')->to_string;
-  push @{$self->static->paths},   $home->child('public')->to_string;
-
-  # Default to controller and application namespace
-  my $controller = "@{[ref $self]}::Controller";
-  my $r          = $self->preload_namespaces([$controller])->routes->namespaces([$controller, ref $self]);
-
-  $self->plugin($_) for qw(HeaderCondition DefaultHelpers TagHelpers EPLRenderer EPRenderer);
-
-  # Exception handling should be first in chain
-  $self->hook(around_dispatch => \&_exception);
-
-  $self->startup;
-  $self->warmup;
-
-  return $self;
 }
 
 sub start {

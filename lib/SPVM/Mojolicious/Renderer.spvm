@@ -7,6 +7,8 @@ class Mojolicious::Renderer {
   # Fields
   has helpers : rw Hash of Mojo::Callback;
   
+  has paths_list : rw List of string;
+  
   # Class Methods
   static method new : Mojolicious::Renderer () {
     
