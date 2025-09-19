@@ -106,11 +106,20 @@ class Mojolicious {
       return $self->{secrets};
     }
   ;
+  
+  has sessions : rw Mojolicious::Sessions
+    get {
+      unless (exists $self->{sessions}) {
+        $self->{sessions} = Mojolicious::Sessions->new;
+      }
+      return $self->{sessions};
+    }
+  ;
+  
 }
 
 __END__
 
-has sessions  => sub { Mojolicious::Sessions->new };
 has static    => sub { Mojolicious::Static->new };
 has types     => sub { Mojolicious::Types->new };
 has ua        => sub { Mojo::UserAgent->new };
