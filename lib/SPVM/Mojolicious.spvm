@@ -198,6 +198,11 @@ class Mojolicious {
     $self->renderer->add_helper($name, $cb);
   }
   
+  method hook : void ($name : string, $cb : Mojo::Callback)  {
+    
+    $self->plugins->on($name, $cb);
+  }
+
 }
 
 
@@ -220,8 +225,6 @@ sub handler {
   $c->helpers->log->trace('Nothing has been rendered, expecting delayed response (see FAQ for more)')
     unless $c->stash->{'mojo.rendered'};
 }
-
-sub hook { shift->plugins->on(@_) }
 
 sub new {
   my $self = shift->SUPER::new((ref $_[0] ? %{shift()} : @_), @Mojo::Server::ARGS_OVERRIDE);
