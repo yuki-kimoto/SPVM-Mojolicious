@@ -16,6 +16,7 @@ class Mojolicious {
   use Mojolicious::Sessions;
   use Mojolicious::Static;
   use Mojolicious::Types;
+  use Mojo::Transaction;
   use Sys;
   
   # Fields
@@ -134,58 +135,41 @@ class Mojolicious {
     }
   ;
   
+  has config : rw Hash;
+  
+  has defaults : rw Hash;
+  
+  # Class Methods
+  static method new : Mojolicious () {
+    
+    my $self = new Mojolicious;
+    
+    return $self;
+  }
+  
+  # Instance Methods
+  method build_controller : Mojolicious::Controller ($tx : Mojo::Transaction) {
+    
+    unless ($tx) {
+      die "The transaction \$tx must be defined.";
+    }
+    
+    # Build default controller
+    my $defaults = $self->defaults;
+    
+    my $stash = $defaults->clone;
+    
+    my $c = Mojolicious::Controller->new;
+    $c->set_app($self);
+    $c->set_tx($tx);
+    $c->set_stash($stash);
+    
+    return $c;
+  }
   
 }
 
 __END__
-
-has ua        => sub { Mojo::UserAgent->new };
-has validator => sub { Mojolicious::Validator->new };
-
-our $CODENAME = 'Waffle';
-our $VERSION  = '9.42';
-
-sub BUILD_DYNAMIC {
-  my ($class, $method, $dyn_methods) = @_;
-
-  return sub {
-    my $self    = shift;
-    my $dynamic = $dyn_methods->{$self->renderer}{$method};
-    return $self->build_controller->$dynamic(@_) if $dynamic;
-    my $package = ref $self;
-    Carp::croak qq{Can't locate object method "$method" via package "$package"};
-  };
-}
-
-sub build_controller {
-  my ($self, $tx) = @_;
-
-  # Embedded application
-  my $stash = {};
-  if ($tx && (my $sub = $tx->can('stash'))) { ($stash, $tx) = ($tx->$sub, $tx->tx) }
-
-  # Build default controller
-  my $defaults = $self->defaults;
-  @$stash{keys %$defaults} = values %$defaults;
-  my $c = $self->controller_class->new(app => $self, stash => $stash, tx => $tx);
-  $c->{tx} ||= $self->build_tx;
-
-  return $c;
-}
-
-sub build_tx {
-  my $self = shift;
-
-  my $tx  = Mojo::Transaction::HTTP->new;
-  my $max = $self->max_request_size;
-  $tx->req->max_message_size($max) if defined $max;
-  $self->plugins->emit_hook(after_build_tx => $tx, $self);
-
-  return $tx;
-}
-
-sub config   { Mojo::Util::_stash(config   => @_) }
-sub defaults { Mojo::Util::_stash(defaults => @_) }
 
 sub dispatch {
   my ($self, $c) = @_;
