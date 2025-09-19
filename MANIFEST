@@ -121,6 +121,16 @@ lib/SPVM/Mojolicious.pm
 lib/SPVM/Mojolicious.spvm
 lib/SPVM/Mojolicious/Command.pm
 lib/SPVM/Mojolicious/Command.spvm
+lib/SPVM/Mojolicious/Command/Cgi.pm
+lib/SPVM/Mojolicious/Command/Cgi.spvm
+lib/SPVM/Mojolicious/Command/Daemon.pm
+lib/SPVM/Mojolicious/Command/Daemon.spvm
+lib/SPVM/Mojolicious/Command/Hypnotoad.pm
+lib/SPVM/Mojolicious/Command/Hypnotoad.spvm
+lib/SPVM/Mojolicious/Command/Morbo.pm
+lib/SPVM/Mojolicious/Command/Morbo.spvm
+lib/SPVM/Mojolicious/Command/Prefork.pm
+lib/SPVM/Mojolicious/Command/Prefork.spvm
 lib/SPVM/Mojolicious/Commands.pm
 lib/SPVM/Mojolicious/Commands.spvm
 lib/SPVM/Mojolicious/Controller.pm
