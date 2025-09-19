@@ -94,19 +94,22 @@ class Mojolicious {
     }
   ;
   
+  has secrets : rw string[]
+    get {
+      unless (exists $self->{secrets}) {
+        # Warn developers about insecure default
+        $self->log->trace("Your secret passphrase needs to be changed (see FAQ for more)");
+        
+        # Default to moniker
+        return [$self->moniker];
+      }
+      return $self->{secrets};
+    }
+  ;
 }
 
 __END__
 
-has secrets            => sub {
-  my $self = shift;
-
-  # Warn developers about insecure default
-  $self->log->trace('Your secret passphrase needs to be changed (see FAQ for more)');
-
-  # Default to moniker
-  return [$self->moniker];
-};
 has sessions  => sub { Mojolicious::Sessions->new };
 has static    => sub { Mojolicious::Static->new };
 has types     => sub { Mojolicious::Types->new };
