@@ -3,4 +3,17 @@
 
 class Mojolicious::Commands extends Mojolicious::Command {
   version_from Mojolicious;
+  
+  # Class Methods
+  static method new : Mojolicious::Commands () {
+    
+    my $self = new Mojolicious::Commands;
+    
+    return $self;
+  }
+  
+  # Instance Methods
+  method run : void ($argv : string[]) {
+    
+  }
 }

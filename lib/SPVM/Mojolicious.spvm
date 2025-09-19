@@ -19,6 +19,7 @@ class Mojolicious {
   use Mojo::Transaction;
   use Sys;
   use Mojolicious::Helper::Reply;
+  use Mojolicious::Commands;
   
   # Fields
   has home : rw Mojo::Home
@@ -75,6 +76,15 @@ class Mojolicious {
         $self->{plugins} = Mojolicious::Plugins->new;
       }
       return $self->{plugins};
+    }
+  ;
+  
+  has commands : rw Mojolicious::Commands
+    get {
+      unless (exists $self->{commands}) {
+        $self->{commands} = Mojolicious::Commands->new;
+      }
+      return $self->{commands};
     }
   ;
   
@@ -217,15 +227,18 @@ class Mojolicious {
     my $c = $self->build_controller($tx);
     $self->dispatch($c);
   }
+  
+  method start : void ($argv : string[] = undef) {
+    
+    unless ($argv) {
+      $argv = CommandInfo->ARGV;
+    }
+    
+    $self->commands->run($argv);
+  }
 
 }
 
 
 __END__
-
-sub start {
-  my $self = shift;
-  $_->warmup for $self->static, $self->renderer;
-  return $self->commands->run(@_ ? @_ : @ARGV);
-}
 
