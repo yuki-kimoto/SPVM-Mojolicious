@@ -202,6 +202,10 @@ class Mojolicious {
     
     $self->plugins->on($name, $cb);
   }
+  
+  method plugin : void ($name : string, $options : object[] = undef) {
+    $self->plugins->register_plugin($name, $self, $options);
+  }
 
 }
 
@@ -246,11 +250,6 @@ sub new {
   $self->warmup;
 
   return $self;
-}
-
-sub plugin {
-  my $self = shift;
-  $self->plugins->register_plugin(shift, $self, @_);
 }
 
 sub start {
