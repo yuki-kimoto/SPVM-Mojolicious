@@ -71,6 +71,16 @@ lib/SPVM/Mojo/Path.pm
 lib/SPVM/Mojo/Path.spvm
 lib/SPVM/Mojo/Server.pm
 lib/SPVM/Mojo/Server.spvm
+lib/SPVM/Mojo/Server/CGI.pm
+lib/SPVM/Mojo/Server/CGI.spvm
+lib/SPVM/Mojo/Server/Daemon.pm
+lib/SPVM/Mojo/Server/Daemon.spvm
+lib/SPVM/Mojo/Server/Hypnotoad.pm
+lib/SPVM/Mojo/Server/Hypnotoad.spvm
+lib/SPVM/Mojo/Server/Morbo.pm
+lib/SPVM/Mojo/Server/Morbo.spvm
+lib/SPVM/Mojo/Server/Prefork.pm
+lib/SPVM/Mojo/Server/Prefork.spvm
 lib/SPVM/Mojo/SSE.pm
 lib/SPVM/Mojo/SSE.spvm
 lib/SPVM/Mojo/SSE/Event.pm
