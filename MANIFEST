@@ -111,6 +111,8 @@ lib/SPVM/Mojolicious.pm
 lib/SPVM/Mojolicious.spvm
 lib/SPVM/Mojolicious/Controller.pm
 lib/SPVM/Mojolicious/Controller.spvm
+lib/SPVM/Mojolicious/Helper/Reply.pm
+lib/SPVM/Mojolicious/Helper/Reply.spvm
 lib/SPVM/Mojolicious/Lite.pm
 lib/SPVM/Mojolicious/Lite.spvm
 lib/SPVM/Mojolicious/Plugin.pm

@@ -92,5 +92,8 @@ class Mojolicious::Static {
     
     return "$prefix$file";
   }
-
+  
+  method dispatch : void ($c : Mojolicious::Controller) {
+    die "TODO";
+  }
 }

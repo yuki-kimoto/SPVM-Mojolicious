@@ -18,6 +18,7 @@ class Mojolicious {
   use Mojolicious::Types;
   use Mojo::Transaction;
   use Sys;
+  use Mojolicious::Helper::Reply;
   
   # Fields
   has home : rw Mojo::Home
@@ -167,35 +168,35 @@ class Mojolicious {
     return $c;
   }
   
+  method dispatch : void ($c : Mojolicious::Controller) {
+    
+    my $stash = $c->stash;
+    if ($stash->get_int("mojo.rendered")) {
+      return;
+    }
+    
+    # Try to find a static file
+    my $tx = $c->tx;
+    unless ($tx->res->code >= 0) {
+      $self->static->dispatch($c);
+    }
+    
+    # Routes
+    unless ($tx->res->code) {
+      my $continue = $self->routes->dispatch($c);
+      
+      unless ($continue) {
+        unless ($tx->res->code) {
+          $c->reply->not_found;
+        }
+      }
+    }
+  }
+  
 }
+
 
 __END__
-
-sub dispatch {
-  my ($self, $c) = @_;
-
-  my $plugins = $self->plugins->emit_hook(before_dispatch => $c);
-
-  my $stash = $c->stash;
-  return if $stash->{'mojo.rendered'};
-
-  # Try to find a static file
-  my $tx = $c->tx;
-  $self->static->dispatch($c) and $plugins->emit_hook(after_static => $c) unless $tx->res->code;
-
-  # Start timer (ignore static files)
-  $c->helpers->log->trace(sub {
-    my $req    = $c->req;
-    my $method = $req->method;
-    my $path   = $req->url->path->to_abs_string;
-    $c->helpers->timing->begin('mojo.timer');
-    return qq{$method "$path"};
-  }) unless $stash->{'mojo.static'};
-
-  # Routes
-  $plugins->emit_hook(before_routes => $c);
-  $c->helpers->reply->not_found unless $tx->res->code || $self->routes->dispatch($c) || $tx->res->code;
-}
 
 sub handler {
   my $self = shift;
