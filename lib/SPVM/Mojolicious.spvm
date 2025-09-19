@@ -193,6 +193,11 @@ class Mojolicious {
     }
   }
   
+  method helper : void ($name : string, $cb : Mojo::Callback) {
+    
+    $self->renderer->add_helper($name, $cb);
+  }
+  
 }
 
 
@@ -215,8 +220,6 @@ sub handler {
   $c->helpers->log->trace('Nothing has been rendered, expecting delayed response (see FAQ for more)')
     unless $c->stash->{'mojo.rendered'};
 }
-
-sub helper { shift->renderer->add_helper(@_) }
 
 sub hook { shift->plugins->on(@_) }
 
@@ -247,30 +250,9 @@ sub plugin {
   $self->plugins->register_plugin(shift, $self, @_);
 }
 
-sub server { $_[0]->plugins->emit_hook(before_server_start => @_[1, 0]) }
-
 sub start {
   my $self = shift;
   $_->warmup for $self->static, $self->renderer;
   return $self->commands->run(@_ ? @_ : @ARGV);
-}
-
-sub startup { }
-
-sub warmup { Mojo::Loader::load_classes $_ for @{shift->preload_namespaces} }
-
-sub _action {
-  my ($next, $c, $action, $last) = @_;
-  my $val = $action->($c);
-  $val->catch(sub { $c->helpers->reply->exception(shift) }) if Scalar::Util::blessed $val && $val->isa('Mojo::Promise');
-  return $val;
-}
-
-sub _die { CORE::die ref $_[0] ? $_[0] : Mojo::Exception->new(shift)->trace }
-
-sub _exception {
-  my ($next, $c) = @_;
-  local $SIG{__DIE__} = \&_die;
-  $c->helpers->reply->exception($@) unless eval { $next->(); 1 };
 }
 
