@@ -124,11 +124,21 @@ class Mojolicious {
       return $self->{static};
     }
   ;
+  
+  has types : rw Mojolicious::Types
+    get {
+      unless (exists $self->{types}) {
+        $self->{types} = Mojolicious::Types->new;
+      }
+      return $self->{types};
+    }
+  ;
+  
+  
 }
 
 __END__
 
-has types     => sub { Mojolicious::Types->new };
 has ua        => sub { Mojo::UserAgent->new };
 has validator => sub { Mojolicious::Validator->new };
 
