@@ -116,11 +116,18 @@ class Mojolicious {
     }
   ;
   
+  has static : rw Mojolicious::Static
+    get {
+      unless (exists $self->{static}) {
+        $self->{static} = Mojolicious::Static->new;
+      }
+      return $self->{static};
+    }
+  ;
 }
 
 __END__
 
-has static    => sub { Mojolicious::Static->new };
 has types     => sub { Mojolicious::Types->new };
 has ua        => sub { Mojo::UserAgent->new };
 has validator => sub { Mojolicious::Validator->new };
