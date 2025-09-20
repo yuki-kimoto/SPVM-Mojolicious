@@ -4,6 +4,9 @@
 class Mojo::Server {
   version_from Mojolicious;
   
+  # Fields
+  has app : rw Mojolicious;
+  
   # Class Methods
   static method new : Mojo::Server () {
     
