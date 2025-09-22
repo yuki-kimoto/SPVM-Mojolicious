@@ -24,11 +24,10 @@ class Mojolicious::Command::Morbo extends Mojolicious::Command {
         $self->{usage} = <<'EOS';
 Usage: morbo [OPTIONS] [APPLICATION]
 
-  ./myapp.spvm morbo ./script/my_app
-  ./myapp.spvm morbo ./myapp.pl
-  ./myapp.spvm morbo -m production -l https://*:443 -l http://[::]:3000 ./myapp.pl
-  ./myapp.spvm morbo -l 'https://*:443?cert=./server.crt&key=./server.key' ./myapp.pl
-  ./myapp.spvm morbo -w /usr/local/lib -w public -w myapp.conf ./myapp.pl
+  ./myapp.spvm morbo
+  ./myapp.spvm morbo -m production -l https://*:443 -l http://[::]:3000
+  ./myapp.spvm morbo -l 'https://*:443?cert=./server.crt&key=./server.key'
+  ./myapp.spvm morbo -w /usr/local/lib -w public -w myapp.conf
 
 Options:
   -b, --backend <name>           Morbo backend to use for reloading, defaults
