@@ -45,6 +45,8 @@ class Mojo::Server extends Mojo::EventEmitter {
     
     my $self = new Mojo::Server;
     
+    $self->on(request => method : void ($server : Mojo::Server, $tx : Mojo::Transaction::HTTP)  { $server->app->handler($tx); });
+    
     return $self;
   }
   
@@ -73,19 +75,6 @@ __END__
 
 our @ARGS_OVERRIDE;
 
-sub daemonize {
-
-  # Fork and kill parent
-  die "Can't fork: $!" unless defined(my $pid = fork);
-  exit 0 if $pid;
-  POSIX::setsid == -1 and die "Can't start a new session: $!";
-
-  # Close filehandles
-  open STDIN,  '<',  '/dev/null';
-  open STDOUT, '>',  '/dev/null';
-  open STDERR, '>&', STDOUT;
-}
-
 sub load_app {
   my ($self, $path, @args) = (shift, shift, ref $_[0] ? %{shift()} : @_);
 
@@ -109,12 +98,6 @@ END_CODE
   FindBin->again;
 
   return $self->app;
-}
-
-sub new {
-  my $self = shift->SUPER::new(@_);
-  $self->on(request => sub { shift->app->handler(shift) });
-  return $self;
 }
 
 sub run { croak 'Method "run" not implemented by subclass' }
