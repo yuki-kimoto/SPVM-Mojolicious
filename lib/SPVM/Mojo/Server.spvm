@@ -1,11 +1,50 @@
 # Copyright (c) 2025 Yuki Kimoto
 # MIT License
 
-class Mojo::Server {
+class Mojo::Server extends Mojo::EventEmitter {
   version_from Mojolicious;
   
+  use Mojo::File;
+  use Mojo::Loader;
+  use Mojo::Util;
+  use Sys;
+  use Re;
+  
   # Fields
-  has app : rw Mojolicious;
+  has app : rw Mojolicious
+    get {
+      unless (exists $self->{app}) {
+        $self->{app} = $self->build_app("Mojo::HelloWorld");
+      }
+      return $self->{app};
+    }
+  ;
+  
+  has reverse_proxy : rw byte
+    get {
+      unless (exists $self->{reverse_proxy}) {
+        my $reverse_proxy = 0;
+        if (length (my $_ = Sys->env("SPVM_MOJO_REVERSE_PROXY"))) {
+          $reverse_proxy = (int)$_;
+        }
+        else {
+          $reverse_proxy = !!@{$self->trusted_proxies};
+        }
+        
+        $self->{reverse_proxy} = (byte)$reverse_proxy;
+      }
+      return $self->{reverse_proxy};
+    }
+  ;
+  
+  has trusted_proxies : rw string[]
+    get {
+      unless (exists $self->{trusted_proxies}) {
+        $self->{trusted_proxies} = Re->split("\s*,\s*", length (my $_ = Sys->env("SPVM_MOJO_TRUSTED_PROXIES")) ? $_ : "");
+      }
+      return $self->{trusted_proxies};
+    }
+  ;
   
   # Class Methods
   static method new : Mojo::Server () {
@@ -20,3 +59,68 @@ class Mojo::Server {
     die "TODO";
   }
 }
+
+__END__
+
+our @ARGS_OVERRIDE;
+
+sub build_app {
+  my ($self, $app) = (shift, shift);
+  local $ENV{MOJO_EXE};
+  return $self->app($app->new(@_))->app unless my $e = load_class $app;
+  die ref $e ? $e : qq{Can't find application class "$app" in \@INC. (@INC)\n};
+}
+
+sub build_tx {
+  my $self = shift;
+  my $tx   = $self->app->build_tx;
+  push @{$tx->req->trusted_proxies}, @{$self->trusted_proxies};
+  $tx->req->reverse_proxy(1) if $self->reverse_proxy;
+  return $tx;
+}
+
+sub daemonize {
+
+  # Fork and kill parent
+  die "Can't fork: $!" unless defined(my $pid = fork);
+  exit 0 if $pid;
+  POSIX::setsid == -1 and die "Can't start a new session: $!";
+
+  # Close filehandles
+  open STDIN,  '<',  '/dev/null';
+  open STDOUT, '>',  '/dev/null';
+  open STDERR, '>&', STDOUT;
+}
+
+sub load_app {
+  my ($self, $path, @args) = (shift, shift, ref $_[0] ? %{shift()} : @_);
+
+  # Clean environment (reset FindBin defensively)
+  {
+    local $0 = $path = path($path)->to_abs->to_string;
+    require FindBin;
+    FindBin->again;
+    local @ENV{qw(MOJO_APP_LOADER MOJO_EXE)} = (1, undef);
+    local @ARGS_OVERRIDE = @args;
+
+    # Try to load application from script into sandbox
+    my $app = eval sprintf <<'END_CODE', md5_sum($path);
+      package Mojo::Server::Sandbox::%s;
+      do $path or die $@ || $! || "$path did not return a true value";
+END_CODE
+    die qq{Can't load application from file "$path": $@} if $@;
+    die qq{File "$path" did not return an application object.\n} unless blessed $app && $app->can('handler');
+    $self->app($app);
+  };
+  FindBin->again;
+
+  return $self->app;
+}
+
+sub new {
+  my $self = shift->SUPER::new(@_);
+  $self->on(request => sub { shift->app->handler(shift) });
+  return $self;
+}
+
+sub run { croak 'Method "run" not implemented by subclass' }

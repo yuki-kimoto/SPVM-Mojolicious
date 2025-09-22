@@ -236,7 +236,11 @@ class Mojolicious {
     
     $self->commands->run($argv);
   }
-
+  
+  method server : void ($server : Mojo::Server) {
+    
+  }
+  
 }
 
 
