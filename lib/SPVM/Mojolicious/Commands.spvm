@@ -5,6 +5,7 @@ class Mojolicious::Commands extends Mojolicious::Command {
   version_from Mojolicious;
   
   use Mojolicious::Command::Cgi;
+  use Mojolicious::Command::Daemon;
   
   # Class Methods
   static method new : Mojolicious::Commands () {

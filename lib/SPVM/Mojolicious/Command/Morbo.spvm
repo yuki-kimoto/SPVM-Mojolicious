@@ -1,6 +1,6 @@
 # Copyright (c) 2025 Yuki Kimoto
 # MIT License
 
-class Mojolicious::Command::Morbo {
+class Mojolicious::Command::Morbo extends Mojolicious::Command {
   version_from Mojolicious;
 }

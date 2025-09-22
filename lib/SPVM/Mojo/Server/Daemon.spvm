@@ -4,8 +4,25 @@
 class Mojo::Server::Daemon extends Mojo::Server {
   version_from Mojolicious;
   
+  # Fields
+  has backlog : rw int;
+  
+  has max_clients : rw int;
+  
+  has inactivity_timeout : rw int;
+  
+  has keep_alive_timeout : rw int;
+  
+  has max_requests : rw int;
+  
+  has listen : rw string[];
+  
+  has reverse_proxy : rw byte;
+  
+  has trusted_proxies : rw string[];
+  
   # Class Methods
-  static method new : Mojo::Server::CGIDaemon () {
+  static method new : Mojo::Server::Daemon () {
     
     my $self = new Mojo::Server::Daemon;
     
