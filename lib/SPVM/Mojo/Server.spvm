@@ -5,7 +5,6 @@ class Mojo::Server extends Mojo::EventEmitter {
   version_from Mojolicious;
   
   use Mojo::File;
-  use Mojo::Loader;
   use Mojo::Util;
   use Sys;
   use Re;
@@ -73,33 +72,3 @@ class Mojo::Server extends Mojo::EventEmitter {
   
 }
 
-__END__
-
-our @ARGS_OVERRIDE;
-
-sub load_app {
-  my ($self, $path, @args) = (shift, shift, ref $_[0] ? %{shift()} : @_);
-
-  # Clean environment (reset FindBin defensively)
-  {
-    local $0 = $path = path($path)->to_abs->to_string;
-    require FindBin;
-    FindBin->again;
-    local @ENV{qw(MOJO_APP_LOADER MOJO_EXE)} = (1, undef);
-    local @ARGS_OVERRIDE = @args;
-
-    # Try to load application from script into sandbox
-    my $app = eval sprintf <<'END_CODE', md5_sum($path);
-      package Mojo::Server::Sandbox::%s;
-      do $path or die $@ || $! || "$path did not return a true value";
-END_CODE
-    die qq{Can't load application from file "$path": $@} if $@;
-    die qq{File "$path" did not return an application object.\n} unless blessed $app && $app->can('handler');
-    $self->app($app);
-  };
-  FindBin->again;
-
-  return $self->app;
-}
-
-sub run { croak 'Method "run" not implemented by subclass' }
