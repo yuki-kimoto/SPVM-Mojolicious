@@ -68,7 +68,9 @@ class Mojo::Server extends Mojo::EventEmitter {
     
     return $tx;
   }
-
+  
+  method run : void () { die "Not implemented."; }
+  
 }
 
 __END__
