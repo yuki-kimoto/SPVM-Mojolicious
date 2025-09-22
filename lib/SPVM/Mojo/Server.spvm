@@ -11,14 +11,7 @@ class Mojo::Server extends Mojo::EventEmitter {
   use Re;
   
   # Fields
-  has app : rw Mojolicious
-    get {
-      unless (exists $self->{app}) {
-        $self->{app} = $self->build_app("Mojo::HelloWorld");
-      }
-      return $self->{app};
-    }
-  ;
+  has app : rw Mojolicious;
   
   has reverse_proxy : rw byte
     get {
@@ -55,21 +48,16 @@ class Mojo::Server extends Mojo::EventEmitter {
   }
   
   # Instance Methods
-  method build_app : Mojolicious ($class_name : string) {
-    die "TODO";
+  method build_app : Mojolicious ($app : Mojolicious) {
+    
+    $self->set_app($app);
   }
+  
 }
 
 __END__
 
 our @ARGS_OVERRIDE;
-
-sub build_app {
-  my ($self, $app) = (shift, shift);
-  local $ENV{MOJO_EXE};
-  return $self->app($app->new(@_))->app unless my $e = load_class $app;
-  die ref $e ? $e : qq{Can't find application class "$app" in \@INC. (@INC)\n};
-}
 
 sub build_tx {
   my $self = shift;
