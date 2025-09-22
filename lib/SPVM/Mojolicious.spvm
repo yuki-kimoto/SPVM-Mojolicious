@@ -241,6 +241,21 @@ class Mojolicious {
     
   }
   
+  method build_tx : Mojo::Transaction::HTTP () {
+    
+    my $tx  = Mojo::Transaction::HTTP->new;
+    
+    if (exists $self->{max_request_size}) {
+      my $max = $self->max_request_size;
+      $tx->req->set_max_message_size($max);
+    }
+    
+    # TODO
+    # $self->plugins->emit_hook(after_build_tx => $tx, $self);
+    
+    return $tx;
+  }
+
 }
 
 

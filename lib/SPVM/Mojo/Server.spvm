@@ -9,6 +9,7 @@ class Mojo::Server extends Mojo::EventEmitter {
   use Mojo::Util;
   use Sys;
   use Re;
+  use Mojo::Transaction;
   
   # Fields
   has app : rw Mojolicious;
@@ -53,19 +54,24 @@ class Mojo::Server extends Mojo::EventEmitter {
     $self->set_app($app);
   }
   
+  method build_tx : Mojo::Transaction::HTTP () {
+    
+    my $tx = $self->app->build_tx;
+    
+    $tx->req->set_trusted_proxies(Array->merge_string($tx->req->trusted_proxies, $self->trusted_proxies));
+    
+    if ($self->reverse_proxy) {
+      $tx->req->set_reverse_proxy(1) ;
+    }
+    
+    return $tx;
+  }
+
 }
 
 __END__
 
 our @ARGS_OVERRIDE;
-
-sub build_tx {
-  my $self = shift;
-  my $tx   = $self->app->build_tx;
-  push @{$tx->req->trusted_proxies}, @{$self->trusted_proxies};
-  $tx->req->reverse_proxy(1) if $self->reverse_proxy;
-  return $tx;
-}
 
 sub daemonize {
 
