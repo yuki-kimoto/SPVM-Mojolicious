@@ -87,51 +87,51 @@ EOS
       die $self->usage;
     }
     
-    my $daemon = Mojo::Server::Daemon->new;
+    my $server = Mojo::Server::Daemon->new;
     
-    $daemon->set_app($self->app);
+    $server->set_app($self->app);
     
     if ($values_h->exists("backlog")) {
       my $backlog = $values_h->get_int("backlog");
-      $daemon->set_backlog($backlog);
+      $server->set_backlog($backlog);
     }
     
     if ($values_h->exists("clients")) {
       my $max_clients = $values_h->get_int("clients");
-      $daemon->set_max_clients($max_clients);
+      $server->set_max_clients($max_clients);
     }
     
     if ($values_h->exists("inactivity-timeout")) {
       my $inactivity_timeout = $values_h->get_int("inactivity-timeout");
-      $daemon->set_inactivity_timeout($inactivity_timeout);
+      $server->set_inactivity_timeout($inactivity_timeout);
     }
     
     if ($values_h->exists("keep-alive-timeout")) {
       my $keep_alive_timeout = $values_h->get_int("keep-alive-timeout");
-      $daemon->set_keep_alive_timeout($keep_alive_timeout);
+      $server->set_keep_alive_timeout($keep_alive_timeout);
     }
     
     if ($values_h->exists("requests")) {
       my $max_requests = $values_h->get_int("requests");
-      $daemon->set_max_requests($max_requests);
+      $server->set_max_requests($max_requests);
     }
     
     my $listen = (string[])$values_h->get("listen");
     if (@$listen) {
-      $daemon->set_listen($listen);
+      $server->set_listen($listen);
     }
     
     my $proxy = (string[])$values_h->get("proxy");
     if (@$proxy) {
-      $daemon->set_reverse_proxy(1);
+      $server->set_reverse_proxy(1);
     }
     
     my $trusted = (string[])Fn->grep(method : int ($_ : string) { return length $_; }, $proxy);
     if (@$trusted) {
-      $daemon->set_trusted_proxies($trusted);
+      $server->set_trusted_proxies($trusted);
     }
     
-    return $daemon;
+    return $server;
   }
   
   method run : void ($args : string[]) {

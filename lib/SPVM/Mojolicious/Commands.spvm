@@ -6,6 +6,7 @@ class Mojolicious::Commands extends Mojolicious::Command {
   
   use Mojolicious::Command::Cgi;
   use Mojolicious::Command::Daemon;
+  use Mojolicious::Command::Prefork;
   
   # Class Methods
   static method new : Mojolicious::Commands () {
