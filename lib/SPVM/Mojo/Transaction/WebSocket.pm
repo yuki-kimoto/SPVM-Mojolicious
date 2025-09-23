@@ -203,7 +203,7 @@ Same as L<Mojo::Transaction#completed|SPVM::Mojo::Transaction/"completed">, but 
 
 =head2 connection
 
-C<method connection : string ();>
+C<method connection : IO::Socket ();>
 
 Connection identifier.
 

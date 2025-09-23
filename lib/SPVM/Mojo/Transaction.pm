@@ -31,7 +31,7 @@ Emitted when a connection has been assigned to transaction.
 
 Examples:
 
-  $tx->on(connection => method : void ($tx : Mojo::Transaction, $connection : string) {...});
+  $tx->on(connection => method : void ($tx : Mojo::Transaction, $connection : IO::Socket) {...});
 
 =head2 finish
 
@@ -119,7 +119,7 @@ HTTP response, defaults to a L<Mojo::Message::Response|SPVM::Mojo::Message::Resp
 
 =head2 connection
 
-C<has connection : rw string;>
+C<has connection : rw IO::Socket;>
 
 Connection identifier.
 
