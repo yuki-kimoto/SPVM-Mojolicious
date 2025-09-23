@@ -10,6 +10,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
   use Mojo::WebSocket;
   use IO::Socket;
   use IO::Socket::IP;
+  use Mojo::Handle::Server;
   
   # Fields
   has acceptors : rw IO::Socket[];
