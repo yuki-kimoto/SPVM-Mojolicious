@@ -9,6 +9,7 @@ class Mojo::Transaction extends Mojo::EventEmitter {
   use Mojo::Util;
   use Hash;
   use IO::Socket;
+  use Mojo::Connection;
   
   # Fields
   has kept_alive : rw byte;
@@ -86,7 +87,7 @@ class Mojo::Transaction extends Mojo::EventEmitter {
     }
   ;
   
-  has connection : rw IO::Socket
+  has connection : rw Mojo::Connection
     set {
       
       $self->{connection} = $_;

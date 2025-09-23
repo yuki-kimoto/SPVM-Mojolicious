@@ -3,4 +3,18 @@
 
 class Mojo::Connection extends Mojo::EventEmitter {
   version_from Mojolicious;
+  
+  use IO::Socket;
+  
+  # Fields
+  has handle : rw IO::Socket;
+  
+  # Class Methods
+  static method new : Mojo::Connection () {
+    
+    my $self = new Mojo::Connection;
+    
+    return $self;
+  }
+  
 }
