@@ -1,0 +1,121 @@
+# Copyright (c) 2025 Yuki Kimoto
+# MIT License
+
+class Mojo::Handle::Server {
+  version_from Mojolicious;
+}
+
+__END__
+
+package Mojo::IOLoop::Server;
+use Mojo::Base 'Mojo::EventEmitter';
+
+use Carp qw(croak);
+use IO::Socket::IP;
+use IO::Socket::UNIX;
+use Mojo::File qw(path);
+use Mojo::IOLoop;
+use Mojo::IOLoop::TLS;
+use Scalar::Util qw(weaken);
+use Socket       qw(IPPROTO_TCP TCP_NODELAY);
+
+has reactor => sub { Mojo::IOLoop->singleton->reactor }, weak => 1;
+
+sub DESTROY {
+  my $self = shift;
+  $ENV{MOJO_REUSE} =~ s/(?:^|\,)\Q$self->{reuse}\E// if $self->{reuse};
+  $self->stop                                        if $self->{handle} && $self->reactor;
+}
+
+sub generate_port { IO::Socket::IP->new(Listen => 5, LocalAddr => '127.0.0.1')->sockport }
+
+sub handle { shift->{handle} }
+
+sub is_accepting { !!shift->{active} }
+
+sub listen {
+  my ($self, $args) = (shift, ref $_[0] ? $_[0] : {@_});
+
+  # Look for reusable file descriptor
+  my $path    = $args->{path};
+  my $address = $args->{address} || '0.0.0.0';
+  my $port    = $args->{port};
+  $ENV{MOJO_REUSE} ||= '';
+  my $fd = ($path && $ENV{MOJO_REUSE} =~ /(?:^|\,)unix:\Q$path\E:(\d+)/)
+    || ($port && $ENV{MOJO_REUSE} =~ /(?:^|\,)\Q$address:$port\E:(\d+)/) ? $1 : undef;
+
+  # Allow file descriptor inheritance
+  local $^F = 1023;
+
+  # Reuse file descriptor
+  my $handle;
+  my $class = $path ? 'IO::Socket::UNIX' : 'IO::Socket::IP';
+  if (defined($fd //= $args->{fd})) {
+    $handle = $class->new_from_fd($fd, 'r') or croak "Can't open file descriptor $fd: $!";
+  }
+
+  else {
+    my %options = (Listen => $args->{backlog} // SOMAXCONN, Type => SOCK_STREAM);
+
+    # UNIX domain socket
+    my $reuse;
+    if ($path) {
+      path($path)->remove if -S $path;
+      $options{Local} = $path;
+      $handle         = $class->new(%options) or croak "Can't create listen socket: $!";
+      $reuse          = $self->{reuse} = join ':', 'unix', $path, fileno $handle;
+    }
+
+    # IP socket
+    else {
+      $options{LocalAddr} = $address;
+      $options{LocalAddr} =~ y/[]//d;
+      $options{LocalPort} = $port if $port;
+      $options{ReuseAddr} = 1;
+      $options{ReusePort} = $args->{reuse};
+      $handle             = $class->new(%options) or croak "Can't create listen socket: $@";
+      $fd                 = fileno $handle;
+      $reuse              = $self->{reuse} = join ':', $address, $handle->sockport, $fd;
+    }
+
+    $ENV{MOJO_REUSE} .= length $ENV{MOJO_REUSE} ? ",$reuse" : "$reuse";
+  }
+  $handle->blocking(0);
+  @$self{qw(args handle)} = ($args, $handle);
+
+  croak 'IO::Socket::SSL 2.009+ required for TLS support' if !Mojo::IOLoop::TLS->can_tls && $args->{tls};
+}
+
+sub port { shift->{handle}->sockport }
+
+sub start {
+  my $self = shift;
+  weaken $self;
+  ++$self->{active} and $self->reactor->io($self->{handle} => sub { $self->_accept })->watch($self->{handle}, 1, 0);
+}
+
+sub stop { delete($_[0]{active}) and $_[0]->reactor->remove($_[0]{handle}) }
+
+sub _accept {
+  my $self = shift;
+
+  # Greedy accept
+  my $args     = $self->{args};
+  my $accepted = 0;
+  while ($self->{active} && !($args->{single_accept} && $accepted++)) {
+    return unless my $handle = $self->{handle}->accept;
+    $handle->blocking(0);
+
+    # Disable Nagle's algorithm
+    setsockopt $handle, IPPROTO_TCP, TCP_NODELAY, 1;
+
+    $self->emit(accept => $handle) and next unless $args->{tls};
+
+    # Start TLS handshake
+    my $tls = Mojo::IOLoop::TLS->new($handle)->reactor($self->reactor);
+    $tls->on(upgrade => sub { $self->emit(accept => pop) });
+    $tls->on(error   => sub { });
+    $tls->negotiate(%$args, server => 1);
+  }
+}
+
