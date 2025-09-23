@@ -9,25 +9,36 @@ class Mojo::Handle::Server extends Mojo::EventEmitter {
   use Mojo::File;
   use Sys::Socket::Constant as SOCKET;
   
+  # Fields
+  has handle : rw IO::Socket;
   
+  # Undocumented Fields
+  has active : byte;
+  
+  static method new : Mojo::Handle::Server () {
+    
+    my $self = new Mojo::Handle::Server;
+    
+    return $self;
+  }
+  
+  static method generate_port : int () {
+    return IO::Socket::IP->new({Listen => 5, LocalAddr => "127.0.0.1"})->sockport;
+  }
+  
+  # Static Methods
+  method is_accepting : int () {
+    return !!$self->{active};
+  }
+  
+  method port : int () {
+  
+    return $self->{handle}->(IO::Socket::IP)->sockport;
+  }
+
 }
 
 __END__
-
-
-has reactor => sub { Mojo::IOLoop->singleton->reactor }, weak => 1;
-
-sub DESTROY {
-  my $self = shift;
-  $ENV{MOJO_REUSE} =~ s/(?:^|\,)\Q$self->{reuse}\E// if $self->{reuse};
-  $self->stop                                        if $self->{handle} && $self->reactor;
-}
-
-sub generate_port { IO::Socket::IP->new(Listen => 5, LocalAddr => '127.0.0.1')->sockport }
-
-sub handle { shift->{handle} }
-
-sub is_accepting { !!shift->{active} }
 
 sub listen {
   my ($self, $args) = (shift, ref $_[0] ? $_[0] : {@_});
@@ -81,8 +92,6 @@ sub listen {
 
   croak 'IO::Socket::SSL 2.009+ required for TLS support' if !Mojo::IOLoop::TLS->can_tls && $args->{tls};
 }
-
-sub port { shift->{handle}->sockport }
 
 sub start {
   my $self = shift;
