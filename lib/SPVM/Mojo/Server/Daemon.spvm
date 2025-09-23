@@ -118,23 +118,17 @@ class Mojo::Server::Daemon extends Mojo::Server {
     
   }
   
+  method stop : void () {
+    
+    for my $server (@{$self->acceptors}) {
+      # $server->stop;
+    }
+    
+  }
+
 }
 
 __END__
-
-sub stop {
-  my $self = shift;
-
-  # Suspend accepting connections but keep listen sockets open
-  my $loop = $self->ioloop;
-  while (my $id = shift @{$self->acceptors}) {
-    my $server = $self->{servers}{$id} = $loop->acceptor($id);
-    $loop->remove($id);
-    $server->stop;
-  }
-
-  return $self;
-}
 
 sub _build_tx {
   my ($self, $id, $c) = @_;
