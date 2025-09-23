@@ -13,7 +13,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
   use Mojo::Handle::Server;
   
   # Fields
-  has acceptors : rw IO::Socket[];
+  has acceptors : rw Mojo::Handle::Server[];
   
   has backlog : rw int;
   
@@ -60,7 +60,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
   has trusted_proxies : rw string[];
   
   # Undocumented Fields
-  has servers : IO::Socket[];
+  has servers : Mojo::Handle::Server[];
   
   # Class Methods
   static method new : Mojo::Server::Daemon () {
@@ -82,7 +82,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
     my $ports_list = IntList->new;
     for (my $i = 0; $i < @$acceptors; $i++) {
       my $handle = $acceptors->[$i];
-      $ports_list->push($handle->(IO::Socket::IP)->sockport);
+      $ports_list->push($handle->port);
     }
     
     return $ports_list->to_array;
@@ -121,7 +121,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
   method stop : void () {
     
     for my $server (@{$self->acceptors}) {
-      # $server->stop;
+      $server->stop;
     }
     
   }
