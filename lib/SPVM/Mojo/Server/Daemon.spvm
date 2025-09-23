@@ -9,9 +9,10 @@ class Mojo::Server::Daemon extends Mojo::Server {
   use Mojo::Util;
   use Mojo::WebSocket;
   use IO::Socket;
+  use IO::Socket::IP;
   
   # Fields
-  has acceptors_list : List of IO::Socket;
+  has acceptors : rw IO::Socket[];
   
   has backlog : rw int;
   
@@ -74,11 +75,22 @@ class Mojo::Server::Daemon extends Mojo::Server {
     die "TODO";
   }
   
+  method ports : int[] () {
+    
+    my $acceptors = $self->acceptors;
+    
+    my $ports_list = IntList->new;
+    for (my $i = 0; $i < @$acceptors; $i++) {
+      my $handle = $acceptors->[$i];
+      $ports_list->push($handle->(IO::Socket::IP)->sockport);
+    }
+    
+    return $ports_list->to_array;
+  }
+
 }
 
 __END__
-
-sub ports { [map { $_[0]->ioloop->acceptor($_)->port } @{$_[0]->acceptors}] }
 
 sub run {
   my $self = shift;
