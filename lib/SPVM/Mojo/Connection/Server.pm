@@ -1,4 +1,4 @@
-package SPVM::Mojo::Handle::Server;
+package SPVM::Mojo::Connection::Server;
 
 
 
@@ -8,15 +8,15 @@ package SPVM::Mojo::Handle::Server;
 
 =head1 Name
 
-SPVM::Mojo::Handle::Server - Short Description
+SPVM::Mojo::Connection::Server - Short Description
 
 =head1 Description
 
-Mojo::Handle::Server class in L<SPVM> has methods to do someting.
+Mojo::Connection::Server class in L<SPVM> has methods to do someting.
 
 =head1 Usage
 
-  use Mojo::Handle::Server;
+  use Mojo::Connection::Server;
 
 =head1 Details
 

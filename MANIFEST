@@ -21,6 +21,8 @@ lib/SPVM/Mojo/Callback.pm
 lib/SPVM/Mojo/Callback.spvm
 lib/SPVM/Mojo/Collection.pm
 lib/SPVM/Mojo/Collection.spvm
+lib/SPVM/Mojo/Connection/Server.pm
+lib/SPVM/Mojo/Connection/Server.spvm
 lib/SPVM/Mojo/Content.pm
 lib/SPVM/Mojo/Content.spvm
 lib/SPVM/Mojo/Content/MultiPart.pm
@@ -43,8 +45,6 @@ lib/SPVM/Mojo/EventEmitter.pm
 lib/SPVM/Mojo/EventEmitter.spvm
 lib/SPVM/Mojo/File.pm
 lib/SPVM/Mojo/File.spvm
-lib/SPVM/Mojo/Handle/Server.pm
-lib/SPVM/Mojo/Handle/Server.spvm
 lib/SPVM/Mojo/Headers.pm
 lib/SPVM/Mojo/Headers.spvm
 lib/SPVM/Mojo/HelloWorld.pm

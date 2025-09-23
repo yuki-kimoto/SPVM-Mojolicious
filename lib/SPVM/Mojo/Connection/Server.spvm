@@ -1,7 +1,7 @@
 # Copyright (c) 2025 Yuki Kimoto
 # MIT License
 
-class Mojo::Handle::Server extends Mojo::EventEmitter {
+class Mojo::Connection::Server extends Mojo::EventEmitter {
   version_from Mojolicious;
   
   use IO::Socket::IP;
@@ -110,9 +110,9 @@ EOS
   
   has args : Hash of string;
   
-  static method new : Mojo::Handle::Server () {
+  static method new : Mojo::Connection::Server () {
     
-    my $self = new Mojo::Handle::Server;
+    my $self = new Mojo::Connection::Server;
     
     return $self;
   }
