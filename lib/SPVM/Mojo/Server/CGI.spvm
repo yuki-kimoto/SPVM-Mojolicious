@@ -118,9 +118,6 @@ class Mojo::Server::CGI extends Mojo::Server {
     my $offset = 0;
     while (1) {
       
-      # No chunk yet, try again
-      # TODO: sleep 1
-      
       my $chunk = (string)undef;
       if ($method eq "get_start_line_chunk") {
         $chunk = $res->get_start_line_chunk($offset);
@@ -135,7 +132,9 @@ class Mojo::Server::CGI extends Mojo::Server {
         die "[Unexpected Error]Invalid method '$method';";
       }
       
+      # No chunk yet, try again
       unless ($chunk) {
+        Sys->sleep(1);
         next;
       }
       
