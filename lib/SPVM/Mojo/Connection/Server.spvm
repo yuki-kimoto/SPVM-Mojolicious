@@ -1,7 +1,7 @@
 # Copyright (c) 2025 Yuki Kimoto
 # MIT License
 
-class Mojo::Connection::Server extends Mojo::EventEmitter {
+class Mojo::Connection::Server extends Mojo::Connection {
   version_from Mojolicious;
   
   use IO::Socket::IP;
