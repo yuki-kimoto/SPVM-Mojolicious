@@ -15,6 +15,8 @@ class Mojo::Handle::Server extends Mojo::EventEmitter {
   # Undocumented Fields
   has active : byte;
   
+  has args : Hash of string;
+  
   static method new : Mojo::Handle::Server () {
     
     my $self = new Mojo::Handle::Server;
@@ -50,28 +52,21 @@ class Mojo::Handle::Server extends Mojo::EventEmitter {
   
   method _accept : void () {
 
-=pod
-
     # Greedy accept
     my $args     = $self->{args};
     my $accepted = 0;
-    while ($self->{active} && !($args->{single_accept} && $accepted++)) {
-      return unless my $handle = $self->{handle}->accept;
-      $handle->blocking(0);
-
+    while ($self->{active} && !((int)$args->get("single_accept") && $accepted++)) {
+      
+      my $handle = $self->{handle}->accept;
+      unless ($handle) {
+        return;
+      }
+      
       # Disable Nagle's algorithm
-      setsockopt $handle, IPPROTO_TCP, TCP_NODELAY, 1;
-
-      $self->emit(accept => $handle) and next unless $args->{tls};
-
-      # Start TLS handshake
-      my $tls = Mojo::IOLoop::TLS->new($handle)->reactor($self->reactor);
-      $tls->on(upgrade => sub { $self->emit(accept => pop) });
-      $tls->on(error   => sub { });
-      $tls->negotiate(%$args, server => 1);
+      $handle->setsockopt(SOCKET->IPPROTO_TCP, SOCKET->TCP_NODELAY, 1);
+      
+      $self->emit(accept => $handle);
     }
-    
-=cut
     
   }
 
