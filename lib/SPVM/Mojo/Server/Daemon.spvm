@@ -304,6 +304,19 @@ class Mojo::Server::Daemon extends Mojo::Server {
     
     return $peer;
   }
+  
+  private method _read : void ($c : Mojo::Connection::Stream, $chunk : string) {
+    
+    # Make sure we have a transaction
+    my $tx = $self->_build_tx($c);
+    $c->set_tx($tx);
+    $tx->server_read($chunk);
+  }
+  
+  private static method _url : string ($tx : Mojo::Transaction) {
+    
+    return $tx->req->url->to_abs->to_string;
+  }
 
 }
 
@@ -358,18 +371,6 @@ sub _listen {
   $url->port($self->ports->[-1]) if !$options->{path} && !$url->port;
   say 'Web application available at ', $options->{path} // $url;
 }
-
-sub _read {
-  my ($self, $id, $chunk) = @_;
-
-  # Make sure we have a transaction
-  my $c  = $self->{connections}{$id};
-  my $tx = $c->{tx} ||= $self->_build_tx($id, $c);
-  warn term_escape "-- Server <<< Client (@{[_url($tx)]})\n$chunk\n" if DEBUG;
-  $tx->server_read($chunk);
-}
-
-sub _url { shift->req->url->to_abs }
 
 
 
