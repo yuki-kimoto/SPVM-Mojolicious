@@ -23,8 +23,12 @@ lib/SPVM/Mojo/Collection.pm
 lib/SPVM/Mojo/Collection.spvm
 lib/SPVM/Mojo/Connection.pm
 lib/SPVM/Mojo/Connection.spvm
+lib/SPVM/Mojo/Connection/Client.pm
+lib/SPVM/Mojo/Connection/Client.spvm
 lib/SPVM/Mojo/Connection/Server.pm
 lib/SPVM/Mojo/Connection/Server.spvm
+lib/SPVM/Mojo/Connection/Stream.pm
+lib/SPVM/Mojo/Connection/Stream.spvm
 lib/SPVM/Mojo/Content.pm
 lib/SPVM/Mojo/Content.spvm
 lib/SPVM/Mojo/Content/MultiPart.pm

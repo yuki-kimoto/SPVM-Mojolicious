@@ -105,6 +105,8 @@ EOS
   # Fields
   has handle : rw IO::Socket;
   
+  has tls : rw byte;
+  
   # Undocumented Fields
   has active : byte;
   

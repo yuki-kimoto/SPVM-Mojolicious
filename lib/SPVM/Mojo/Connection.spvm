@@ -9,6 +9,16 @@ class Mojo::Connection extends Mojo::EventEmitter {
   # Fields
   has handle : rw IO::Socket;
   
+  has timeout : rw int;
+  
+  has next : rw Mojo::Transaction;
+  
+  has requests : rw int;
+  
+  has writing : rw byte;
+  
+  has tx : rw Mojo::Transaction;
+  
   # Class Methods
   static method new : Mojo::Connection () {
     

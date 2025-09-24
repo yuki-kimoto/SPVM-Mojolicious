@@ -147,7 +147,7 @@ class Mojo::Transaction extends Mojo::EventEmitter {
   
   method server_read : void ($chunk : string) { die "Not implemented."; }
   
-  method server_write : string ($server : int) { die "Not implemented."; }
+  method server_write : string () { die "Not implemented."; }
 
 }
 
