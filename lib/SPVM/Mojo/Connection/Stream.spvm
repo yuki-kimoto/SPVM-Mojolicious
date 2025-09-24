@@ -13,6 +13,15 @@ class Mojo::Connection::Stream extends Mojo::Connection {
     }
   ;
   
+  # Undocumented Fields
+  has read : int;
+  
+  has buffer : string;
+  
+  has written : int;
+  
+  has graceful : byte;
+  
   # Class Methods
   static method new : Mojo::Connection::Stream () {
     
@@ -24,6 +33,53 @@ class Mojo::Connection::Stream extends Mojo::Connection {
   }
   
   # Instance Methods
+  method bytes_read : int () {
+    return $self->{read};
+  }
+  
+  method bytes_waiting : int () {
+    return length $self->{buffer};
+  }
+  
+  method bytes_written : int () {
+    
+    return $self->{written};
+  }
+  
+  method can_write : int () {
+    return $self->{handle} && $self->bytes_waiting < $self->high_water_mark;
+  }
+  
+  method close : void () {
+    
+    # TODO: if gorutine scheduler is not yet run, reutrn.
+    $self->set_timeout(0);
+    my $handle = $self->{handle};
+    unless ($handle) {
+      return;
+    }
+    
+    $self->emit("close");
+  }
+  
+  method close_gracefully : void () {
+    
+    if ($self->is_writing) {
+      $self->{graceful}++;
+    }
+    else {
+      $self->close;
+    }
+  }
+  
+  method is_writing : int () {
+    
+    unless ($self->{handle}) {
+      return 0;
+    }
+    return !!length($self->{buffer}) || $self->has_subscribers("drain");
+  }
+  
   method write : void ($chunk : string, $cb : Mojo::Callback = undef) {
     
     die "TODO";
@@ -46,28 +102,6 @@ class Mojo::Connection::Stream extends Mojo::Connection {
 }
 
 __END__
-
-sub bytes_read { shift->{read} || 0 }
-
-sub bytes_waiting { length(shift->{buffer} // '') }
-
-sub bytes_written { shift->{written} || 0 }
-
-sub can_write { $_[0]{handle} && $_[0]->bytes_waiting < $_[0]->high_water_mark }
-
-sub close_gracefully { $_[0]->is_writing ? $_[0]{graceful}++ : $_[0]->close }
-
-sub is_readable {
-  my $self = shift;
-  $self->_again;
-  return $self->{handle} && Mojo::Util::_readable(0, fileno $self->{handle});
-}
-
-sub is_writing {
-  my $self = shift;
-  return undef unless $self->{handle};
-  return !!length($self->{buffer}) || $self->has_subscribers('drain');
-}
 
 sub start {
   my $self = shift;
@@ -122,8 +156,6 @@ sub write {
 
   return $self;
 }
-
-sub _again { $_[0]->reactor->again($_[0]{timer}) if $_[0]{timer} }
 
 sub _read {
   my $self = shift;
