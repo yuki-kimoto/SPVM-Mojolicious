@@ -290,12 +290,24 @@ class Mojo::Server::Daemon extends Mojo::Server {
       $c->set_timeout($self->keep_alive_timeout);
     }
   }
+  
+  private static method _peer : string ($handle : IO::Socket) {
+    
+    my $peer = (string)undef;
+    
+    if ($handle isa IO::Socket::UNIX) {
+      $peer = $handle->(IO::Socket::UNIX)->peerpath;
+    }
+    else {
+      $peer = $handle->(IO::Socket::IP)->peerhost;
+    }
+    
+    return $peer;
+  }
 
 }
 
 __END__
-
-sub _trace { $_[0]->app->log->trace($_[2]) if $_[0]{connections}{$_[1]}{tx} }
 
 sub _listen {
   my ($self, $listen) = @_;
@@ -346,8 +358,6 @@ sub _listen {
   $url->port($self->ports->[-1]) if !$options->{path} && !$url->port;
   say 'Web application available at ', $options->{path} // $url;
 }
-
-sub _peer { $_[0]->isa('IO::Socket::UNIX') ? $_[0]->peerpath : $_[0]->peerhost }
 
 sub _read {
   my ($self, $id, $chunk) = @_;
