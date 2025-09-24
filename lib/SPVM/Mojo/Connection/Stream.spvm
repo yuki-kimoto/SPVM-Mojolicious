@@ -4,6 +4,8 @@
 class Mojo::Connection::Stream extends Mojo::Connection {
   version_from Mojolicious;
   
+  use StringBuffer;
+  
   has high_water_mark : rw int
     get {
       unless (exists $self->{high_water_mark}) {
@@ -16,7 +18,7 @@ class Mojo::Connection::Stream extends Mojo::Connection {
   # Undocumented Fields
   has read : int;
   
-  has buffer : string;
+  has buffer : StringBuffer;
   
   has written : int;
   
@@ -29,6 +31,8 @@ class Mojo::Connection::Stream extends Mojo::Connection {
     
     $self->{timeout} = 15;
     
+    $self->{buffer} = StringBuffer->new;
+    
     return $self;
   }
   
@@ -38,7 +42,7 @@ class Mojo::Connection::Stream extends Mojo::Connection {
   }
   
   method bytes_waiting : int () {
-    return length $self->{buffer};
+    return $self->{buffer}->length;
   }
   
   method bytes_written : int () {
@@ -77,118 +81,74 @@ class Mojo::Connection::Stream extends Mojo::Connection {
     unless ($self->{handle}) {
       return 0;
     }
-    return !!length($self->{buffer}) || $self->has_subscribers("drain");
+    return !!$self->{buffer}->length || $self->has_subscribers("drain");
   }
   
   method write : void ($chunk : string, $cb : Mojo::Callback = undef) {
     
-    die "TODO";
+    $self->{buffer}->push($chunk);
+    if ($cb) {
+      $self->once(drain => $cb);
+    }
+    elsif (!$self->{buffer}->length) {
+      return;
+    }
     
-=pod
-
-    # IO::Socket::SSL will corrupt data with the wrong internal representation
-    utf8::downgrade $chunk;
-    $self->{buffer} .= $chunk;
-    if    ($cb)                     { $self->once(drain => $cb) }
-    elsif (!length $self->{buffer}) { return $self }
-    $self->reactor->watch($self->{handle}, !$self->{paused}, 1) if $self->{handle};
+    if ($self->{handle}) {
+      $self->{handle}->write($chunk);
+    }
     
-    return $self;
-
-=cut
-
+    # $self->reactor->watch($self->{handle}, !$self->{paused}, 1) if $self->{handle};
+    
+    return;
   }
 
-}
-
-__END__
-
-sub start {
-  my $self = shift;
-
-  # Resume
-  return unless $self->{handle};
-  my $reactor = $self->reactor;
-  return $reactor->watch($self->{handle}, 1, $self->is_writing) if delete $self->{paused};
-
-  weaken $self;
-  my $cb = sub { pop() ? $self->_write : $self->_read };
-  $reactor->io($self->timeout($self->{timeout})->{handle} => $cb);
-}
-
-sub steal_handle {
-  my $self = shift;
-  $self->reactor->remove($self->{handle});
-  return delete $self->{handle};
-}
-
-sub stop { $_[0]->reactor->watch($_[0]{handle}, 0, $_[0]->is_writing) if $_[0]{handle} && !$_[0]{paused}++ }
-
-sub timeout {
-  my ($self, $timeout) = @_;
-
-  return $self->{timeout} unless defined $timeout;
-  $self->{timeout} = $timeout;
-
-  my $reactor = $self->reactor;
-  if ($self->{timer}) {
-    if   (!$self->{timeout}) { $reactor->remove(delete $self->{timer}) }
-    else                     { $reactor->again($self->{timer}, $self->{timeout}) }
-  }
-  elsif ($self->{timeout}) {
-    weaken $self;
-    $self->{timer}
-      = $reactor->timer($timeout => sub { $self and delete($self->{timer}) and $self->emit('timeout')->close });
-  }
-
-  return $self;
-}
-
-sub write {
-  my ($self, $chunk, $cb) = @_;
-
-  # IO::Socket::SSL will corrupt data with the wrong internal representation
-  utf8::downgrade $chunk;
-  $self->{buffer} .= $chunk;
-  if    ($cb)                     { $self->once(drain => $cb) }
-  elsif (!length $self->{buffer}) { return $self }
-  $self->reactor->watch($self->{handle}, !$self->{paused}, 1) if $self->{handle};
-
-  return $self;
-}
-
-sub _read {
-  my $self = shift;
-
-  if (defined(my $read = $self->{handle}->sysread(my $buffer, 131072, 0))) {
+  private method _read : void () {
+    
+    my $handle = $self->{handle};
+    my $buffer = (mutable string)new_string_len 131072;
+    my $read = $handle->read($buffer);
+    
     $self->{read} += $read;
-    return $read == 0 ? $self->close : $self->emit(read => $buffer)->_again;
+    
+    if ($read == 0) {
+      $self->close;
+    }
+    else {
+      Fn->shorten($buffer, $read);
+      $self->emit(read => $buffer);
+    }
+  }
+  
+  private method _write : void () {
+    
+    # Handle errors only when reading (to avoid timing problems)
+    my $handle = $self->{handle};
+    my $buffer = $self->{buffer};
+    if ($buffer->length) {
+      my $written = $handle->write($self->{buffer}->get_string_unsafe, $buffer->length);
+      $self->{written} += $written;
+      
+      my $chunk = $self->{buffer}->substr(0, $written);
+      
+      $self->{buffer}->replace(0, $written, "");
+      
+      $self->emit(write => $chunk);
+    }
+    
+    # Clear the buffer to free the underlying SV* memory
+    unless ($self->{buffer}->length) {
+      $self->emit("drain");
+    }
+    
+    if ($self->is_writing) {
+      return;
+    }
+    
+    if ($self->{graceful}) {
+      $self->close;
+      return;
+    }
   }
 
-  # Retry
-  return undef if $! == EAGAIN || $! == EINTR || $! == EWOULDBLOCK;
-
-  # Closed (maybe real error)
-  $! == ECONNRESET ? $self->close : $self->emit(error => $!)->close;
 }
-
-sub _write {
-  my $self = shift;
-
-  # Handle errors only when reading (to avoid timing problems)
-  my $handle = $self->{handle};
-  if (length $self->{buffer}) {
-    return undef unless defined(my $written = $handle->syswrite($self->{buffer}));
-    $self->{written} += $written;
-    $self->emit(write => substr($self->{buffer}, 0, $written, ''))->_again;
-  }
-
-  # Clear the buffer to free the underlying SV* memory
-  undef $self->{buffer}, $self->emit('drain') unless length $self->{buffer};
-  return undef                                        if $self->is_writing;
-  return $self->close                                 if $self->{graceful};
-  $self->reactor->watch($handle, !$self->{paused}, 0) if $self->{handle};
-}
-
-1;
-
