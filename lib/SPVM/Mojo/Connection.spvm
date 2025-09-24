@@ -19,6 +19,8 @@ class Mojo::Connection extends Mojo::EventEmitter {
   
   has tx : rw Mojo::Transaction;
   
+  has tls : rw byte;
+  
   # Class Methods
   static method new : Mojo::Connection () {
     

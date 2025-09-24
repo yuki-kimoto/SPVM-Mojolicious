@@ -102,11 +102,6 @@ nK13sEavqpo7L8cpeaPeNLY2Tt4mVXw6Ujq1fLM/7VOvmNTQMu3lVXQve32w+gm0
 EOS
   }
   
-  # Fields
-  has handle : rw IO::Socket;
-  
-  has tls : rw byte;
-  
   # Undocumented Fields
   has active : byte;
   

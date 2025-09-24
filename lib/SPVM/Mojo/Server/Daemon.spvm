@@ -127,7 +127,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
     
   }
   
-  method _build_tx : Mojo::Transaction::HTTP ($conn_accepted : Mojo::Connection::Stream, $conn_server : Mojo::Connection::Server) {
+  method _build_tx : Mojo::Transaction::HTTP ($conn_accepted : Mojo::Connection::Stream) {
     
     my $tx = $self->build_tx;
     
@@ -147,7 +147,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
       $tx->set_remote_port($handle->(IO::Socket::IP)->peerport);
     }
     
-    if ($conn_server->tls) {
+    if ($conn_accepted->tls) {
       $tx->req->url->base->set_scheme("https");
     }
     
@@ -186,14 +186,14 @@ class Mojo::Server::Daemon extends Mojo::Server {
     $tx->on(request => $request_cb);
     
     # Kept alive if we have more than one request on the connection
-    my $requests = $conn_server->requests;
+    my $requests = $conn_accepted->requests;
     ++$requests;
     
     if ($requests > 1) {
       $tx->set_kept_alive(1);
     }
     
-    $conn_server->set_requests($requests);
+    $conn_accepted->set_requests($requests);
     
     return $tx;
   }
@@ -243,58 +243,57 @@ class Mojo::Server::Daemon extends Mojo::Server {
   
   method _finish : void ($c : Mojo::Connection::Stream) {
     
-    die "TODO";
-
-=pod
-    
     # Always remove connection for WebSockets
-    my $c = $self->{connections}{$id};
-    return unless my $tx = $c->{tx};
-    return $self->_remove($id) if $tx->is_websocket;
-
-    # Finish transaction
-    delete($c->{tx})->closed;
-
+    my $tx = $c->tx;
+    unless ($tx) {
+      return;
+    }
+    
+    $tx->closed;
+    
+    my $ws = (Mojo::Transaction::WebSocket)$c->next;
+    $c->set_next(undef);
+    
     # Upgrade connection to WebSocket
-    if (my $ws = delete $c->{next}) {
-
+    if ($ws) {
       # Successful upgrade
       if ($ws->handshake->res->code == 101) {
-        $c->{tx} = $ws->established(1);
-        weaken $self;
-        $ws->on(resume => sub { $self->_write($id) });
-        $self->_write($id);
+        $ws->set_established(1);
+        $c->set_tx($ws);
+        $ws->on(resume => [$this : Mojo::Server::Daemon = $self, $c : Mojo::Connection::Stream] method : void () {
+          $this->_write($c);
+        });
+        $self->_write($c);
       }
-
+      
       # Failed upgrade
-      else { $ws->closed }
+      else { $ws->closed; }
     }
-
+    
     # Close connection if necessary
-    return $self->_remove($id) if $tx->error || !$tx->keep_alive;
-
+    if ($tx isa Mojo::Transaction::HTTP && !$tx->(Mojo::Transaction::HTTP)->keep_alive) {
+      $tx->closed;
+    }
+    
     # Build new transaction for leftovers
     if (length(my $leftovers = $tx->req->content->leftovers)) {
-      $tx = $c->{tx} = $self->_build_tx($id, $c);
+    
+      $tx = $self->_build_tx($c);
+      
+      $c->set_tx($tx);
+      
       $tx->server_read($leftovers);
     }
-
+    
     # Keep-alive connection
-    $self->ioloop->stream($id)->timeout($self->keep_alive_timeout) unless $c->{tx};
-
-=cut
-
+    unless ($c->tx) {
+      $c->set_timeout($self->keep_alive_timeout);
+    }
   }
 
 }
 
 __END__
-
-sub _close {
-  my ($self, $id) = @_;
-  if (my $tx = $self->{connections}{$id}{tx}) { $tx->closed }
-  delete $self->{connections}{$id};
-}
 
 sub _trace { $_[0]->app->log->trace($_[2]) if $_[0]{connections}{$_[1]}{tx} }
 
@@ -358,12 +357,6 @@ sub _read {
   my $tx = $c->{tx} ||= $self->_build_tx($id, $c);
   warn term_escape "-- Server <<< Client (@{[_url($tx)]})\n$chunk\n" if DEBUG;
   $tx->server_read($chunk);
-}
-
-sub _remove {
-  my ($self, $id) = @_;
-  $self->ioloop->remove($id);
-  $self->_close($id);
 }
 
 sub _url { shift->req->url->to_abs }
