@@ -15,6 +15,8 @@ class Mojo::Connection::Stream extends Mojo::Connection {
     }
   ;
   
+  has is_writing : ro byte;
+  
   # Undocumented Fields
   has read : int;
   
@@ -76,27 +78,30 @@ class Mojo::Connection::Stream extends Mojo::Connection {
     }
   }
   
-  method is_writing : int () {
-    
-    unless ($self->{handle}) {
-      return 0;
-    }
-    return !!$self->{buffer}->length || $self->has_subscribers("drain");
-  }
-  
   method write : void ($chunk : string, $cb : Mojo::Callback = undef) {
     
-    $self->{buffer}->push($chunk);
-    if ($cb) {
-      $self->once(drain => $cb);
-    }
-    elsif (!$self->{buffer}->length) {
-      return;
+    my $handle = $self->{handle};
+    
+    my $offset = 0;
+    while (1) {
+      my $write_length = $handle->write($chunk, $offset);
+      
+      unless ($write_length) {
+        last;
+      }
+      
+      $offset += $write_length;
+      
+      $self->{written} += $offset;
+      
+      $self->emit(write => Fn->substr($chunk, $offset, $write_length));
     }
     
-    $self->_write;
+    $cb->($self);
     
-    return;
+    if ($self->{graceful}) {
+      $self->close;
+    }
   }
   
   private method _read : void () {
@@ -116,35 +121,4 @@ class Mojo::Connection::Stream extends Mojo::Connection {
     }
   }
   
-  private method _write : void () {
-    
-    # Handle errors only when reading (to avoid timing problems)
-    my $handle = $self->{handle};
-    my $buffer = $self->{buffer};
-    
-    while (1) {
-      if ($buffer->length) {
-        my $written = $handle->write($buffer->get_string_unsafe, $buffer->length);
-        
-        unless ($written) {
-          last;
-        }
-        
-        $self->{written} += $written;
-        
-        my $chunk = $buffer->substr(0, $written);
-        
-        $buffer->replace(0, $written, "");
-        
-        $self->emit(write => $chunk);
-      }
-    }
-    
-    $self->emit("drain");
-    
-    if ($self->{graceful}) {
-      $self->close;
-    }
-  }
-
 }
