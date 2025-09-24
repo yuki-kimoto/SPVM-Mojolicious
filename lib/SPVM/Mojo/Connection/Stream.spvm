@@ -94,15 +94,11 @@ class Mojo::Connection::Stream extends Mojo::Connection {
       return;
     }
     
-    if ($self->{handle}) {
-      $self->{handle}->write($chunk);
-    }
-    
-    # $self->reactor->watch($self->{handle}, !$self->{paused}, 1) if $self->{handle};
+    $self->_write;
     
     return;
   }
-
+  
   private method _read : void () {
     
     my $handle = $self->{handle};
@@ -125,29 +121,29 @@ class Mojo::Connection::Stream extends Mojo::Connection {
     # Handle errors only when reading (to avoid timing problems)
     my $handle = $self->{handle};
     my $buffer = $self->{buffer};
-    if ($buffer->length) {
-      my $written = $handle->write($self->{buffer}->get_string_unsafe, $buffer->length);
-      $self->{written} += $written;
-      
-      my $chunk = $self->{buffer}->substr(0, $written);
-      
-      $self->{buffer}->replace(0, $written, "");
-      
-      $self->emit(write => $chunk);
+    
+    while (1) {
+      if ($buffer->length) {
+        my $written = $handle->write($buffer->get_string_unsafe, $buffer->length);
+        
+        unless ($written) {
+          last;
+        }
+        
+        $self->{written} += $written;
+        
+        my $chunk = $buffer->substr(0, $written);
+        
+        $buffer->replace(0, $written, "");
+        
+        $self->emit(write => $chunk);
+      }
     }
     
-    # Clear the buffer to free the underlying SV* memory
-    unless ($self->{buffer}->length) {
-      $self->emit("drain");
-    }
-    
-    if ($self->is_writing) {
-      return;
-    }
+    $self->emit("drain");
     
     if ($self->{graceful}) {
       $self->close;
-      return;
     }
   }
 
