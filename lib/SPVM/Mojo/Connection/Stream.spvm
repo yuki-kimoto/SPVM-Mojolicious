@@ -93,8 +93,6 @@ class Mojo::Connection::Stream extends Mojo::Connection {
       $offset += $write_length;
       
       $self->{written} += $offset;
-      
-      $self->emit(write => Fn->substr($chunk, $offset, $write_length));
     }
     
     $cb->($self);
@@ -104,20 +102,22 @@ class Mojo::Connection::Stream extends Mojo::Connection {
     }
   }
   
-  private method _read : void () {
+  method read : void () {
     
     my $handle = $self->{handle};
-    my $buffer = (mutable string)new_string_len 131072;
-    my $read = $handle->read($buffer);
     
-    $self->{read} += $read;
+    my $buffer = (mutable string)new_string_len 4096;
     
-    if ($read == 0) {
-      $self->close;
-    }
-    else {
-      Fn->shorten($buffer, $read);
-      $self->emit(read => $buffer);
+    while (1) {
+      my $read_length = $handle->read($buffer);
+      
+      unless ($read_length) {
+        return;
+      }
+      
+      $self->{read} += $read_length;
+      
+      $self->emit(read => Fn->substr($buffer, 0, $read_length));
     }
   }
   
