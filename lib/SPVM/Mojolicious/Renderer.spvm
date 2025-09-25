@@ -8,6 +8,7 @@ class Mojolicious::Renderer {
   use Mojo::File;
   use JSON;
   use Mojo::Util;
+  use Mojo::Loader;
   
   # Fields
   has cache : rw Mojo::Cache;
@@ -33,6 +34,8 @@ class Mojolicious::Renderer {
   
   has paths_list : rw StringList;
   
+  has data_section : rw string;
+  
   # Class Methods
   static method new : Mojolicious::Renderer () {
     
@@ -53,11 +56,6 @@ class Mojolicious::Renderer {
     $self->{paths_list} = StringList->new;
     
     return $self;
-  }
-  
-  method add_helper : void ($name : string, $cb : Mojo::Callback) {
-    
-    $self->{helpers}->set($name, $cb);
   }
   
   method accepts : string[] ($c : Mojolicious::Controller, $preferences : string[] = undef) {
@@ -89,29 +87,53 @@ class Mojolicious::Renderer {
     
     return $exts_list->length ? new string[0] : [$preferences->[0]];
   }
+  
+  method add_handler : void ($name : string, $cb : Mojo::Callback) {
+    
+    $self->{handlers}->set($name, $cb);
+  }
+  
+  method add_helper : void ($name : string, $cb : Mojo::Callback) {
+    
+    $self->{helpers}->set($name, $cb);
+  }
+  
+  method get_data_template : string ($options : object[]) {
+    
+    my $template = $self->template_name($options);
+    
+    unless ($template) {
+      return undef;
+    }
+    
+    return Mojo::Util->get_data_template($self->data_section, $template);
+  }
+  
+  method template_name : string ($options : object[]) {
+    
+    my $options_h = Hash->new($options);
+    
+    my $template = $options_h->get_string("template");
+    unless ($template) {
+      return undef;
+    }
+    
+    my $format = $options_h->get_string("format");
+    unless ($format) {
+      return undef;
+    }
+    
+    $template .= ".$format";
+    
+    # Variants
+    my $handler = $options_h->get_string("handler");
+    
+    return $handler ? "$template.$handler" : $template;
+  }
 
 }
 
 __END__
-
-sub add_handler { $_[0]->handlers->{$_[1]} = $_[2] and return $_[0] }
-
-sub add_helper {
-  my ($self, $name, $cb) = @_;
-
-  $self->helpers->{$name} = $cb;
-  delete $self->{proxy};
-  $cb = $self->get_helper($name) if $name =~ s/\..*$//;
-  Mojo::DynamicMethods::register $_, $self, $name, $cb for qw(Mojolicious Mojolicious::Controller);
-
-  return $self;
-}
-
-sub get_data_template {
-  my ($self, $options) = @_;
-  return undef unless my $template = $self->template_name($options);
-  return data_section $self->{index}{$template}, $template;
-}
 
 sub get_helper {
   my ($self, $name) = @_;
@@ -214,50 +236,12 @@ sub template_handler {
   return $handlers->[0];
 }
 
-sub template_name {
-  my ($self, $options) = @_;
-
-  return undef unless defined(my $template = $options->{template});
-  return undef unless my $format = $options->{format};
-  $template .= ".$format";
-
-  $self->warmup unless $self->{templates};
-
-  # Variants
-  my $handler = $options->{handler};
-  if (defined(my $variant = $options->{variant})) {
-    $variant = "$template+$variant";
-    my $handlers = $self->{templates}{$variant} // [];
-    $template = $variant if @$handlers && !defined $handler || grep { $_ eq $handler } @$handlers;
-  }
-
-  return defined $handler ? "$template.$handler" : $template;
-}
-
 sub template_path {
   my ($self, $options) = @_;
   return undef unless my $name = $self->template_name($options);
   my @parts = split /\//, $name;
   -r and return $_ for map { path($_, @parts)->to_string } @{$self->paths}, $TEMPLATES;
   return undef;
-}
-
-sub warmup {
-  my $self = shift;
-
-  my ($index, $templates) = @$self{qw(index templates)} = ({}, {});
-
-  # Handlers for templates
-  for my $path (@{$self->paths}, $TEMPLATES) {
-    s/\.(\w+)$// and push @{$templates->{$_}}, $1
-      for path($path)->list_tree->map(sub { join '/', @{$_->to_rel($path)} })->each;
-  }
-
-  # Handlers and classes for DATA templates
-  for my $class (reverse @{$self->classes}) {
-    $index->{$_} = $class for my @keys = sort keys %{data_section $class};
-    s/\.(\w+)$// and unshift @{$templates->{$_}}, $1 for reverse @keys;
-  }
 }
 
 sub _maybe { $_[0] ? encode @_ : $_[1] }
