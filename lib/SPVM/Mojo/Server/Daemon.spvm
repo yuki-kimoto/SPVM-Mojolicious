@@ -14,7 +14,16 @@ class Mojo::Server::Daemon extends Mojo::Server {
   use Mojo::Connection::Stream;
   
   # Fields
-  has acceptors : rw Mojo::Connection::Server[];
+  has acceptors : virtual rw Mojo::Connection::Server[]
+    get {
+      return $self->{acceptors_list}->to_array->(Mojo::Connection::Server[]);
+    }
+    set {
+      $self->{acceptors_list} = List->new((Mojo::Connection::Server[])$_);
+    }
+  ;
+  
+  has acceptors_list : rw List of Mojo::Connection::Server;
   
   has backlog : rw int;
   
@@ -60,6 +69,8 @@ class Mojo::Server::Daemon extends Mojo::Server {
   
   has trusted_proxies : rw string[];
   
+  has silent : rw byte;
+  
   # Undocumented Fields
   has servers : Mojo::Connection::Server[];
   
@@ -67,6 +78,8 @@ class Mojo::Server::Daemon extends Mojo::Server {
   static method new : Mojo::Server::Daemon () {
     
     my $self = new Mojo::Server::Daemon;
+    
+    $self->{acceptors_list} = List->new(new Mojo::Connection::Server[0]);
     
     return $self;
   }
@@ -113,10 +126,6 @@ class Mojo::Server::Daemon extends Mojo::Server {
         $self->_listen($_);
       }
     }
-  }
-  
-  method _listen : void ($listen : string) {
-    
   }
   
   method stop : void () {
@@ -317,61 +326,85 @@ class Mojo::Server::Daemon extends Mojo::Server {
     
     return $tx->req->url->to_abs->to_string;
   }
-
-}
-
-__END__
-
-sub _listen {
-  my ($self, $listen) = @_;
-
-  my $url   = Mojo::URL->new($listen);
-  my $proto = $url->protocol;
-  croak qq{Invalid listen location "$listen"} unless $proto eq 'http' || $proto eq 'https' || $proto eq 'http+unix';
-
-  my $query   = $url->query;
-  my $options = {backlog => $self->backlog};
-  $options->{$_} = $query->param($_) for qw(fd single_accept reuse);
-  if ($proto eq 'http+unix') { $options->{path} = $url->host }
-  else {
-    if ((my $host = $url->host) ne '*') { $options->{address} = $host }
-    if (my $port = $url->port) { $options->{port} = $port }
+  
+  method _listen : void ($listen : string) {
+    
+    my $url = Mojo::URL->new($listen);
+    
+    my $proto = $url->protocol;
+    unless ($proto eq "http" || $proto eq "https" || $proto eq "http+unix") {
+      die "Invalid listen location '$listen'";
+    }
+    
+    my $query   = $url->query;
+    my $options = Hash->new({backlog => $self->backlog});
+    
+    $options->set("fd" => $query->param("fd"));
+    $options->set("single_accept" => $query->param("single_accept"));
+    $options->set("reuse" => $query->param("reuse"));
+    
+    if ($proto eq "http+unix") { $options->set(path => $url->host); }
+    else {
+      if ((my $host = $url->host) ne "*") { $options->set(address => $host); }
+      if (my $port = $url->port) { $options->set(port => $port); }
+    }
+    
+    $options->set(tls_ca => $query->param("ca"));
+    
+    for my $_ (@{$query->names}) {
+      if (my $m = Re->m($_, "^(.*)_(cert|key)$")) {
+        my $type = $m->cap1;
+        my $name = "tls_" . $m->cap2;
+        
+        $options->set($name, Hash->new);
+        $options->get($name)->(Hash)->set($type, $query->param($_));
+      }
+    }
+    
+    if (my $cert = $query->param("cert")) { $options->get("tls_cert")->(Hash)->set("", $cert); }
+    if (my $key  = $query->param("key"))  { $options->get("tls_key")->(Hash)->set("", $key); }
+    my $ciphers = $query->param("ciphers");
+    my $verify = $query->param("verify");
+    my $version = $query->param("version");
+    
+    $options->set(tls_options => Hash->new);
+    
+    if ($ciphers) {
+      $options->get("tls_options")->(Hash)->set(SSL_cipher_list => $ciphers);
+    }
+    if ($verify) {
+      $options->get("tls_options")->(Hash)->set(SSL_verify_mode => Fn->hex($verify));
+    }
+    if ($version) {
+      $options->get("tls_options")->(Hash)->set(SSL_version => $version);
+    }
+    
+    my $tls =  $proto eq "https";
+    $options->set(tls => $tls);
+    
+    my $c = Mojo::Connection::Server->new;
+    
+    $c->set_timeout($self->inactivity_timeout);
+    
+    $c->listen($options);
+    
+    $self->acceptors_list->push($c);
+    
+    if ($self->silent) {
+      return;
+    }
+    
+    $self->app->log->info("Listening at '" . $url->to_string . "'");
+    $query->set_pairs(new string[0]);
+    
+    if ($url->host eq "*") {
+      $url->set_host("127.0.0.1");
+    }
+    if (!$options->get("path") && !$url->port) {
+      $url->set_port($self->ports->[@$self->ports - 1]) ;
+    }
+    
+    say "Web application available at " . ($options->get_string("path") // $url->to_string);
   }
 
-  $options->{tls_ca} = $query->param('ca');
-  /^(.*)_(cert|key)$/ and $options->{"tls_$2"}{$1} = $query->param($_) for @{$query->names};
-  if (my $cert = $query->param('cert')) { $options->{tls_cert}{''} = $cert }
-  if (my $key  = $query->param('key'))  { $options->{tls_key}{''}  = $key }
-  my ($ciphers, $verify, $version) = ($query->param('ciphers'), $query->param('verify'), $query->param('version'));
-  $options->{tls_options}{SSL_cipher_list} = $ciphers    if defined $ciphers;
-  $options->{tls_options}{SSL_verify_mode} = hex $verify if defined $verify;
-  $options->{tls_options}{SSL_version}     = $version    if defined $version;
-  my $tls = $options->{tls} = $proto eq 'https';
-
-  weaken $self;
-  push @{$self->acceptors}, $self->ioloop->server(
-    $options => sub {
-      my ($loop, $stream, $id) = @_;
-
-      $self->{connections}{$id} = {tls => $tls};
-      warn "-- Accept $id (@{[_peer($stream->handle)]})\n" if DEBUG;
-      $stream->timeout($self->inactivity_timeout);
-
-      $stream->on(close   => sub { $self && $self->_close($id) });
-      $stream->on(error   => sub { $self && $self->app->log->error(pop) && $self->_close($id) });
-      $stream->on(read    => sub { $self->_read($id => pop) });
-      $stream->on(timeout => sub { $self->_trace($id, 'Inactivity timeout (see FAQ for more)') });
-    }
-  );
-
-  return if $self->silent;
-  $self->app->log->info(qq{Listening at "$url"});
-  $query->pairs([]);
-  $url->host('127.0.0.1')        if $url->host eq '*';
-  $url->port($self->ports->[-1]) if !$options->{path} && !$url->port;
-  say 'Web application available at ', $options->{path} // $url;
 }
-
-
-
-
