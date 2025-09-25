@@ -50,6 +50,8 @@ class Mojolicious::Renderer {
     
     $self->{min_compress_size} = 860;
     
+    $self->{paths_list} = StringList->new;
+    
     return $self;
   }
   
