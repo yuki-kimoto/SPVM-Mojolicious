@@ -17,6 +17,8 @@ class Mojolicious::Renderer {
   
   has default_format : rw string;
   
+  has default_handler : rw string;
+  
   has handlers : rw Hash of Mojo::Callback;
   
   has helpers : rw Hash of Mojo::Callback;
@@ -36,6 +38,9 @@ class Mojolicious::Renderer {
   
   has data_section : rw string;
   
+  # Undocumented Fields
+  has templates : Hash of string[];
+  
   # Class Methods
   static method new : Mojolicious::Renderer () {
     
@@ -54,6 +59,8 @@ class Mojolicious::Renderer {
     $self->{min_compress_size} = 860;
     
     $self->{paths_list} = StringList->new;
+    
+    $self->{templates} = Hash->new;
     
     return $self;
   }
@@ -109,9 +116,9 @@ class Mojolicious::Renderer {
     return Mojo::Util->get_data_template($self->data_section, $template);
   }
   
-  method template_name : string ($options : object[]) {
+  method template_name : string ($options : Hash|object[]) {
     
-    my $options_h = Hash->new($options);
+    my $options_h = &to_hash($options);
     
     my $template = $options_h->get_string("template");
     unless ($template) {
@@ -136,50 +143,142 @@ class Mojolicious::Renderer {
     return $self->{helpers}->get($name);
   }
   
+  method render : string[] ($c : Mojolicious::Controller) {
+    
+    my $stash   = $c->stash;
+    my $options_h = Hash->new({
+      handler  => $stash->get_string("handler"),
+      template => (string)$stash->delete("template"),
+    });
+    
+    my $inline = (string)$stash->delete("inline");
+    $options_h->set(inline => $inline);
+    
+    if ($inline) {
+      if ($options_h->get("handler")) {
+        $options_h->set("handler", $self->default_handler);
+      }
+    }
+    
+    $options_h->set(format => $stash->get_string("format") // $self->default_format);
+    
+    # Data
+    if ($stash->get("data")) {
+      return [(string)$stash->delete("data"), $options_h->get_string("format")];
+    }
+    
+    # Text
+    if ($stash->get("text")) {
+      return [(string)$stash->delete("text"), $options_h->get_string("format")];
+    }
+    
+    # JSON
+    if ($stash->get("json")) {
+      return [JSON->new->encode($stash->get("json")), "json"];
+    }
+    
+    my $output = (string)undef;
+    my $success = $self->_render_template($c, my $_ = [$output], $options_h);
+    unless ($success) {
+      return undef;
+    }
+    $output = $_->[0];
+    
+=pod TODO
+
+    # Inheritance
+    my $content = $stash->{'mojo.content'} //= {};
+    local $content->{content} = $output =~ /\S/ ? $output : undef if $stash->{extends} || $stash->{layout};
+    while ((my $next = _next($stash)) && !defined $inline) {
+      @$options_h{qw(handler template)} = ($stash->{handler}, $next);
+      $options_h->{format} = $stash->{format} || $self->default_format;
+      if ($self->_render_template($c, \my $tmp, $options_h)) { $output = $tmp }
+      $content->{content} //= $output if $output =~ /\S/;
+    }
+
+=cut
+    
+    if ($stash->get_int("mojo.string")) {
+      return [$output, undef];
+    }
+    
+    return [$output, $options_h->get_string("format")];
+    
+  }
+
+  private method _render_template : int ($c : Mojolicious::Controller, $output_ref : string[], $options_h : Hash) {
+    
+    my $handler = $self->template_handler($options_h);
+    
+    unless ($options_h->get("handler")) {
+      $options_h->set("handler", $handler);
+    }
+    
+    unless ($handler) {
+      return 0;
+    }
+    
+    my $renderer = $self->handlers->get($handler);
+    
+    unless ($renderer) {
+      $c->log->error("No handler for '$handler' found.");
+      return 0;
+    }
+    
+    my $output = (string)undef;
+    $renderer->($self, $c, my $_ = [$output], $options_h);
+    $output = $_->[0];
+    
+    if ($output) {
+      return 1;
+    }
+    else {
+      return 0;
+    }
+  }
+  
+  private static method to_hash : Hash ($options : Hash|object[]) {
+    
+    my $options_h = (Hash)undef;
+    if (!$options) {
+      $options_h = Hash->new;
+    }
+    elsif ($options isa Hash) {
+      $options_h = (Hash)$options;
+    }
+    elsif ($options isa object[]) {
+      $options_h = Hash->new((object[])$options);
+    }
+    else {
+      die "The type of the options \$options must be Hash or object[].";
+    }
+    
+    return $options_h;
+  }
+  
+  method template_handler : string ($options : Hash|object[] = undef) {
+    
+    my $options_h = &to_hash($options);
+    
+    my $file = $self->template_name($options_h);
+    unless ($file) {
+      return undef;
+    }
+    
+    my $templates = $self->{templates};
+    
+    my $handlers = $templates->get($file);
+    
+    unless ($handlers) {
+      return $self->default_handler;
+    }
+    
+    return $handlers->[0];
+  }
+
 }
 
 __END__
-
-sub render {
-  my ($self, $c) = @_;
-
-  my $stash   = $c->stash;
-  my $options = {
-    encoding => $self->encoding,
-    handler  => $stash->{handler},
-    template => delete $stash->{template},
-    variant  => $stash->{variant}
-  };
-  my $inline = $options->{inline} = delete $stash->{inline};
-  $options->{handler} //= $self->default_handler if defined $inline;
-  $options->{format} = $stash->{format} || $self->default_format;
-
-  # Data
-  return delete $stash->{data}, $options->{format} if defined $stash->{data};
-
-  # Text
-  return _maybe($options->{encoding}, delete $stash->{text}), $options->{format} if defined $stash->{text};
-
-  # JSON
-  return encode_json(delete $stash->{json}), 'json' if exists $stash->{json};
-
-  # Template or templateless handler
-  $options->{template} //= $self->template_for($c);
-  return () unless $self->_render_template($c, \my $output, $options);
-
-  # Inheritance
-  my $content = $stash->{'mojo.content'} //= {};
-  local $content->{content} = $output =~ /\S/ ? $output : undef if $stash->{extends} || $stash->{layout};
-  while ((my $next = _next($stash)) && !defined $inline) {
-    @$options{qw(handler template)} = ($stash->{handler}, $next);
-    $options->{format} = $stash->{format} || $self->default_format;
-    if ($self->_render_template($c, \my $tmp, $options)) { $output = $tmp }
-    $content->{content} //= $output if $output =~ /\S/;
-  }
-
-  return $output if $stash->{'mojo.string'};
-  return _maybe($options->{encoding}, $output), $options->{format};
-}
 
 sub respond {
   my ($self, $c, $output, $format, $status) = @_;
@@ -203,26 +302,6 @@ sub respond {
   return !!$c->rendered($status);
 }
 
-sub template_for {
-  my ($self, $c) = @_;
-
-  # Normal default template
-  my $stash = $c->stash;
-  my ($controller, $action) = @$stash{qw(controller action)};
-  return join '/', split(/-/, decamelize $controller), $action if $controller && $action;
-
-  # Try the route name if we don't have controller and action
-  return undef unless my $route = $c->match->endpoint;
-  return $route->name;
-}
-
-sub template_handler {
-  my ($self, $options) = @_;
-  return undef                  unless my $file     = $self->template_name($options);
-  return $self->default_handler unless my $handlers = $self->{templates}{$file};
-  return $handlers->[0];
-}
-
 sub template_path {
   my ($self, $options) = @_;
   return undef unless my $name = $self->template_name($options);
@@ -231,24 +310,10 @@ sub template_path {
   return undef;
 }
 
-sub _maybe { $_[0] ? encode @_ : $_[1] }
-
 sub _next {
   my $stash = shift;
   return delete $stash->{extends} if $stash->{extends};
   return undef unless my $layout = delete $stash->{layout};
   return join '/', 'layouts', $layout;
-}
-
-sub _render_template {
-  my ($self, $c, $output, $options) = @_;
-
-  my $handler = $options->{handler} ||= $self->template_handler($options);
-  return undef unless $handler;
-  $c->helpers->log->error(qq{No handler for "$handler" found}) and return undef
-    unless my $renderer = $self->handlers->{$handler};
-
-  $renderer->($self, $c, $output, $options);
-  return 1 if defined $$output;
 }
 
