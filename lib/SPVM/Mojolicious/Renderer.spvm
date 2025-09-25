@@ -130,28 +130,15 @@ class Mojolicious::Renderer {
     
     return $handler ? "$template.$handler" : $template;
   }
-
+  
+  method get_helper : Mojo::Callback ($name : string) {
+    
+    return $self->{helpers}->get($name);
+  }
+  
 }
 
 __END__
-
-sub get_helper {
-  my ($self, $name) = @_;
-
-  if (my $h = $self->{proxy}{$name} || $self->helpers->{$name}) { return $h }
-
-  my $found;
-  my $class = 'Mojolicious::Renderer::Helpers::' . md5_sum "$name:$self";
-  my $re    = length $name ? qr/^(\Q$name\E\.([^.]+))/ : qr/^(([^.]+))/;
-  for my $key (keys %{$self->helpers}) {
-    $key =~ $re ? ($found, my $method) = (1, $2) : next;
-    my $sub = $self->get_helper($1);
-    monkey_patch $class, $method => sub { ${shift()}->$sub(@_) };
-  }
-
-  $found ? push @{$self->{namespaces}}, $class : return undef;
-  return $self->{proxy}{$name} = sub { bless \(my $dummy = shift), $class };
-}
 
 sub render {
   my ($self, $c) = @_;
