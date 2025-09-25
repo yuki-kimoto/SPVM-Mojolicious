@@ -3,31 +3,94 @@
 
 class Mojo::Template {
   version_from Mojolicious;
+  
+  use Mojo::ByteStream;
+  use Mojo::File;
+  use Mojo::Util;
+  
+  # Fields
+  has append : rw string;
+  
+  has code : rw string;
+  
+  has prepend : rw string;
+  
+  has unparsed : rw string;
+  
+  has compiled : rw byte;
+  
+  has capture_end : rw string;
+  
+  has capture_start : rw string;
+  
+  has comment_mark : rw string;
+  
+  has escape_mark : rw string;
+  
+  has expression_mark : rw string;
+  
+  has trim_mark : rw string;
+  
+  has line_start : rw string;
+  
+  has replace_mark : rw string;
+  
+  has name : rw string;
+  
+  has tag_start : rw string;
+  
+  has tag_end : rw string;
+  
+  has tree : List;
+
+  # Class Methods
+  static method new : Mojo::Template () {
+    
+    my $self = new Mojo::Template;
+    
+    $self->{append} = "";
+    
+    $self->{code} = "";
+    
+    $self->{prepend} = "";
+    
+    $self->{unparsed} = "";
+    
+    $self->{capture_end} = "end";
+    
+    $self->{capture_start} = "begin";
+    
+    $self->{comment_mark} = "#";
+    
+    $self->{escape_mark} = "=";
+    
+    $self->{expression_mark} = "=";
+    
+    $self->{trim_mark} = "=";
+    
+    $self->{line_start} = "%";
+    
+    $self->{replace_mark} = "%";
+    
+    $self->{name} = "template";
+    
+    $self->{tag_start} = "<%";
+    
+    $self->{tag_end} = "%>";
+    
+    $self->{tree} = List->new;
+    
+    return $self;
+  }
+  
+  static method DEBUG : int () {
+    return length(my $_ = Sys->env("SPVM_MOJO_TEMPLATE_DEBUG")) ? (int)$_ : 0;
+  }
+  
+  
 }
 
 __END__
-
-use Mojo::ByteStream;
-use Mojo::Exception;
-use Mojo::File qw(path);
-use Mojo::Util qw(decode encode monkey_patch);
-
-use constant DEBUG => $ENV{MOJO_TEMPLATE_DEBUG} || 0;
-
-has [qw(append code prepend unparsed)] => '';
-has [qw(auto_escape compiled vars)];
-has capture_end                                 => 'end';
-has capture_start                               => 'begin';
-has comment_mark                                => '#';
-has encoding                                    => 'UTF-8';
-has escape                                      => sub { \&Mojo::Util::xml_escape };
-has [qw(escape_mark expression_mark trim_mark)] => '=';
-has [qw(line_start replace_mark)]               => '%';
-has name                                        => 'template';
-has namespace                                   => 'Mojo::Template::Sandbox';
-has tag_start                                   => '<%';
-has tag_end                                     => '%>';
-has tree                                        => sub { [] };
 
 sub parse {
   my ($self, $template) = @_;
