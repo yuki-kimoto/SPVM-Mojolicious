@@ -4,17 +4,51 @@
 class Mojolicious::Renderer {
   version_from Mojolicious;
   
+  use Mojo::Cache;
+  use Mojo::File;
+  use JSON;
+  use Mojo::Util;
+  
   # Fields
+  has cache : rw Mojo::Cache;
+  
+  has compress : rw byte;
+  
+  has default_format : rw string;
+  
+  has handlers : rw Hash of Mojo::Callback;
+  
   has helpers : rw Hash of Mojo::Callback;
   
-  has paths_list : rw List of string;
+  has min_compress_size : rw int;
+  
+  has paths : virtual rw string[]
+    get {
+      return $self->paths_list->to_array->(string[]);
+    }
+    set {
+      $self->{paths_list} = StringList->new($_);
+    }
+  ;
+  
+  has paths_list : rw StringList;
   
   # Class Methods
   static method new : Mojolicious::Renderer () {
     
     my $self = new Mojolicious::Renderer;
     
+    $self->{cache} = Mojo::Cache->new;
+    
+    $self->{compress} = 1;
+    
+    $self->{default_format} = "html";
+    
+    $self->{handlers} = Hash->new;
+    
     $self->{helpers} = Hash->new;
+    
+    $self->{min_compress_size} = 860;
     
     return $self;
   }
@@ -27,32 +61,6 @@ class Mojolicious::Renderer {
 }
 
 __END__
-
-package Mojolicious::Renderer;
-use Mojo::Base -base;
-
-use Carp qw(croak);
-use Mojo::Cache;
-use Mojo::DynamicMethods;
-use Mojo::File   qw(curfile path);
-use Mojo::JSON   qw(encode_json);
-use Mojo::Loader qw(data_section);
-use Mojo::Util   qw(decamelize deprecated encode gzip md5_sum monkey_patch);
-
-has cache          => sub { Mojo::Cache->new };
-has classes        => sub { ['main'] };
-has compress       => 1;
-has default_format => 'html';
-has 'default_handler';
-has encoding               => 'UTF-8';
-has [qw(handlers helpers)] => sub { {} };
-has min_compress_size      => 860;
-has paths                  => sub { [] };
-
-# Bundled templates
-my $TEMPLATES = curfile->sibling('resources', 'templates');
-
-sub DESTROY { Mojo::Util::_teardown($_) for @{shift->{namespaces}} }
 
 sub accepts {
   my ($self, $c) = (shift, shift);
