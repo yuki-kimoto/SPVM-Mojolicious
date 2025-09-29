@@ -312,23 +312,26 @@ class Mojo::Template {
     return $self->code(join "\n", @blocks)->tree([]);
 
 =cut
-
+  
+  }
+  
+  method render : string ($template : string, $args : object[] = undef) {
+    
+    $self->parse($template);
+    
+    my $output = $self->process($args);
+    
+    return $output;
+  }
+  
+  method render_file : string ($path : string, $args : object[] = undef) {
+    
+    unless ($self->{name}) {
+      $self->set_name($path) ;
+    }
+    my $template = Mojo::File->path($path)->slurp;
+    
+    return $self->render($template, $args);
   }
   
 }
-
-__END__
-
-sub render { shift->parse(shift)->process(@_) }
-
-sub render_file {
-  my ($self, $path) = (shift, shift);
-
-  $self->name($path) unless defined $self->{name};
-  my $template = path($path)->slurp;
-  my $encoding = $self->encoding;
-  croak qq{Template "$path" has invalid encoding} if $encoding && !defined($template = decode $encoding, $template);
-
-  return $self->render($template, @_);
-}
-
