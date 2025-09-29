@@ -253,66 +253,99 @@ class Mojo::Template {
   
   private method _compile : void () {
 
-=pod
+    my $tree_list   = $self->tree_list;
+    my $escape = 1;
 
-    my $tree   = $self->tree;
-    my $escape = $self->auto_escape;
-
-    my @blocks = ('');
-    my ($i, $capture, $multi);
-    while (++$i <= @$tree && (my $next = $tree->[$i])) {
-      my ($op, $value) = @{$tree->[$i - 1]};
-      push @blocks, '' and next if $op eq 'line';
-      my $newline = chomp($value //= '');
-
+    my $blocks = StringList->new;
+    my $i = 0;
+    my $capture = (string)undef;
+    my $multi = 0;
+    while (++$i <= $tree_list->length && (my $next = $tree_list->get($i))) {
+      my $_ = $tree_list->get($i - 1);
+      
+      my $op = $_->[0];
+      my $value = $_->[1];
+      
+      if ($op eq "line") {
+        $blocks->push("");
+        next;
+      }
+      
+      my $value_length = length $value;
+      Fn->chomp((mutable string)$value);
+      
+      my $newline = length $value != $value_length;
+      
       # Text (quote and fix line ending)
-      if ($op eq 'text') {
-        $value = join "\n", map { quotemeta $_ } split(/\n/, $value, -1);
-        $value      .= '\n'                          if $newline;
-        $blocks[-1] .= "\$_O .= \"" . $value . "\";" if length $value;
+      if ($op eq "text") {
+        if (length $value) {
+          my $_ = $blocks->get($blocks->length - 1);
+          $_ .= "\$_O .= <<'END_OF_STRING';\n" . $value . "END_OF_STRING\n" ;
+          $blocks->set($blocks->length - 1, $_ );
+        }
       }
-
+      
       # Code or multi-line expression
-      elsif ($op eq 'code' || $multi) { $blocks[-1] .= $value }
-
-      # Capture end
-      elsif ($op eq 'cpen') {
-        $blocks[-1] .= 'return Mojo::ByteStream->new($_O) }';
-
-        # No following code
-        $blocks[-1] .= ';' if $next->[0] ne 'cpst' && ($next->[1] // '') =~ /^\s*$/;
+      elsif ($op eq "code" || $multi) {
+        my $_ = $blocks->get($blocks->length - 1);
+        $_ .= $value;
+        $blocks->set($blocks->length - 1, $_);
       }
-
+# Capture end
+      elsif ($op eq "cpen") {
+        my $_ = $blocks->get($blocks->length - 1);
+        $_ .= "return Mojo::ByteStream->new(\$_O) }";
+        $blocks->set($blocks->length - 1, $_);
+        
+        # No following code
+        my $_ = $blocks->get($blocks->length - 1);
+        if ($next->[0] ne "cpst" && (Re->m($next->[1] // "", "^\s*$"))) {
+          $_ .= ";" ;
+        }
+        $blocks->set($blocks->length - 1, $_);
+      }
+      
       # Expression
-      if ($op eq 'expr' || $op eq 'escp') {
+      if ($op eq "expr" || $op eq "escp") {
 
         # Escaped
-        if (!$multi && ($op eq 'escp' && !$escape || $op eq 'expr' && $escape)) {
-          $blocks[-1] .= "\$_O .= _escape scalar + $value";
+        if (!$multi && ($op eq "escp" && !$escape || $op eq "expr" && $escape)) {
+          my $_ = $blocks->get($blocks->length - 1);
+          $_ .= "\$_O .= Mojo::Util->xml_escape($value)";
+          $blocks->set($blocks->length - 1, $_);
         }
 
         # Raw
-        elsif (!$multi) { $blocks[-1] .= "\$_O .= scalar + $value" }
+        elsif (!$multi) {
+          my $_ = $blocks->get($blocks->length - 1);
+          $_ .= "\$_O .= $value";
+          $blocks->set($blocks->length - 1, $_);
+        }
 
         # Multi-line
-        $multi = !$next || $next->[0] ne 'text';
+        $multi = !$next || $next->[0] ne "text";
 
         # Append semicolon
-        $blocks[-1] .= ';' unless $multi || $capture;
+        my $_ = $blocks->get($blocks->length - 1);
+        unless ($multi || $capture) {
+          $_ .= ";";
+        }
+        $blocks->set($blocks->length - 1, $_);
       }
 
       # Capture start
-      if    ($op eq 'cpst') { $capture = 1 }
+      if    ($op eq "cpst") { $capture = 1; }
       elsif ($capture) {
-        $blocks[-1] .= "sub { my \$_O = ''; ";
+        my $_ = $blocks->get($blocks->length - 1);
+        $_ .= "method : void () { my \$_O = \"\"; ";
+        $blocks->set($blocks->length - 1, $_);
         $capture = 0;
       }
     }
-
-    return $self->code(join "\n", @blocks)->tree([]);
-
-=cut
-  
+    
+    $self->set_code(Fn->join("\n", $blocks->to_array));
+    
+    $self->set_tree_list(List->new(new string[][0]));
   }
   
   method render : string ($template : string, $args : object[] = undef) {
