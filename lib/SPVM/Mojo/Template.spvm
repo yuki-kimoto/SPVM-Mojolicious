@@ -41,7 +41,8 @@ class Mojo::Template {
   
   has tag_end : rw string;
   
-  has tree : List;
+  # Undocumented Fields
+  has tree_list : rw List of string[];
 
   # Class Methods
   static method new : Mojo::Template () {
@@ -78,7 +79,7 @@ class Mojo::Template {
     
     $self->{tag_end} = "%>";
     
-    $self->{tree} = List->new;
+    $self->{tree_list} = List->new;
     
     return $self;
   }
@@ -88,122 +89,155 @@ class Mojo::Template {
   }
   
   
+  method parse : void ($template : string) {
+    
+    # Clean start
+    $self->set_unparsed($template);
+    my $tree_list = (List of string[])List->new(new string[][0]);
+    $self->set_tree_list($tree_list);
+    $self->set_compiled(0);
+    
+    my $tag     = $self->tag_start;
+    my $replace = $self->replace_mark;
+    my $expr    = $self->expression_mark;
+    my $escp    = $self->escape_mark;
+    my $cpen    = $self->capture_end;
+    my $cmnt    = $self->comment_mark;
+    my $cpst    = $self->capture_start;
+    my $trim    = $self->trim_mark;
+    my $end     = $self->tag_end;
+    my $start   = $self->line_start;
+    
+    my $line_re  = "^(\s*)\Q$start\E(?:(\Q$replace\E)|(\Q$cmnt\E)|(\Q$expr\E))?(.*)$";
+    my $token_re = "(\Q$tag\E(?:\Q$replace\E|\Q$cmnt\E)|\Q$tag$expr\E(?:\Q$escp\E)?(?:\s*\Q$cpen\E(?!\w))?|\Q$tag\E(?:\s*\Q$cpen\E(?!\w))?|(?:(?<!\w)\Q$cpst\E\s*)?(?:\Q$trim\E)?\Q$end\E)";
+    my $cpen_re = "^\Q$tag\E(?:\Q$expr\E)?(?:\Q$escp\E)?\s*\Q$cpen\E(.*)$";
+    my $end_re  = "^(?:(\Q$cpst\E)\s*)?(\Q$trim\E)?\Q$end\E$";
+    
+    # Split lines
+    my $op = "text";
+    my $trimming = (string)undef;
+    my $capture = 0;
+    for my $line (@{Fn->split("\n", $template)}) {
+      
+      # Turn Perl line into mixed line
+      if ($op eq "text" && (my $m = Re->m($line, $line_re))) {
+        
+        # Escaped start
+        if ($m->cap2) { $line = $m->cap1 . $start . $m->cap5; }
+        
+        # Comment
+        elsif ($m->cap3) { $line = $tag . $m->cap3 . "$trim$end"; }
+        
+        # Expression or code
+        else { $line = $m->cap4 ? $m->cap1 . $tag . $m->cap4 . $m->cap5 . $end : $tag . $m->cap5 . "$trim$end"; }
+      }
+      
+      # Escaped line ending
+      if (!Re->s(my $_ = [$line], "\\\\\\\\$", "\\\\\n")) {
+        $line = $_->[0];
+        if (Re->s(my $_ = [$line], "\\$", "")) {
+          $line = $_->[0];
+          $line .= "\n";
+        }
+      }
+      
+      # Mixed line
+      for my $token (@{Re->split($token_re, $line)}) {
+        
+        # Capture end
+        if (my $m = Re->m($token, $cpen_re)) {
+          $token = $tag . $m->cap1;
+          $capture = 1;
+        }
+        
+        # End
+        if ($op ne "text" && (my $m = Re->m($token, $end_re))) {
+          
+          # Capture start
+          if ($m->cap1) {
+            $tree_list->splice($tree_list->length - 1, 0, ["cpst"]);
+          }
+          
+          # Trim left side
+          if (($trimming = $m->cap2) && $tree_list->length > 1) {
+            &_trim($tree_list);
+          }
+          
+          # Hint at end
+          $tree_list->push([$op = "text", ""]);
+        }
+        
+        # Code
+        elsif ($token eq $tag) { $op = "code"; }
+        
+        # Expression
+        elsif ($token eq "$tag$expr") { $op = "expr"; }
+        
+        # Expression that needs to be escaped
+        elsif ($token eq "$tag$expr$escp") { $op = "escp"; }
+        
+        # Comment
+        elsif ($token eq "$tag$cmnt") { $op = "cmnt"; }
+        
+        # Text (comments are just ignored)
+        elsif ($op ne "cmnt") {
+          
+          # Replace
+          if ($token eq "$tag$replace") {
+            $token = $tag ;
+          }
+          
+          # Trim right side (convert whitespace to line noise)
+          if ($trimming && (my $r = Re->s(my $_ = [$token], "^(\s+)", ""))) {
+            $token = $_->[0];
+            $tree_list->push(["code", $r->match->cap1]);
+            $trimming = 0;
+          }
+          
+          # Token (with optional capture end)
+          $tree_list->push($capture ? ["cpen"] : [$op, $token]);
+          $capture = 0;
+        }
+      }
+      
+      # Optimize successive text lines separated by a newline
+      my $len = $tree_list->length;
+      if ($tree_list->get($len - 4) && $tree_list->get($len - 4)->[0] ne "line"
+        || (!$tree_list->get($len - 3) || $tree_list->get($len - 3)->[0] ne "text" || !Re->m($tree_list->get($len - 3)->[1], "\n$")
+        || ($tree_list->get($len - 2)->[0] ne "line" || $tree_list->get($len - 1)->[0] ne "text")))
+      {
+        $tree_list->push(["line"]);
+        next;
+      }
+      
+      my $_ = $tree_list->get($len - 3);
+      $_->[1] .= $tree_list->pop->[1];
+    }
+    
+  }
+  
+  static method _trim : void ($tree_list : List of string[]) {
+    
+    # Skip captures
+    my $len = $tree_list->length;
+    my $i = $tree_list->get($len - 2)->[0] eq "cpst" || $tree_list->get($len - 2)->[0] eq "cpen" ? $len - 3 : $len - 2;
+    
+    # Only trim text
+    unless ($tree_list->get($i)->[0] eq "text") {
+      return;
+    }
+    
+    # Convert whitespace text to line noise
+    if (my $r = Re->s(my $_ = [$tree_list->get($i)->[1]], "(\s+)$", "")) {
+      $tree_list->get($i)->[1] = $_->[0];
+      $tree_list->splice($i, 0, ["code", $r->match->cap1]);
+    }
+    
+  }
+  
 }
 
 __END__
-
-sub parse {
-  my ($self, $template) = @_;
-
-  # Clean start
-  $self->unparsed($template)->tree(\my @tree)->compiled(undef);
-
-  my $tag     = $self->tag_start;
-  my $replace = $self->replace_mark;
-  my $expr    = $self->expression_mark;
-  my $escp    = $self->escape_mark;
-  my $cpen    = $self->capture_end;
-  my $cmnt    = $self->comment_mark;
-  my $cpst    = $self->capture_start;
-  my $trim    = $self->trim_mark;
-  my $end     = $self->tag_end;
-  my $start   = $self->line_start;
-
-  my $line_re  = qr/^(\s*)\Q$start\E(?:(\Q$replace\E)|(\Q$cmnt\E)|(\Q$expr\E))?(.*)$/;
-  my $token_re = qr/
-    (
-      \Q$tag\E(?:\Q$replace\E|\Q$cmnt\E)                   # Replace
-    |
-      \Q$tag$expr\E(?:\Q$escp\E)?(?:\s*\Q$cpen\E(?!\w))?   # Expression
-    |
-      \Q$tag\E(?:\s*\Q$cpen\E(?!\w))?                      # Code
-    |
-      (?:(?<!\w)\Q$cpst\E\s*)?(?:\Q$trim\E)?\Q$end\E       # End
-    )
-  /x;
-  my $cpen_re = qr/^\Q$tag\E(?:\Q$expr\E)?(?:\Q$escp\E)?\s*\Q$cpen\E(.*)$/;
-  my $end_re  = qr/^(?:(\Q$cpst\E)\s*)?(\Q$trim\E)?\Q$end\E$/;
-
-  # Split lines
-  my $op = 'text';
-  my ($trimming, $capture);
-  for my $line (split /\n/, $template) {
-
-    # Turn Perl line into mixed line
-    if ($op eq 'text' && $line =~ $line_re) {
-
-      # Escaped start
-      if ($2) { $line = "$1$start$5" }
-
-      # Comment
-      elsif ($3) { $line = "$tag$3 $trim$end" }
-
-      # Expression or code
-      else { $line = $4 ? "$1$tag$4$5 $end" : "$tag$5 $trim$end" }
-    }
-
-    # Escaped line ending
-    $line .= "\n" if $line !~ s/\\\\$/\\\n/ && $line !~ s/\\$//;
-
-    # Mixed line
-    for my $token (split $token_re, $line) {
-
-      # Capture end
-      ($token, $capture) = ("$tag$1", 1) if $token =~ $cpen_re;
-
-      # End
-      if ($op ne 'text' && $token =~ $end_re) {
-
-        # Capture start
-        splice @tree, -1, 0, ['cpst'] if $1;
-
-        # Trim left side
-        _trim(\@tree) if ($trimming = $2) && @tree > 1;
-
-        # Hint at end
-        push @tree, [$op = 'text', ''];
-      }
-
-      # Code
-      elsif ($token eq $tag) { $op = 'code' }
-
-      # Expression
-      elsif ($token eq "$tag$expr") { $op = 'expr' }
-
-      # Expression that needs to be escaped
-      elsif ($token eq "$tag$expr$escp") { $op = 'escp' }
-
-      # Comment
-      elsif ($token eq "$tag$cmnt") { $op = 'cmnt' }
-
-      # Text (comments are just ignored)
-      elsif ($op ne 'cmnt') {
-
-        # Replace
-        $token = $tag if $token eq "$tag$replace";
-
-        # Trim right side (convert whitespace to line noise)
-        if ($trimming && $token =~ s/^(\s+)//) {
-          push @tree, ['code', $1];
-          $trimming = 0;
-        }
-
-        # Token (with optional capture end)
-        push @tree, $capture ? ['cpen'] : (), [$op, $token];
-        $capture = 0;
-      }
-    }
-
-    # Optimize successive text lines separated by a newline
-    push @tree, ['line'] and next
-      if $tree[-4] && $tree[-4][0] ne 'line'
-      || (!$tree[-3] || $tree[-3][0] ne 'text' || $tree[-3][1] !~ /\n$/)
-      || ($tree[-2][0] ne 'line' || $tree[-1][0] ne 'text');
-    $tree[-3][1] .= pop(@tree)->[1];
-  }
-
-  return $self;
-}
 
 sub process {
   my $self = shift;
@@ -305,19 +339,6 @@ sub _line {
   my $name = shift->name;
   $name =~ y/"//d;
   return qq{#line @{[shift]} "$name"};
-}
-
-sub _trim {
-  my $tree = shift;
-
-  # Skip captures
-  my $i = $tree->[-2][0] eq 'cpst' || $tree->[-2][0] eq 'cpen' ? -3 : -2;
-
-  # Only trim text
-  return unless $tree->[$i][0] eq 'text';
-
-  # Convert whitespace text to line noise
-  splice @$tree, $i, 0, ['code', $1] if $tree->[$i][1] =~ s/(\s+)$//;
 }
 
 sub _wrap {
