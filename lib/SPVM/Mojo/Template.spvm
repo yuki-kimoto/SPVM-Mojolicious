@@ -279,9 +279,7 @@ class Mojo::Template {
       # Text (quote and fix line ending)
       if ($op eq "text") {
         if (length $value) {
-          my $_ = $blocks->get($blocks->length - 1);
-          $_ .= "\$_O .= <<'END_OF_STRING';\n" . $value . "END_OF_STRING\n" ;
-          $blocks->set($blocks->length - 1, $_ );
+          $blocks->[-1] .= "\$_O .= <<'END_OF_STRING';\n" . $value . "END_OF_STRING\n" ;
         }
       }
       
