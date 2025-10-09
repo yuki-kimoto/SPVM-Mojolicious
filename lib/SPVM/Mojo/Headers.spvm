@@ -380,7 +380,8 @@ class Mojo::Headers {
         last;
       }
       
-      my $line_buffer = StringBuffer->new($_->match->cap1);
+      my $line_buffer = StringBuffer->new;
+      $line_buffer->push($_->match->cap1);
       
       # Check line size limit
       if ($offset > $size || $headers->length >= $lines) {
