@@ -216,7 +216,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
       $port = $options_h->{"port"}->(int);
     }
     else {
-      my $tsl = $options_h->get_or_default_int("tls", 0);
+      my $tsl = $options_h->get_or_default("tls", 0)->(int);
       $port = $tsl ? 443 : 80;
     }
     
@@ -434,9 +434,9 @@ EOS
     
     my $options_h = Hash->new($options);
     
-    my $headers = (Mojo::Headers)$options_h->delete_or_default("headers", undef);
+    my $headers = (Mojo::Headers)$options_h->get_or_default("headers", undef);
     
-    my $request_timeout = $options_h->delete_or_default_double("request_timeout", $self->{request_timeout});
+    my $request_timeout = $options_h->get_or_default("request_timeout", $self->{request_timeout})->(double);
     
     for my $name (@{$options_h->keys}) {
       die "The \$name option is not available.";
