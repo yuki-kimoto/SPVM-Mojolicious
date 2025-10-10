@@ -99,8 +99,8 @@ class Mojolicious::Types {
     
     my $detected = $types->keys;
     
-    Sort->sort_object($detected, [$types : Hash] method : int ($a : object, $b : object) {
-      return $types->get_int((string)$b) <=> $types->get_int((string)$a);
+    Sort->sort_object($detected, [$types : Hash] method : int ($a : string, $b : string) {
+      return $types->get_int($b) <=> $types->get_int($a);
     });
     
     # Detect extensions from MIME types
