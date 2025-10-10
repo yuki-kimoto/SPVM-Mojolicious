@@ -110,7 +110,7 @@ class Mojolicious::Renderer {
   
   method template_name : string ($options : Hash|object[]) {
     
-    my $options_h = &to_hash($options);
+    my $options_h = Fn->to_hash($options);
     
     my $template = $options_h->get_string("template");
     unless ($template) {
@@ -229,28 +229,9 @@ class Mojolicious::Renderer {
     }
   }
   
-  private static method to_hash : Hash ($options : Hash|object[]) {
-    
-    my $options_h = (Hash)undef;
-    if (!$options) {
-      $options_h = Hash->new;
-    }
-    elsif ($options isa Hash) {
-      $options_h = (Hash)$options;
-    }
-    elsif ($options isa object[]) {
-      $options_h = Hash->new((object[])$options);
-    }
-    else {
-      die "The type of the options \$options must be Hash or object[].";
-    }
-    
-    return $options_h;
-  }
-  
   method template_handler : string ($options : Hash|object[] = undef) {
     
-    my $options_h = &to_hash($options);
+    my $options_h = Fn->to_hash($options);
     
     my $file = $self->template_name($options_h);
     unless ($file) {
