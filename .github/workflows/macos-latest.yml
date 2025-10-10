@@ -8,6 +8,10 @@ on:
       - '*'
   pull_request:
 
+# Temporaly setting: There is an ongoing outage on the primary CPAN mirror. It is possible to work around the issue by using MetaCPAN as a mirror.
+env:
+  PERL_CPANM_OPT: -M https://cpan.metacpan.org/ --metacpan
+
 jobs:
   build:
     runs-on: macos-latest
