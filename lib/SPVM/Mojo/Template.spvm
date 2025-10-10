@@ -87,8 +87,8 @@ class Mojo::Template {
     
     # Clean start
     $self->set_unparsed($template);
-    my $tree_list = (List of string[])List->new_ref(new string[][0]);
-    $self->set_tree($tree_list->get_array->(string[][]));
+    my $tree = (List of string[])List->new_ref(new string[][0]);
+    $self->set_tree($tree->get_array->(string[][]));
     $self->set_compiled(0);
     
     my $tag     = $self->tag_start;
@@ -149,16 +149,16 @@ class Mojo::Template {
           
           # Capture start
           if ($m->cap1) {
-            $tree_list->splice($tree_list->length - 1, 0, ["cpst"]);
+            $tree->splice($tree->length - 1, 0, ["cpst"]);
           }
           
           # Trim left side
-          if (($trimming = $m->cap2) && $tree_list->length > 1) {
-            &_trim($tree_list);
+          if (($trimming = $m->cap2) && $tree->length > 1) {
+            &_trim($tree);
           }
           
           # Hint at end
-          $tree_list->push([$op = "text", ""]);
+          $tree->push([$op = "text", ""]);
         }
         
         # Code
@@ -184,47 +184,47 @@ class Mojo::Template {
           # Trim right side (convert whitespace to line noise)
           if ($trimming && (my $r = Re->s(my $_ = [$token], "^(\s+)", ""))) {
             $token = $_->[0];
-            $tree_list->push(["code", $r->match->cap1]);
+            $tree->push(["code", $r->match->cap1]);
             $trimming = 0;
           }
           
           # Token (with optional capture end)
-          $tree_list->push($capture ? ["cpen"] : [$op, $token]);
+          $tree->push($capture ? ["cpen"] : [$op, $token]);
           $capture = 0;
         }
       }
       
       # Optimize successive text lines separated by a newline
-      my $len = $tree_list->length;
-      if ($tree_list->get($len - 4) && $tree_list->get($len - 4)->[0] ne "line"
-        || (!$tree_list->get($len - 3) || $tree_list->get($len - 3)->[0] ne "text" || !Re->m($tree_list->get($len - 3)->[1], "\n$")
-        || ($tree_list->get($len - 2)->[0] ne "line" || $tree_list->get($len - 1)->[0] ne "text")))
+      my $len = $tree->length;
+      if ($tree->get($len - 4) && $tree->get($len - 4)->[0] ne "line"
+        || (!$tree->get($len - 3) || $tree->get($len - 3)->[0] ne "text" || !Re->m($tree->get($len - 3)->[1], "\n$")
+        || ($tree->get($len - 2)->[0] ne "line" || $tree->get($len - 1)->[0] ne "text")))
       {
-        $tree_list->push(["line"]);
+        $tree->push(["line"]);
         next;
       }
       
-      my $_ = $tree_list->get($len - 3);
-      $_->[1] .= $tree_list->pop->[1];
+      my $_ = $tree->get($len - 3);
+      $_->[1] .= $tree->pop->[1];
     }
     
   }
   
-  static method _trim : void ($tree_list : List of string[]) {
+  static method _trim : void ($tree : List of string[]) {
     
     # Skip captures
-    my $len = $tree_list->length;
-    my $i = $tree_list->get($len - 2)->[0] eq "cpst" || $tree_list->get($len - 2)->[0] eq "cpen" ? $len - 3 : $len - 2;
+    my $len = $tree->length;
+    my $i = $tree->get($len - 2)->[0] eq "cpst" || $tree->get($len - 2)->[0] eq "cpen" ? $len - 3 : $len - 2;
     
     # Only trim text
-    unless ($tree_list->get($i)->[0] eq "text") {
+    unless ($tree->get($i)->[0] eq "text") {
       return;
     }
     
     # Convert whitespace text to line noise
-    if (my $r = Re->s(my $_ = [$tree_list->get($i)->[1]], "(\s+)$", "")) {
-      $tree_list->get($i)->[1] = $_->[0];
-      $tree_list->splice($i, 0, ["code", $r->match->cap1]);
+    if (my $r = Re->s(my $_ = [$tree->get($i)->[1]], "(\s+)$", "")) {
+      $tree->get($i)->[1] = $_->[0];
+      $tree->splice($i, 0, ["code", $r->match->cap1]);
     }
     
   }
@@ -253,15 +253,15 @@ class Mojo::Template {
   
   private method _compile : void () {
     
-    my $tree_list = (List of string[])List->new($self->tree);
+    my $tree = (List of string[])List->new($self->tree);
     my $escape = 1;
     
     my $blocks = StringList->new;
     my $i = 0;
     my $capture = (string)undef;
     my $multi = 0;
-    while (++$i <= $tree_list->length && (my $next = $tree_list->get($i))) {
-      my $_ = $tree_list->get($i - 1);
+    while (++$i <= $tree->length && (my $next = $tree->get($i))) {
+      my $_ = $tree->get($i - 1);
       
       my $op = $_->[0];
       my $value = $_->[1];
