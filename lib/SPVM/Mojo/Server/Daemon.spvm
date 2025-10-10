@@ -397,7 +397,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
       $url->set_port($self->ports->[@$self->ports - 1]) ;
     }
     
-    say "Web application available at " . ($options->get_string("path") // $url->to_string);
+    say "Web application available at " . ($options->{"path"}->(string) // $url->to_string);
   }
 
 }

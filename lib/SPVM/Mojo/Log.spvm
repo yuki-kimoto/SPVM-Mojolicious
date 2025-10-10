@@ -132,48 +132,48 @@ class Mojo::Log extends Mojo::EventEmitter {
   
   method debug : void ($message : string|Mojo::Log::Callback::Message) {
     
-    if (2 >= $LEVEL->get_int($self->level)) {
+    if (2 >= $LEVEL->{$self->level}->(int)) {
       $self->_log($message, "debug");
     }
   }
   
   method error : void ($message : string|Mojo::Log::Callback::Message) {
     
-    if (5 >= $LEVEL->get_int($self->level)) {
+    if (5 >= $LEVEL->{$self->level}->(int)) {
       $self->_log($message, "error");
     }
   }
   
   method fatal : void ($message : string|Mojo::Log::Callback::Message) {
     
-    if (6 >= $LEVEL->get_int($self->level)) {
+    if (6 >= $LEVEL->{$self->level}->(int)) {
       $self->_log($message, "fatal");
     }
   }
   
   method info : void ($message : string|Mojo::Log::Callback::Message) {
     
-    if (3 >= $LEVEL->get_int($self->level)) {
+    if (3 >= $LEVEL->{$self->level}->(int)) {
       $self->_log($message, "info");
     }
   }
   
   method trace : void ($message : string|Mojo::Log::Callback::Message) {
     
-    if (1 >= $LEVEL->get_int($self->level)) {
+    if (1 >= $LEVEL->{$self->level}->(int)) {
       $self->_log($message, "trace");
     }
   }
   
   method warn : void ($message : string|Mojo::Log::Callback::Message) {
     
-    if (4 >= $LEVEL->get_int($self->level)) {
+    if (4 >= $LEVEL->{$self->level}->(int)) {
       $self->_log($message, "warn");
     }
   }
   
   method is_level : int ($level : string) {
-    return $LEVEL->get_int($level) >= $LEVEL->get_int($self->level);
+    return $LEVEL->{$level}->(int) >= $LEVEL->{$self->level}->(int);
   }
   
   # Private Instance Methods
@@ -238,7 +238,7 @@ class Mojo::Log extends Mojo::EventEmitter {
   
   private method _short : string ($time : double, $level : string, $message : string) {
     
-    my $magic = "<" . $MAGIC->get_int("$level") . ">";
+    my $magic = "<" . $MAGIC->{"$level"}->(int) . ">";
     my $short = Fn->substr($level, 0, 1);
     
     my $short_message = "${magic}[" . Sys->process_id . "] [$short] $message\n";

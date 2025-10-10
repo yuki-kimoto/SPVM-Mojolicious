@@ -137,7 +137,7 @@ class Mojolicious::Routes::Match {
     }
     
     # WebSocket
-    if ($r->is_websocket && !$options->get_int("websocket")) {
+    if ($r->is_websocket && !$options->{"websocket"}->(int)) {
       return 0;
     }
     
@@ -154,7 +154,7 @@ class Mojolicious::Routes::Match {
     if (($endpoint && $empty) || $r->inline) {
       $stack_list->push($captures->clone);
       if ($endpoint && $empty) {
-        my $format = $captures->get_string("format");
+        my $format = $captures->{"format"}->(string);
         if ($format) {
           for (my $i = 0; $i = $stack_list->length; $i++) {
             my $captures = $stack_list->get($i);

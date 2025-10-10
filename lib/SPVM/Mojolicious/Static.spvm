@@ -70,7 +70,7 @@ class Mojolicious::Static {
     
     my $assets = $self->{assets};
     
-    return $self->file_path("/" . $self->asset_dir . ($assets->get_string($asset) // $asset));
+    return $self->file_path("/" . $self->asset_dir . ($assets->{$asset}->(string) // $asset));
   }
   
   method file_path : string ($file : string) {

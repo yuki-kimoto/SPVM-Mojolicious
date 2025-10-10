@@ -112,12 +112,12 @@ class Mojolicious::Renderer {
     
     my $options_h = Fn->to_hash($options);
     
-    my $template = $options_h->get_string("template");
+    my $template = $options_h->{"template"}->(string);
     unless ($template) {
       return undef;
     }
     
-    my $format = $options_h->get_string("format");
+    my $format = $options_h->{"format"}->(string);
     unless ($format) {
       return undef;
     }
@@ -125,7 +125,7 @@ class Mojolicious::Renderer {
     $template .= ".$format";
     
     # Variants
-    my $handler = $options_h->get_string("handler");
+    my $handler = $options_h->{"handler"}->(string);
     
     return $handler ? "$template.$handler" : $template;
   }
@@ -139,7 +139,7 @@ class Mojolicious::Renderer {
     
     my $stash   = $c->stash;
     my $options_h = Hash->new({
-      handler  => $stash->get_string("handler"),
+      handler  => $stash->{"handler"}->(string),
       template => (string)$stash->delete("template"),
     });
     
@@ -152,16 +152,16 @@ class Mojolicious::Renderer {
       }
     }
     
-    $options_h->set(format => $stash->get_string("format") // $self->default_format);
+    $options_h->set(format => $stash->{"format"}->(string) // $self->default_format);
     
     # Data
     if ($stash->get("data")) {
-      return [(string)$stash->delete("data"), $options_h->get_string("format")];
+      return [(string)$stash->delete("data"), $options_h->{"format"}->(string)];
     }
     
     # Text
     if ($stash->get("text")) {
-      return [(string)$stash->delete("text"), $options_h->get_string("format")];
+      return [(string)$stash->delete("text"), $options_h->{"format"}->(string)];
     }
     
     # JSON
@@ -190,11 +190,11 @@ class Mojolicious::Renderer {
 
 =cut
     
-    if ($stash->get_int("mojo.string")) {
+    if ($stash->{"mojo.string"}->(int)) {
       return [$output, undef];
     }
     
-    return [$output, $options_h->get_string("format")];
+    return [$output, $options_h->{"format"}->(string)];
     
   }
 

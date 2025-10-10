@@ -213,7 +213,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     my $port = 0;
     
     if ($options_h->exists("port")) {
-      $port = $options_h->get_int("port");
+      $port = $options_h->{"port"}->(int);
     }
     else {
       my $tsl = $options_h->get_or_default_int("tls", 0);
@@ -516,7 +516,7 @@ EOS
     # TLS
     my $tls = $proto eq "https";
     
-    my $path = $options_h->get_string("path");
+    my $path = $options_h->{"path"}->(string);
     
     # UNIX domain socket
     if ($path) {
@@ -527,7 +527,7 @@ EOS
     
     # IP socket
     else {
-      $options_h->set(PeerAddr => $options_h->get_string("address"));
+      $options_h->set(PeerAddr => $options_h->{"address"}->(string));
       $options_h->delete("address");
       $options_h->set(PeerPort => &_port($options_h));
       $options_h->delete("port");

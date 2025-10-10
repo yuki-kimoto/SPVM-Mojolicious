@@ -383,7 +383,7 @@ class Mojolicious::Routes::Pattern {
   method render : string ($values : Hash, $endpoint : int) {
     
     # Placeholders can only be optional without a format
-    my $optional = !(my $format = $values->get_string("format"));
+    my $optional = !(my $format = $values->{"format"}->(string));
     
     my $str = "";
     my $tree_list = (List of object[])List->new_ref($self->tree);
@@ -411,9 +411,9 @@ class Mojolicious::Routes::Pattern {
       # Placeholder
       else {
         my $name    = $value->(object[])->[0]->(string);
-        my $default = $self->defaults->get_string($name);
+        my $default = $self->defaults->{$name}->(string);
         
-        $part = $values->get_string($name) // $default // "";
+        $part = $values->{$name}->(string) // $default // "";
         
         if    (!$default || ($default ne $part)) { $optional = 0; }
         elsif ($optional)                                { $part     = ""; }

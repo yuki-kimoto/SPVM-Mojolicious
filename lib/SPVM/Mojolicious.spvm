@@ -188,7 +188,7 @@ class Mojolicious {
   method dispatch : void ($c : Mojolicious::Controller) {
     
     my $stash = $c->stash;
-    if ($stash->get_int("mojo.rendered")) {
+    if ($stash->{"mojo.rendered"}->(int)) {
       return;
     }
     
