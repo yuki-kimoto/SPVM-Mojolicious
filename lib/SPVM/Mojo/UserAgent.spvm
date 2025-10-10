@@ -192,7 +192,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
   ;
   
   # Uncodumented Fields
-  has keep_alive_sockets_list : List of object[]; # endpoint and socket pairs 
+  has keep_alive_sockets : object[]; # endpoint and socket pairs 
   
   has connections_h : Hash of IO::Socket;
   
@@ -201,7 +201,7 @@ class Mojo::UserAgent extends Mojo::EventEmitter {
     
     my $self = new Mojo::UserAgent;
     
-    $self->{keep_alive_sockets_list} = List->new(new object[0]);
+    $self->{keep_alive_sockets} = new object[0];
     
     $self->{connections_h} = (Hash of IO::Socket)Hash->new;
     
@@ -689,7 +689,7 @@ EOS
     my $max = $self->max_connections;
     
     # Keep connection alive
-    my $keep_alive_sockets_list = $self->{keep_alive_sockets_list};
+    my $keep_alive_sockets_list = List->new_ref($self->{keep_alive_sockets});
     
     while ($keep_alive_sockets_list->length && $keep_alive_sockets_list->length >= $max) {
       $keep_alive_sockets_list->shift;
@@ -759,7 +759,7 @@ EOS
   
   private method _dequeue : IO::Socket ($endpoint : string)  {
     
-    my $keep_alive_sockets_list = $self->{keep_alive_sockets_list};
+    my $keep_alive_sockets_list = List->new_ref($self->{keep_alive_sockets});
     
     for (my $i = 0; $i < $keep_alive_sockets_list->length; $i++) {
       my $keep_alive_socket = (object[])$keep_alive_sockets_list->get($i);
