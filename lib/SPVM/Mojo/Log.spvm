@@ -69,15 +69,11 @@ class Mojo::Log extends Mojo::EventEmitter {
     return $handle;
   }
   
-  has history_list : List of Mojo::Log::Line;
-  
-  method history : Mojo::Log::Line[] () {
-    return $self->{history_list}->to_array->(Mojo::Log::Line[]);
-  }
+  has history : Mojo::Log::Line[];
   
   has level : rw string;
   
-  has max_history_list_size : rw int;
+  has max_history_size : rw int;
   
   has path : rw string;
   
@@ -95,11 +91,11 @@ class Mojo::Log extends Mojo::EventEmitter {
     
     my $self = new Mojo::Log;
     
-    $self->{history_list} = List->new(new Mojo::Log::Line[0]);
+    $self->{history} = new Mojo::Log::Line[0];
     
     $self->{level} = "trace";
     
-    $self->{max_history_list_size} = 10;
+    $self->{max_history_size} = 10;
     
     if (length (my $_ = Sys->env("MOJO_LOG_SHORT"))) {
       $self->{short} = (byte)$_;
@@ -203,8 +199,8 @@ class Mojo::Log extends Mojo::EventEmitter {
   
   private method _message : void ($level : string, $message : string)  {
     
-    my $max     = $self->max_history_list_size;
-    my $history_list = $self->{history_list};
+    my $max     = $self->max_history_size;
+    my $history_list = (List of Mojo::Log::Line)List->new_ref($self->{history});
     
     my $line = Mojo::Log::Line->new;
     my $time = Time::HiRes->time;
