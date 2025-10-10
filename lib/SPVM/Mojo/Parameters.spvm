@@ -12,34 +12,7 @@ class Mojo::Parameters {
   interface Stringable;
   
   # Fields
-  has pairs : rw virtual string[]
-    get {
-      return $self->pairs_list->to_array;
-    }
-    
-    set {
-      unless ($_) {
-        die "The pairs argument must be defined.";
-      }
-      
-      $self->set_pairs_list(StringList->new($_));
-    }
-  ;
-  
-  has pairs_list : rw StringList
-    get {
-      $self->_parse;
-      return $self->{pairs_list};
-    }
-    
-    set {
-      unless ($_) {
-        die "The pairs_list argument must be defined.";
-      }
-      $self->{pairs_list} = $_;
-      $self->{string} = undef;
-    }
-  ;
+  has pairs : rw string[];
   
   # Undocumented Fields
   has string : string;
@@ -80,7 +53,7 @@ class Mojo::Parameters {
       die "The length of \$pairs must be an even number if it is an array.";
     }
     
-    my $old_list = $self->{pairs_list};
+    my $pairs_list = StringList->new_ref($self->{pairs});
     
     my $new = $pairs_array;
     
@@ -90,13 +63,13 @@ class Mojo::Parameters {
       
       if ($new_value) {
         if ($new_value isa string) {
-          $old_list->push((string)$new_name);
-          $old_list->push((string)$new_value);
+          $pairs_list->push((string)$new_name);
+          $pairs_list->push((string)$new_value);
         }
         elsif ($new_value isa string[]) {
           for my $one_new_value (@(string[])$new_value) {
-            $old_list->push((string)$new_name);
-            $old_list->push($one_new_value);
+            $pairs_list->push((string)$new_name);
+            $pairs_list->push($one_new_value);
           }
         }
         else {
@@ -115,7 +88,7 @@ class Mojo::Parameters {
       $clone->{string} = copy $self->{string};
     }
     else {
-      $clone->{pairs_list} = StringList->new(Array->copy_string($self->pairs));
+      $clone->{pairs} = Array->copy_string($self->{pairs});
     }
     
     return $clone;
@@ -125,15 +98,15 @@ class Mojo::Parameters {
     
     my $values_list = StringList->new;
     
-    my $pairs_list = StringList->new($self->pairs);
+    my $pairs_list = StringList->new_ref($self->pairs);
     
-    for (my $i = 0; $i < $pairs_list->length; $i += 2) {
-      if ($pairs_list->get($i) eq $name) {
-        $values_list->push($pairs_list->get($i + 1));
+    for (my $i = 0; $i < @$pairs_list; $i += 2) {
+      if ($pairs_list->[$i] eq $name) {
+        $values_list->push($pairs_list->[$i + 1]);
       }
     }
     
-    my $values = $values_list->to_array;
+    my $values = $values_list->get_array;
     
     return $values;
   }
@@ -237,7 +210,7 @@ class Mojo::Parameters {
     
     $self->_parse;
     
-    my $pairs_list = $self->{pairs_list};
+    my $pairs_list = StringList->new_ref($self->{pairs});
     
     my $i     = 0;
     while ($i < $pairs_list->length) {
@@ -258,7 +231,7 @@ class Mojo::Parameters {
     
     $self->_parse;
     
-    my $pairs_list = $self->{pairs_list};
+    my $pairs_list = StringList->new_ref($self->{pairs});
     
     for (my $i = 0; $i < $pairs_list->length; $i += 2) {
       my $name = $pairs_list->get($i);
@@ -303,7 +276,7 @@ class Mojo::Parameters {
     # Build pairs (HTML Living Standard)
     $self->_parse;
     
-    my $pairs_list = $self->{pairs_list};
+    my $pairs_list = StringList->new_ref($self->{pairs});
     
     unless ($pairs_list->length) {
       return "";
@@ -337,9 +310,9 @@ class Mojo::Parameters {
     my $string = $self->{string};
     $self->{string} = undef;
     
-    $self->{pairs_list} = StringList->new;
+    $self->{pairs} = new string[0];
     
-    my $pairs_list = $self->{pairs_list};
+    my $pairs_list = StringList->new_ref($self->{pairs});
     
     if (length $string) {
       for my $pair (@{Fn->split("&", $string)}) {
