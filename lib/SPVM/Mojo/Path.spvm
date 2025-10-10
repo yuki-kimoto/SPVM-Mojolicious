@@ -57,23 +57,23 @@ class Mojo::Path {
     
     $self->_parse;
     
-    my $parts_list = StringList->new_ref($self->{parts});
+    my $parts = StringList->new_ref($self->{parts});
     
     my $i = 0;
-    while ($i < $parts_list->length) {
-      if    (!length $parts_list->get($i) || $parts_list->get($i) eq "." || $parts_list->get($i) eq "...") {
-        $parts_list->replace($i, 1, undef);
+    while ($i < $parts->length) {
+      if    (!length $parts->get($i) || $parts->get($i) eq "." || $parts->get($i) eq "...") {
+        $parts->replace($i, 1, undef);
       }
-      elsif ($i < 1 || $parts_list->get($i) ne ".." || $parts_list->get($i - 1) eq "..")           {
+      elsif ($i < 1 || $parts->get($i) ne ".." || $parts->get($i - 1) eq "..")           {
         $i++;
       }
       else {
         --$i;
-        $parts_list->replace($i, 2, undef);
+        $parts->replace($i, 2, undef);
       }
     }
     
-    if ($parts_list->length == 0) {
+    if ($parts->length == 0) {
       $self->set_trailing_slash(0);
     }
     
@@ -191,17 +191,17 @@ class Mojo::Path {
       return;
     }
     
-    my $parts_list = StringList->new_ref($self->{parts});
+    my $parts = StringList->new_ref($self->{parts});
     
     # Merge
     unless ($self->trailing_slash) {
-      $parts_list->pop;
+      $parts->pop;
     }
     
     my $path_obj = Mojo::Path->new($path_string);
     
     for my $part (@{$path_obj->parts}) {
-      $parts_list->push($part);
+      $parts->push($part);
     }
     
     $self->set_trailing_slash($path_obj->trailing_slash);
@@ -211,10 +211,10 @@ class Mojo::Path {
     
     my $clone = $self->clone;
     
-    my $parts_list = StringList->new_ref($self->{parts});
+    my $parts = StringList->new_ref($self->{parts});
     
     unless ($clone->trailing_slash) {
-      $parts_list->pop;
+      $parts->pop;
     }
     
     $clone->set_trailing_slash(!!@{$clone->parts});
