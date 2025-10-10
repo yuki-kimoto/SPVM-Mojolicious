@@ -206,7 +206,7 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     
     $self->match($c);
     
-    unless ($c->match->stack_list->length) {
+    unless (@{$c->match->stack}) {
       return 0;
     }
     
