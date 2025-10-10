@@ -26,16 +26,7 @@ class Mojolicious::Renderer {
   
   has min_compress_size : rw int;
   
-  has paths : virtual rw string[]
-    get {
-      return $self->paths_list->to_array->(string[]);
-    }
-    set {
-      $self->{paths_list} = StringList->new($_);
-    }
-  ;
-  
-  has paths_list : rw StringList;
+  has paths : rw string[];
   
   has data_section : rw string;
   
@@ -59,7 +50,7 @@ class Mojolicious::Renderer {
     
     $self->{min_compress_size} = 860;
     
-    $self->{paths_list} = StringList->new;
+    $self->{paths} = new string[0];
     
     $self->{templates} = Hash->new;
     
