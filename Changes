@@ -5,7 +5,11 @@
     * Improve Mojo::Parameters.
     * Improve Mojo::Path.
     * Improve Mojo::UserAgent.
-    
+    * Remove all xxx_list fields.
+  
+  [Internal Changes]
+    * Use hash access syntax.
+  
 0.026 2025-10-09
   [Internal Changes]
     * Clean up the code.
