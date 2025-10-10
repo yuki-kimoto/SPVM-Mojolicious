@@ -40,7 +40,7 @@ class Mojo::Template {
   has tag_end : rw string;
   
   # Undocumented Fields
-  has tree_list : rw List of string[];
+  has tree : rw string[][];
 
   # Class Methods
   static method new : Mojo::Template () {
@@ -73,7 +73,7 @@ class Mojo::Template {
     
     $self->{tag_end} = "%>";
     
-    $self->{tree_list} = List->new;
+    $self->{tree} = new string[][0];
     
     return $self;
   }
@@ -87,8 +87,8 @@ class Mojo::Template {
     
     # Clean start
     $self->set_unparsed($template);
-    my $tree_list = (List of string[])List->new(new string[][0]);
-    $self->set_tree_list($tree_list);
+    my $tree_list = (List of string[])List->new_ref(new string[][0]);
+    $self->set_tree($tree_list->get_array->(string[][]));
     $self->set_compiled(0);
     
     my $tag     = $self->tag_start;
@@ -252,10 +252,10 @@ class Mojo::Template {
   }
   
   private method _compile : void () {
-
-    my $tree_list   = $self->tree_list;
+    
+    my $tree_list = (List of string[])List->new($self->tree);
     my $escape = 1;
-
+    
     my $blocks = StringList->new;
     my $i = 0;
     my $capture = (string)undef;
@@ -345,7 +345,7 @@ class Mojo::Template {
     
     $self->set_code(Fn->join("\n", $blocks->to_array));
     
-    $self->set_tree_list(List->new(new string[][0]));
+    $self->set_tree(new string[][0]);
   }
   
   method render : string ($template : string, $args : object[] = undef) {
