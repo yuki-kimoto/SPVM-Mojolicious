@@ -3,6 +3,7 @@
     * Require SPVM 0.990102.
   [Changes]
     * Improve Mojo::Parameters.
+    * Improve Mojo::Path.
     
 0.026 2025-10-09
   [Internal Changes]
