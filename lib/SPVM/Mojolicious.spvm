@@ -156,10 +156,11 @@ class Mojolicious {
     my $self = new Mojolicious;
     
     my $home = $self->home;
-    my $paths = $self->renderer->paths;
-    StringList->new_ref($paths)->push($home->child("templates")->to_string);
+    my $renderer_paths = $self->renderer->paths;
+    StringList->new_ref($renderer_paths)->push($home->child("templates")->to_string);
     
-    $self->static->paths_list->push($home->child("public")->to_string);
+    my $static_paths = $self->static->paths;
+    StringList->new_ref($static_paths)->push($home->child("public")->to_string);
     
     return $self;
   }
