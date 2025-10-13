@@ -180,8 +180,7 @@ class Mojo::Template {
           }
           
           # Trim right side (convert whitespace to line noise)
-          if ($trimming && (my $r = Re->s(my $_ = [$token], "^(\s+)", ""))) {
-            $token = $_->[0];
+          if ($trimming && (my $r = Re->s((mutable string)$token, "^(\s+)", ""))) {
             $tree->push(["code", $r->match->cap1]);
             $trimming = 0;
           }
@@ -220,8 +219,7 @@ class Mojo::Template {
     }
     
     # Convert whitespace text to line noise
-    if (my $r = Re->s(my $_ = [$tree->get($i)->[1]], "(\s+)$", "")) {
-      $tree->get($i)->[1] = $_->[0];
+    if (my $r = Re->s((mutable string)$tree->get($i)->[1], "(\s+)$", "")) {
       $tree->splice($i, 0, ["code", $r->match->cap1]);
     }
     
