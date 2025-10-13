@@ -143,7 +143,7 @@ class Mojo::Util {
       $n += $i / ($output_buffer->length + 1);
       $i = $i % ($output_buffer->length + 1);
       
-      $output_buffer->replace($i++, 0, Fn->chr($n));
+      $output_buffer->substr($i++, 0, Fn->chr($n));
     }
     
     my $output = $output_buffer->to_string;
