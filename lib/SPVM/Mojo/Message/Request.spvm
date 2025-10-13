@@ -161,10 +161,10 @@ class Mojo::Message::Request extends Mojo::Message {
   
   method query_params : Mojo::Parameters () { return $self->url->query; }
   
-  method extract_start_line : int ($bufref : string[]) {
+  method extract_start_line : int ($buf : mutable string) {
     
     # Ignore any leading empty lines
-    my $_ = Re->s($bufref, "^\s*(.*?)\x0d?\x0a", "");
+    my $_ = Re->s($buf, "^\s*(.*?)\x0d?\x0a", "");
     unless ($_) {
       return 0;
     }
