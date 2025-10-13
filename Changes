@@ -1,3 +1,7 @@
+0.030 2025-10-13
+  [Internal Changes]
+    * Refactor fields.
+    
 0.029 2025-10-13
   [Internal Changes]
     * Refactor regex.
