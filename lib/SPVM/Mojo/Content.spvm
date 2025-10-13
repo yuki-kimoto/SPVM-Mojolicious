@@ -75,7 +75,7 @@ class Mojo::Content extends Mojo::EventEmitter {
   
   has pre_buffer : string;
   
-  has post_buffer : string;
+  has post_buffer : mutable string;
   
   has chunk_state : string;
   
@@ -472,14 +472,13 @@ class Mojo::Content extends Mojo::EventEmitter {
     }
     
     # Decompress
-    $self->{post_buffer} .= $chunk;
+    $self->{post_buffer} = (mutable string)($self->{post_buffer} . $chunk);
     $self->{gz} = $self->{gz} // &_new_compress_raw_zlib_inflate;
     my $gz     = $self->{gz};
     my $post_buffer_ref = [$self->{post_buffer}];
-    my $out_ref = [(string)undef];
-    my $status = &_inflate($gz, $post_buffer_ref,$out_ref);
-    my $out = $out_ref->[0];
-    if ($out) {
+    my $out = (mutable string)copy "";
+    my $status = &_inflate($gz, $self->{post_buffer}, $out);
+    if (length $out) {
       $self->emit(read => $out) ;
     }
     
@@ -490,7 +489,7 @@ class Mojo::Content extends Mojo::EventEmitter {
     }
     
     # Check buffer size
-    if (length($self->{post_buffer} // "") > $self->max_buffer_size) {
+    if (length $self->{post_buffer} > $self->max_buffer_size) {
       $self->{state} = "finished";
       $self->{limit} = 1;
     }
@@ -509,7 +508,7 @@ class Mojo::Content extends Mojo::EventEmitter {
     # return Compress::Raw::Zlib::Inflate->new(WindowBits => WANT_GZIP);
   }
   
-  private static method _inflate : int ($compress_raw_zlib_inflate : object, $post_buffer_ref : string[], $out_ref : string[]) {
+  private static method _inflate : int ($compress_raw_zlib_inflate : object, $post_buffer : mutable string, $out : mutable string) {
     
     die "TODO";
     # my $status = $gz->inflate(\$self->{post_buffer}, my $out);
