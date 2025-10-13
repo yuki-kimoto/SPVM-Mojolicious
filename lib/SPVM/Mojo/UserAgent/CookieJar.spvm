@@ -142,7 +142,7 @@ class Mojo::UserAgent::CookieJar {
       }
       
       # Grab cookies
-      my $new = List->new(new Mojo::Cookie::Response[0]);
+      my $new = new Mojo::Cookie::Response[0];
       $self->{jar}->{$domain} = $new;
       for my $cookie (@$old) {
         if ($cookie->host_only && $host ne $cookie->domain) {
@@ -156,7 +156,7 @@ class Mojo::UserAgent::CookieJar {
             next;
           }
         }
-        $new->push($cookie);
+        List->new_ref($new)->push($cookie);
         
         # Taste cookie
         if ($cookie->secure && $url->protocol ne "https") {
