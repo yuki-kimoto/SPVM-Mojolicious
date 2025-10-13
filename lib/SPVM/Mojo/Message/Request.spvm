@@ -58,11 +58,9 @@ class Mojo::Message::Request extends Mojo::Message {
         
         my $b64 = Fn->substr(Digest::SHA->sha1_base64($seed . ($counter = ($counter + 1) % 0xffffff)), 0, 12);
         
-        Re->s(my $_ = [$b64], "+", "-");
-        $b64 = $_->[0];
+        Re->s((mutable string)$b64, "+", "-");
         
-        Re->s(my $_ = [$b64], "/", "_");
-        $b64 = $_->[0];
+        Re->s((mutable string)$b64, "/", "_");
         
         $self->{request_id} = $b64;
       }
