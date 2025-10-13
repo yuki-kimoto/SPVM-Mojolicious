@@ -102,7 +102,7 @@ class Mojo::Content::MultiPart extends Mojo::Content {
       }
       $boundary = Mojo::Util->b64_encode($boundary_ascii);
       $boundary = copy $boundary;
-      Re->s($boundary, ["\W", "g"], "X");
+      Re->s((mutable string)$boundary, ["\W", "g"], "X");
       
       unless ($self->body_contains($boundary)) {
         last;

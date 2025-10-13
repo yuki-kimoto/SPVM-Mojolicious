@@ -373,7 +373,7 @@ class Mojo::Headers {
     my $offset = 0;
     while (1) {
       
-      my $_ = Re->s($buffer, "^(.*?)\x0d?\x0a", "");
+      my $_ = Re->s((mutable string)$buffer->get_string, "^(.*?)\x0d?\x0a", "");
       
       unless ($_) {
         last;
@@ -390,7 +390,7 @@ class Mojo::Headers {
       }
       
       # New header
-      if (my $_ = Re->m($line_buffer, "^(\S[^:]*):\s*(.*)$")) {
+      if (my $_ = Re->m($line_buffer->get_string, "^(\S[^:]*):\s*(.*)$")) {
         
         my $name = $_->cap1;
         my $value = $_->cap2;
@@ -399,7 +399,7 @@ class Mojo::Headers {
       }
       
       # Multi-line
-      elsif ((my $_ = Re->s($line_buffer, "^\s+", "")) && $headers->length) {
+      elsif ((my $_ = Re->s((mutable string)$line_buffer->get_string, "^\s+", "")) && $headers->length) {
         my $last_header = (string[])$headers->get($headers->length - 1);
         my $last_header_value = $last_header->[1];
         $last_header->[1] = $last_header_value . " " . $line_buffer->to_string;

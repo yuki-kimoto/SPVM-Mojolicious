@@ -363,7 +363,7 @@ class Mojolicious::Routes::Pattern {
         next;
       }
       
-      if (my $m = Re->m($token->[1], "^(.+)\Q$type_start\E(.+)$")) {
+      if (my $m = Re->m((string)$token->[1], "^(.+)\Q$type_start\E(.+)$")) {
         $token->[1] = [(object)$m->cap1, $m->cap2, undef];
       }
       else {
