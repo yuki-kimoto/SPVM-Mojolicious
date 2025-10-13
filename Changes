@@ -1,3 +1,6 @@
+0.030 2025-10-13
+  [Requirement Changes]
+    * Require SPVM::Regex 0.252.
 0.029 2025-10-13
   [Internal Changes]
     * Refactor regex.
