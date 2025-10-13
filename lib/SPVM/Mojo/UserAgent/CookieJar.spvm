@@ -130,7 +130,7 @@ class Mojo::UserAgent::CookieJar {
     my $domain = my $host = Fn->lc($url->ihost);
     my $path   = $url->path->to_abs_string;
     
-    for (my $tmp = 0; 1 ; (Re->s(my $_ = [$domain], "^[^.]*\.*", ""), $domain = $_->[0])) {
+    for (my $tmp = 0; 1 ; Re->s((mutable string)$domain, "^[^.]*\.*", "")) {
       
       unless (length $domain) {
         last;
