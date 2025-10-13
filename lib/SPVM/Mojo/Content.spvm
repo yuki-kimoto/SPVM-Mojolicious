@@ -73,7 +73,7 @@ class Mojo::Content extends Mojo::EventEmitter {
   
   has real_size : int;
   
-  has pre_buffer : string;
+  has pre_buffer : mutable string;
   
   has post_buffer : mutable string;
   
@@ -124,9 +124,9 @@ class Mojo::Content extends Mojo::EventEmitter {
       $self->{max_leftover_size} = 262144;
     }
     
-    $self->{buffer} = "";
+    $self->{buffer} = (mutable string)copy "";
     
-    $self->{pre_buffer} = "";
+    $self->{pre_buffer} = (mutable string)copy "";
     
   }
   
@@ -300,7 +300,7 @@ class Mojo::Content extends Mojo::EventEmitter {
       my $limit = $self->is_finished && length($self->{buffer}) > $self->max_leftover_size;
       unless ($limit) {
         $self->{buffer} .= $self->{pre_buffer};
-        $self->{pre_buffer} = "";
+        $self->{pre_buffer} = new_string_len 0;
       }
     }
     
@@ -437,8 +437,8 @@ class Mojo::Content extends Mojo::EventEmitter {
   protected method _parse_until_body : void ($chunk : string) {
     
     $self->{raw_size} += length($chunk = $chunk // "");
-    $self->{pre_buffer} //= "";
-    $self->{pre_buffer} .= $chunk;
+    $self->{pre_buffer} //= new_string_len 0;
+    $self->{pre_buffer} = (mutable string)($self->{pre_buffer} . $chunk);
     
     $self->{state} = $self->{state} // "headers";
     if ($self->{state} eq "headers") {
@@ -545,16 +545,13 @@ class Mojo::Content extends Mojo::EventEmitter {
       # Start new chunk (ignore the chunk extension)
       unless ($self->{chunk_len}) {
         
-        my $pre_buffer_ref = [$self->{pre_buffer}];
+        my $r = Re->s($self->{pre_buffer}, "^(?:\x0d?\x0a)?([0-9a-fA-F]+).*\x0a", "");
         
-        my $_ = Re->s($pre_buffer_ref, "^(?:\x0d?\x0a)?([0-9a-fA-F]+).*\x0a", "");
-        $self->{pre_buffer} = $pre_buffer_ref->[0];
-        
-        unless ($_) {
+        unless ($r) {
           last;
         }
         
-        if ($self->{chunk_len} = Fn->hex($_->match->cap1)) {
+        if ($self->{chunk_len} = Fn->hex($r->match->cap1)) {
           next;
         }
         
@@ -568,8 +565,7 @@ class Mojo::Content extends Mojo::EventEmitter {
         $len = $self->{chunk_len};
       }
       
-      $self->{buffer} .= Fn->substr(my $_ = [$self->{pre_buffer}], 0, $len, "");
-      $self->{pre_buffer} = $_->[0];
+      $self->{buffer} .= Fn->substr($self->{pre_buffer}, 0, $len, "");
       $self->{real_size} += $len;
       $self->{chunk_len} -= $len;
     }
@@ -580,7 +576,7 @@ class Mojo::Content extends Mojo::EventEmitter {
     }
     
     # Check buffer size
-    if (length($self->{pre_buffer} // "") > $self->max_buffer_size) {
+    if (length $self->{pre_buffer} > $self->max_buffer_size) {
       $self->{state} = "finished";
       $self->{limit} = 1;
     }
@@ -621,7 +617,7 @@ class Mojo::Content extends Mojo::EventEmitter {
     $self->{state} = "body";
     
     # Take care of leftovers
-    my $leftovers = $self->{pre_buffer} = $headers->leftovers;
+    my $leftovers = $self->{pre_buffer} = (mutable string)copy $headers->leftovers;
     $self->{header_size} = $self->{raw_size} - length $leftovers;
     
   }
