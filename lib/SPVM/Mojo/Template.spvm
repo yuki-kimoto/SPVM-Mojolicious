@@ -127,10 +127,8 @@ class Mojo::Template {
       }
       
       # Escaped line ending
-      if (!Re->s(my $_ = [$line], "\\\\\\\\$", "\\\\\n")) {
-        $line = $_->[0];
-        if (Re->s(my $_ = [$line], "\\$", "")) {
-          $line = $_->[0];
+      if (!Re->s((mutable string)$line, "\\\\\\\\$", "\\\\\n")) {
+        if (Re->s((mutable string)$line, "\\$", "")) {
           $line .= "\n";
         }
       }
