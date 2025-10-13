@@ -475,7 +475,6 @@ class Mojo::Content extends Mojo::EventEmitter {
     $self->{post_buffer} = (mutable string)($self->{post_buffer} . $chunk);
     $self->{gz} = $self->{gz} // &_new_compress_raw_zlib_inflate;
     my $gz     = $self->{gz};
-    my $post_buffer_ref = [$self->{post_buffer}];
     my $out = (mutable string)copy "";
     my $status = &_inflate($gz, $self->{post_buffer}, $out);
     if (length $out) {
