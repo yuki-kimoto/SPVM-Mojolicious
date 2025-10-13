@@ -309,17 +309,16 @@ class Mojo::Headers {
   
   method links : Hash of Hash of string () {
     
-    my $header = $self->link // "";
+    my $header = (mutable string)copy($self->link // "");
     my $data   = (Hash of Hash of string)Hash->new;
     while (1) {
-      if (my $r = Re->s(my $_ = [$header], "^[,\s]*<(.+?)>", "")) {
-        $header = $_->[0];
+      if (my $r = Re->s($header, "^[,\s]*<(.+?)>", "")) {
         
         my $m = $r->match;
         my $target = $m->cap1;
         my $params_and_header = Mojo::Util->header_params($header);
         my $params = (Hash)$params_and_header->[0];
-        $header = (string)$params_and_header->[1];
+        $header = (mutable string)$params_and_header->[1];
         
         if (my $rel = $params->{"rel"}->(string)) {
           unless ($data->get($rel)) {
