@@ -74,14 +74,14 @@ class Mojo::UserAgent::CookieJar {
     
     Sort->sort_string_asc($keys);
     
-    my $all_cookies_list = List->new(new Mojo::Cookie::Response[0]);
+    my $all_cookies_list = (List of Mojo::Cookie::Response)List->new(new Mojo::Cookie::Response[0]);
     
     for my $key (@$keys) {
       my $jar = $jar->{$key};
       $all_cookies_list->push_($jar);
     }
     
-    return (Mojo::Cookie::Response[])$all_cookies_list->to_array;
+    return $all_cookies_list->to_array;
   }
   
   method collect : void ($tx : Mojo::Transaction::HTTP) {
@@ -126,7 +126,7 @@ class Mojo::UserAgent::CookieJar {
   
   method find : Mojo::Cookie::Request[] ($url : Mojo::URL) {
     
-    my $found = List->new(new Mojo::Cookie::Request[0]);
+    my $found = (List of Mojo::Cookie::Request)List->new(new Mojo::Cookie::Request[0]);
     my $domain = my $host = Fn->lc($url->ihost);
     my $path   = $url->path->to_abs_string;
     
@@ -172,7 +172,7 @@ class Mojo::UserAgent::CookieJar {
       }
     }
     
-    return $found->to_array->(Mojo::Cookie::Request[]);
+    return $found->to_array;
   }
   
   method prepare : void ($tx : Mojo::Transaction::HTTP) {

@@ -344,7 +344,7 @@ class Mojo::Message extends Mojo::EventEmitter {
   
   method uploads : Mojo::Upload[] () {
     
-    my $uploads = List->new(new Mojo::Upload[0]);
+    my $uploads = (List of Mojo::Upload)List->new(new Mojo::Upload[0]);
     for my $data (@{$self->_parse_formdata(1)}) {
       my $upload = Mojo::Upload->new;
       $upload->set_name($data->(object[])->[0]->(string));
@@ -354,7 +354,7 @@ class Mojo::Message extends Mojo::EventEmitter {
       $uploads->push($upload);
     }
     
-    return $uploads->to_array->(Mojo::Upload[]);
+    return $uploads->to_array;
   }
   
   private method _parse_formdata : object[] ($upload : int = 0) {
