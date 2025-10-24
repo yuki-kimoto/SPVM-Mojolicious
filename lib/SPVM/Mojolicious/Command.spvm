@@ -20,7 +20,7 @@ class Mojolicious::Command {
   
   has quiet : rw byte;
   
-  has template : rw object[];
+  has template : rw Hash;
   
   has usage : rw string;
   
@@ -42,7 +42,7 @@ class Mojolicious::Command {
     
     $self->{description} = "No description";
     
-    $self->{template} = {vars => 1};
+    $self->{template} = Hash->new({vars => 1});
     
     $self->{usage} = "Usage: APPLICATION\n";
   }
