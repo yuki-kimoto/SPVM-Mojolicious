@@ -9,10 +9,24 @@ class Mojolicious::Command::Morbo extends Mojolicious::Command {
   use Fn;
   use Sys;
   
-  has usage : rw string
-    get {
-      unless (exists $self->{usage}) {
-        $self->{usage} = <<'EOS';
+  # Class Methods
+  static method new : Mojolicious::Command::Morbo () {
+    
+    my $self = new Mojolicious::Command::Morbo;
+    
+    $self->init;
+    
+    return $self;
+  }
+  
+  # Instance Methods
+  protected method init : void () {
+    
+    $self->SUPER::init;
+    
+    $self->{description} = "Morbo HTTP and WebSocket development server";
+    
+    $self->{usage} = <<'EOS';
 Usage: morbo [OPTIONS] [APPLICATION]
 
   ./myapp.spvm morbo
@@ -39,28 +53,6 @@ Options:
                                  directory
 
 EOS
-      }
-      
-      return $self->{usage};
-    }
-  ;
-  
-  # Class Methods
-  static method new : Mojolicious::Command::Morbo () {
-    
-    my $self = new Mojolicious::Command::Morbo;
-    
-    $self->init;
-    
-    return $self;
-  }
-  
-  # Instance Methods
-  protected method init : void () {
-    
-    $self->SUPER::init;
-    
-    $self->{description} = "Morbo HTTP and WebSocket development server";
   }
   
   method build_server : Mojo::Server::Morbo ($args : string[] = undef) {

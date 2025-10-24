@@ -8,10 +8,24 @@ class Mojolicious::Command::Daemon extends Mojolicious::Command {
   use Mojo::Util;
   use Fn;
   
-  has usage : rw string
-    get {
-      unless (exists $self->{usage}) {
-        $self->{usage} = <<'EOS';
+  # Class Methods
+  static method new : Mojolicious::Command::Daemon () {
+    
+    my $self = new Mojolicious::Command::Daemon;
+    
+    $self->init;
+    
+    return $self;
+  }
+  
+  # Instance Methods
+  protected method init : void () {
+    
+    $self->SUPER::init;
+    
+    $self->{description} = "Start application with HTTP and WebSocket server";
+    
+    $self->{usage} = <<'EOS';
 Usage: APPLICATION daemon [OPTIONS]
 
   ./myapp.spvm daemon
@@ -49,28 +63,6 @@ Options:
                                        keep-alive connection, defaults to 100
 
 EOS
-      }
-      
-      return $self->{usage};
-    }
-  ;
-  
-  # Class Methods
-  static method new : Mojolicious::Command::Daemon () {
-    
-    my $self = new Mojolicious::Command::Daemon;
-    
-    $self->init;
-    
-    return $self;
-  }
-  
-  # Instance Methods
-  protected method init : void () {
-    
-    $self->SUPER::init;
-    
-    $self->{description} = "Start application with HTTP and WebSocket server";
   }
   
   method build_server : Mojo::Server::Daemon ($args : string[] = undef) {

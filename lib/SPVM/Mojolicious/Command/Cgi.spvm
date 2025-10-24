@@ -8,28 +8,7 @@ class Mojolicious::Command::Cgi extends Mojolicious::Command {
   use Mojo::Util;
   use Fn;
   
-  has usage : rw string
-    get {
-      unless (exists $self->{usage}) {
-        $self->{usage} = <<'EOS';
-Usage: APPLICATION cgi [OPTIONS]
-
-  ./myapp.spvm cgi
-
-Options:
-  -h, --help          Show this summary of available options
-      --home <path>   Path to home directory of your application, defaults to
-                      the value of MOJO_HOME or auto-detection
-  -m, --mode <name>   Operating mode for your application, defaults to the
-                      value of MOJO_MODE/PLACK_ENV or "development"
-      --nph           Enable non-parsed-header mode
-
-EOS
-      }
-      
-      return $self->{usage};
-    }
-  ;
+  has usage : rw string;
   
   # Class Methods
   static method new : Mojolicious::Command::Cgi () {
@@ -47,6 +26,21 @@ EOS
     $self->SUPER::init;
     
     $self->{description} = "Start application with CGI";
+    
+    $self->{usage} = <<'EOS';
+Usage: APPLICATION cgi [OPTIONS]
+
+  ./myapp.spvm cgi
+
+Options:
+  -h, --help          Show this summary of available options
+      --home <path>   Path to home directory of your application, defaults to
+                      the value of MOJO_HOME or auto-detection
+  -m, --mode <name>   Operating mode for your application, defaults to the
+                      value of MOJO_MODE/PLACK_ENV or "development"
+      --nph           Enable non-parsed-header mode
+
+EOS
   }
   
   method run : void ($args : string[]) {
