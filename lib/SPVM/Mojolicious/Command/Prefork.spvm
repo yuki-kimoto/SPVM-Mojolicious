@@ -73,6 +73,22 @@ EOS
     }
   ;
   
+  # Class Methods
+  static method new : Mojolicious::Command::Prefork () {
+    
+    my $self = new Mojolicious::Command::Prefork;
+    
+    $self->init;
+    
+    return $self;
+  }
+  
+  # Instance Methods
+  protected method init : void () {
+    
+    $self->SUPER::init;
+  }
+  
   method build_server : Mojo::Server::Prefork ($args : string[] = undef) {
     
     my $values_h = Hash->new({

@@ -40,6 +40,22 @@ EOS
     }
   ;
   
+  # Class Methods
+  static method new : Mojolicious::Command::Cgi () {
+    
+    my $self = new Mojolicious::Command::Cgi;
+    
+    $self->init;
+    
+    return $self;
+  }
+  
+  # Instance Methods
+  protected method init : void () {
+    
+    $self->SUPER::init;
+  }
+  
   method run : void ($args : string[]) {
     
     my $values_h = Hash->new({

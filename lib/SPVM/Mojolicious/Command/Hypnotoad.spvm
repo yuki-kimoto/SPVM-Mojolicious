@@ -39,6 +39,22 @@ EOS
     }
   ;
   
+  # Class Methods
+  static method new : Mojolicious::Command::Hypnotoad () {
+    
+    my $self = new Mojolicious::Command::Hypnotoad;
+    
+    $self->init;
+    
+    return $self;
+  }
+  
+  # Instance Methods
+  protected method init : void () {
+    
+    $self->SUPER::init;
+  }
+  
   method build_server : Mojo::Server::Hypnotoad ($args : string[] = undef) {
     
     my $values_h = Hash->new;
