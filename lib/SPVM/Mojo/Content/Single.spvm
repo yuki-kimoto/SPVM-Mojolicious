@@ -29,6 +29,7 @@ class Mojo::Content::Single extends Mojo::Content {
     return $self;
   }
   
+  # Instance Methods
   protected method init : void ($options : object[] = undef) {
     
     $self->SUPER::init;
@@ -46,7 +47,6 @@ class Mojo::Content::Single extends Mojo::Content {
     $self->{asset} = $asset;
   }
   
-  # Instance Methods
   method body_contains : int ($chunk : string) {
     
     return $self->asset->contains($chunk) >= 0;
