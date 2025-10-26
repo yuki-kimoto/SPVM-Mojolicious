@@ -8,7 +8,7 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
   use Mojo::Cache;
   use Mojolicious::Routes::Callback::Condition;
   use Mojo::DynamicMethods;
-  use Mojo::DynamicMethods::Callback;
+  use Mojo::Callback;
   use Regex;
   use Mojolicious::Controller;
   
@@ -20,7 +20,7 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
   
   has conditions : rw Hash of Mojolicious::Routes::Callback::Condition;
   
-  has shortcuts : rw Hash of Mojo::DynamicMethods::Callback;
+  has shortcuts : rw Hash of Mojo::Callback;
   
   has types : rw Hash of string|Regex|string[]|Regex[]|object[];
   
@@ -69,7 +69,7 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
   }
   
   # Instance Methods
-  method dynamic_methods : Hash of Hash of Mojo::DynamicMethods::Callback () {
+  method dynamic_methods : Hash of Hash of Mojo::Callback () {
     return $self->shortcuts;
   }
   
@@ -78,7 +78,7 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     $self->conditions->set($name, $cb);
   }
   
-  method add_shortcut : void ($name : string, $cb : Mojo::DynamicMethods::Callback) {
+  method add_shortcut : void ($name : string, $cb : Mojo::Callback) {
     $self->conditions->set($name, $cb);
   }
   
