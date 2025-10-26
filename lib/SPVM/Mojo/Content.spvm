@@ -26,35 +26,11 @@ class Mojo::Content extends Mojo::EventEmitter {
   
   has skip_body : rw byte;
   
-  has headers : rw Mojo::Headers
-    get {
-      unless (exists $self->{headers}) {
-        $self->{headers} = Mojo::Headers->new;
-      }
-      
-      return $self->{headers};
-    }
-  ;
+  has headers : rw Mojo::Headers;
   
-  has max_buffer_size : rw int
-    get {
-      unless (exists $self->{max_buffer_size}) {
-        $self->{max_buffer_size} = length (my $_ = Sys->env("SPVM_MOJO_MAX_BUFFER_SIZE")) ? (int)$_ : 262144;
-      }
-      
-      return $self->{max_buffer_size};
-    }
-  ;
+  has max_buffer_size : rw int;
   
-  has max_leftover_size : rw int
-    get {
-      unless (exists $self->{max_leftover_size}) {
-        $self->{max_leftover_size} = length (my $_ = Sys->env("SPVM_MOJO_MAX_BUFFER_SIZE")) ? (int)$_ : 262144;
-      }
-      
-      return $self->{max_leftover_size};
-    }
-  ;
+  has max_leftover_size : rw int;
   
   # Undocumented Fields
   has body_buffer : string;
@@ -128,6 +104,11 @@ class Mojo::Content extends Mojo::EventEmitter {
     
     $self->{pre_buffer} = (mutable string)copy "";
     
+    $self->{headers} = Mojo::Headers->new;
+    
+    $self->{max_buffer_size} = length (my $_ = Sys->env("SPVM_MOJO_MAX_BUFFER_SIZE")) ? (int)$_ : 262144;
+    
+    $self->{max_leftover_size} = length (my $_ = Sys->env("SPVM_MOJO_MAX_BUFFER_SIZE")) ? (int)$_ : 262144;
   }
   
   method body_contains : int ($chunk : string) { die "Not impelmented"; }
