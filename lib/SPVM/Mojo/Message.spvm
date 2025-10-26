@@ -19,45 +19,13 @@ class Mojo::Message extends Mojo::EventEmitter {
   interface Stringable;
   
   # Fields
-  has content : rw Mojo::Content
-    get {
-      unless (exists $self->{content}) {
-        $self->{content} = Mojo::Content::Single->new;
-      }
-      
-      return $self->{content};
-    }
-  ;
+  has content : rw Mojo::Content;
   
-  has max_line_size : rw int
-    get {
-      unless (exists $self->{max_line_size}) {
-        $self->{max_line_size} = length(my $_ = Sys->env("SPVM_MOJO_MAX_LINE_SIZE")) ? (int)$_ : 8192;
-      }
-      
-      return $self->{max_line_size};
-    }
-  ;
+  has max_line_size : rw int;
   
-  has max_message_size : rw int
-    get {
-      unless (exists $self->{max_message_size}) {
-        $self->{max_message_size} = length(my $_ = Sys->env("SPVM_MOJO_MAX_MESSAGE_SIZE")) ? (int)$_ : 16777216;
-      }
-      
-      return $self->{max_message_size};
-    }  
-  ;
+  has max_message_size : rw int;
   
-  has version : rw string
-    get {
-      unless (exists $self->{version}) {
-        $self->{version} = "1.1";
-      }
-      
-      return $self->{version};
-    }
-  ;
+  has version : rw string;
   
   # Undocumented Fields
   has state : string;
@@ -87,6 +55,14 @@ class Mojo::Message extends Mojo::EventEmitter {
     $self->{_cache} = Hash->new;
     
     $self->{buffer} = (mutable string)copy "";
+    
+    $self->{content} = Mojo::Content::Single->new;
+    
+    $self->{max_line_size} = length(my $_ = Sys->env("SPVM_MOJO_MAX_LINE_SIZE")) ? (int)$_ : 8192;
+    
+    $self->{max_message_size} = length(my $_ = Sys->env("SPVM_MOJO_MAX_MESSAGE_SIZE")) ? (int)$_ : 16777216;
+    
+    $self->{version} = "1.1";
   }
   
   method body : string () {

@@ -99,10 +99,17 @@ class Mojo::Message::Request extends Mojo::Message {
     
     my $self = new Mojo::Message::Request;
     
+    $self->init;
+    
     return $self;
   }
   
   # Instance Methods
+  protected method init : void () {
+    
+    $self->SUPER::init;
+  }
+  
   method clone : Mojo::Message::Request () {
     
     # Dynamic requests cannot be cloned
