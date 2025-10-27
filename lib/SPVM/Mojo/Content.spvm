@@ -33,8 +33,6 @@ class Mojo::Content extends Mojo::EventEmitter {
   has max_leftover_size : rw int;
   
   # Undocumented Fields
-  has body_buffer : string;
-  
   has eof : byte;
   
   has state : string;
@@ -46,6 +44,8 @@ class Mojo::Content extends Mojo::EventEmitter {
   has buffer : StringBuffer;
   
   has header_buffer : StringBuffer;
+  
+  has body_buffer : StringBuffer;
   
   has pre_buffer : mutable string;
   
@@ -146,17 +146,17 @@ class Mojo::Content extends Mojo::EventEmitter {
   method generate_body_chunk : string ($offset : int) {
     
     unless ($self->{body_buffer}) {
-      $self->{body_buffer} = "";
+      $self->{body_buffer} = StringBuffer->new;
     }
     
-    unless (length $self->{body_buffer}) {
+    unless ($self->{body_buffer}->length) {
       $self->emit(drain => $offset);
     }
     
-    if (length $self->{body_buffer}) {
+    if ($self->{body_buffer}->length) {
       my $body_buffer = $self->{body_buffer};
       $self->{body_buffer} = undef;
-      return $body_buffer;
+      return $body_buffer->get_string;
     }
     
     if ($self->{eof}) {
@@ -362,7 +362,7 @@ class Mojo::Content extends Mojo::EventEmitter {
     $self->{dynamic} = 1;
     
     if ($chunk) {
-      $self->{body_buffer} .= $chunk;
+      $self->{body_buffer}->push($chunk);
     }
     
     if ($cb) {
@@ -385,7 +385,7 @@ class Mojo::Content extends Mojo::EventEmitter {
     $self->{dynamic} = 1;
     
     if ($chunk) {
-      $self->{body_buffer} .= $self->_build_chunk($chunk);
+      $self->{body_buffer}->push($self->_build_chunk($chunk));
     }
     
     if ($cb) {
