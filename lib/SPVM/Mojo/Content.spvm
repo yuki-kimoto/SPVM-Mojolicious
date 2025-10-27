@@ -41,17 +41,17 @@ class Mojo::Content extends Mojo::EventEmitter {
   
   has dynamic : byte;
   
-  has header_buffer : StringBuffer;
-  
   has limit : byte;
   
   has buffer : StringBuffer;
   
-  has real_size : int;
+  has header_buffer : StringBuffer;
   
   has pre_buffer : mutable string;
   
   has post_buffer : StringBuffer;
+  
+  has real_size : int;
   
   has chunk_state : string;
   
