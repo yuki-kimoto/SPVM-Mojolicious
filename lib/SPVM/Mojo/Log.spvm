@@ -29,23 +29,7 @@ class Mojo::Log extends Mojo::EventEmitter {
   }
   
   # Fields
-  has format : rw Mojo::Log::Callback::Format
-    get {
-      
-      my $format = $self->{format};
-      
-      unless ($format) {
-        $format = [$this : Mojo::Log = $self] method : string ($time : double, $level : string, $message : string) {
-          return $this->_default($time, $level, $message);
-        };
-        $self->{format} = $format;
-      }
-      
-      return $format;
-      
-      
-    }
-  ;
+  has format : rw Mojo::Log::Callback::Format;
   
   has handle : rw IO::File
     get {
@@ -100,6 +84,10 @@ class Mojo::Log extends Mojo::EventEmitter {
     if (length (my $_ = Sys->env("MOJO_LOG_SHORT"))) {
       $self->{short} = (byte)$_;
     }
+    
+    $self->{format} = [$this : Mojo::Log = $self] method : string ($time : double, $level : string, $message : string) {
+      return $this->_default($time, $level, $message);
+    };
     
     return $self;
   }
