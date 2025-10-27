@@ -45,7 +45,7 @@ class Mojo::Content extends Mojo::EventEmitter {
   
   has limit : byte;
   
-  has buffer : string;
+  has buffer : StringBuffer;
   
   has real_size : int;
   
@@ -100,7 +100,7 @@ class Mojo::Content extends Mojo::EventEmitter {
       $self->{max_leftover_size} = 262144;
     }
     
-    $self->{buffer} = (mutable string)copy "";
+    $self->{buffer} = StringBuffer->new;
     
     $self->{pre_buffer} = (mutable string)copy "";
     
@@ -254,7 +254,7 @@ class Mojo::Content extends Mojo::EventEmitter {
   
   method leftovers : string () {
     
-    return $self->{buffer};
+    return $self->{buffer}->get_string;
   }
   
   method parse : Mojo::Content ($chunk : string) {
@@ -278,9 +278,9 @@ class Mojo::Content extends Mojo::EventEmitter {
     # Not chunked, pass through to second buffer
     else {
       $self->{real_size} += length $self->{pre_buffer};
-      my $limit = $self->is_finished && length($self->{buffer}) > $self->max_leftover_size;
+      my $limit = $self->is_finished && $self->{buffer}->length > $self->max_leftover_size;
       unless ($limit) {
-        $self->{buffer} .= $self->{pre_buffer};
+        $self->{buffer}->push($self->{pre_buffer});
         $self->{pre_buffer} = new_string_len 0;
       }
     }
@@ -304,9 +304,9 @@ class Mojo::Content extends Mojo::EventEmitter {
     }
     
     if ($self->is_chunked || $self->relaxed) {
-      $self->_decompress($self->{buffer});
-      $self->{size} += length $self->{buffer};
-      $self->{buffer} = "";
+      $self->_decompress($self->{buffer}->get_string);
+      $self->{size} += $self->{buffer}->length;
+      $self->{buffer} = StringBuffer->new;
       return $self;
     }
     
@@ -315,13 +315,12 @@ class Mojo::Content extends Mojo::EventEmitter {
     eval { $len = Fn->to_int($content_length); }
     
     if ((my $need = ($len - $self->{size})) > 0) {
-      my $len   = length $self->{buffer};
+      my $len   = $self->{buffer}->length;
       if ($need > $len) {
         $need = $len;
       }
       
-      my $chunk = Fn->substr(my $ref = [$self->{buffer}], 0, $need, "");
-      $self->{buffer} = $ref->[0];
+      my $chunk = $self->{buffer}->substr(0, $need, "");
       
       $self->_decompress($chunk);
       $self->{size} += length $chunk;
@@ -546,7 +545,7 @@ class Mojo::Content extends Mojo::EventEmitter {
         $len = $self->{chunk_len};
       }
       
-      $self->{buffer} .= Fn->substr($self->{pre_buffer}, 0, $len, "");
+      $self->{buffer}->push(Fn->substr($self->{pre_buffer}, 0, $len, ""));
       $self->{real_size} += $len;
       $self->{chunk_len} -= $len;
     }
@@ -578,7 +577,7 @@ class Mojo::Content extends Mojo::EventEmitter {
     $self->{chunk_state} = "finished";
     
     # Take care of leftover and replace Transfer-Encoding with Content-Length
-    $self->{buffer} .= $headers->leftovers;
+    $self->{buffer}->push($headers->leftovers);
     $headers->remove("Transfer-Encoding");
     unless ($headers->content_length) {
       $headers->set_content_length($self->{real_size});
