@@ -51,7 +51,7 @@ class Mojo::Content extends Mojo::EventEmitter {
   
   has pre_buffer : mutable string;
   
-  has post_buffer : mutable string;
+  has post_buffer : StringBuffer;
   
   has chunk_state : string;
   
@@ -452,11 +452,11 @@ class Mojo::Content extends Mojo::EventEmitter {
     }
     
     # Decompress
-    $self->{post_buffer} = (mutable string)($self->{post_buffer} . $chunk);
+    $self->{post_buffer}->push($chunk);
     $self->{gz} = $self->{gz} // &_new_compress_raw_zlib_inflate;
     my $gz     = $self->{gz};
     my $out = (mutable string)copy "";
-    my $status = &_inflate($gz, $self->{post_buffer}, $out);
+    my $status = &_inflate($gz, (mutable string)$self->{post_buffer}->get_string, $out);
     if (length $out) {
       $self->emit(read => $out) ;
     }
@@ -468,7 +468,7 @@ class Mojo::Content extends Mojo::EventEmitter {
     }
     
     # Check buffer size
-    if (length $self->{post_buffer} > $self->max_buffer_size) {
+    if ($self->{post_buffer}->length > $self->max_buffer_size) {
       $self->{state} = "finished";
       $self->{limit} = 1;
     }
