@@ -41,7 +41,7 @@ class Mojo::Content extends Mojo::EventEmitter {
   
   has dynamic : byte;
   
-  has header_buffer : string;
+  has header_buffer : StringBuffer;
   
   has limit : byte;
   
@@ -184,11 +184,11 @@ class Mojo::Content extends Mojo::EventEmitter {
     
     my $header_buffer = $self->{header_buffer};
     
-    my $header_buffer_length = length $header_buffer;
+    my $header_buffer_length = $header_buffer->length;
     
     my $max = ($header_buffer_length <= 131072) ? $header_buffer_length : 131072;
     
-    my $chunk = Fn->substr($header_buffer, $offset, $max - $offset);
+    my $chunk = $header_buffer->substr($offset, $max - $offset);
     
     return $chunk;
   }
@@ -197,7 +197,7 @@ class Mojo::Content extends Mojo::EventEmitter {
     
     $self->_headers;
     
-    return length $self->{header_buffer};
+    return $self->{header_buffer}->length;
   }
   
   method headers_contain : int ($chunk : string) {
@@ -206,7 +206,7 @@ class Mojo::Content extends Mojo::EventEmitter {
     
     my $header_buffer = $self->{header_buffer};
     
-    return Fn->index($header_buffer, $chunk) >= 0;
+    return $header_buffer->index($chunk) >= 0;
   }
   
   method is_chunked : int () {
@@ -510,7 +510,8 @@ class Mojo::Content extends Mojo::EventEmitter {
     
     my $headers = $self->headers->to_string;
     
-    $self->{header_buffer} = $headers ? "$headers\x0d\x0a\x0d\x0a" : "\x0d\x0a";
+    $self->{header_buffer} = StringBuffer->new;
+    $self->{header_buffer}->push($headers ? "$headers\x0d\x0a\x0d\x0a" : "\x0d\x0a");
   }
   
   private method _parse_chunked : void () {
