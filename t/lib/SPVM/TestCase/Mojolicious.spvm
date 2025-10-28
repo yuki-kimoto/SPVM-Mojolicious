@@ -8,8 +8,13 @@ class TestCase::Mojolicious {
   use Mojolicious::Lite;
   use Mojolicious::Plugin;
   use Mojolicious::Plugins;
+  use Mojolicious::Lite;
   
   static method test : int () {
+    
+    my $app = Mojolicious::Lite->new;
+    
+    
     
     return 1;
   }

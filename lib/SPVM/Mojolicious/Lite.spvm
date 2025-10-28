@@ -20,6 +20,10 @@ class Mojolicious::Lite extends Mojolicious {
   # Class Method
   static method new : Mojolicious::Lite () {
     
+    my $self = new Mojolicious::Lite;
+    
+    $self->SUPER::init;
+    
     my $home = FindBin->Bin;
     
     my $exe = FindBin->Script;
@@ -28,18 +32,16 @@ class Mojolicious::Lite extends Mojolicious {
     
     Re->s((mutable string)$moniker, "\.(pl|pm|t)$", "");
     
-    my $app = new Mojolicious::Lite;
+    $self->set_moniker($moniker);
     
-    $app->set_moniker($moniker);
-    
-    my $routes = $app->routes;
+    my $routes = $self->routes;
     $routes->set_namespaces(new string[0]);
     
-    $app->{routes} = $routes;
+    $self->{routes} = $routes;
     
-    $app->{root} = $routes;
+    $self->{root} = $routes;
     
-    return $app;
+    return $self;
   }
   
   # Instance Methods
