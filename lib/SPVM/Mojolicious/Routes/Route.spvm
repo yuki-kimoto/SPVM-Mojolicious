@@ -149,12 +149,17 @@ class Mojolicious::Routes::Route {
     
     my $self = new Mojolicious::Routes::Route;
     
-    $self->{children} = new Mojolicious::Routes::Route[0];
+    $self->init;
     
     return $self;
   }
   
   # Instance Methods
+  protected method init : void ($options : object[] = undef) {
+    
+    $self->{children} = new Mojolicious::Routes::Route[0];
+  }
+  
   method any : Mojolicious::Routes::Route ($args : object...) {
     
     my $methods = (string[])undef;

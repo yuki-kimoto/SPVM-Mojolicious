@@ -53,6 +53,12 @@ class Mojolicious::Routes::Pattern {
     
     $self->{wildcard_start} = "#";
     
+    $self->{placeholders} = new string[0];
+    
+    $self->{constraints} = Hash->new;
+    
+    $self->{defaults} = Hash->new;
+    
     return $self;
   }
   

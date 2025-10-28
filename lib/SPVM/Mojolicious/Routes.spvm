@@ -31,16 +31,7 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     
     my $self = new Mojolicious::Routes;
     
-    $self->{cache} = Mojo::Cache->new;
-    
-    $self->{conditions} = Hash->new;
-    
-    $self->{shortcuts} = Hash->new;
-    
-    $self->{types} = Hash->new;
-    $self->{types}->set(num => [Regex->new("[0-9]+")]);
-    
-    $self->{namespaces} = new string[0];
+    $self->init;
     
     return $self;
   }
@@ -69,6 +60,23 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
   }
   
   # Instance Methods
+  protected method init : void ($options : object[] = undef) {
+    
+    $self->SUPER::init;
+    
+    $self->{cache} = Mojo::Cache->new;
+    
+    $self->{conditions} = Hash->new;
+    
+    $self->{shortcuts} = Hash->new;
+    
+    $self->{types} = Hash->new;
+    $self->{types}->set(num => [Regex->new("[0-9]+")]);
+    
+    $self->{namespaces} = new string[0];
+    
+  }
+  
   method dynamic_methods : Hash of Hash of Mojo::Callback () {
     return $self->shortcuts;
   }
