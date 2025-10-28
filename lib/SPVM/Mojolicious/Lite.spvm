@@ -15,6 +15,8 @@ class Mojolicious::Lite extends Mojolicious {
   
   has root : rw Mojolicious::Routes;
   
+  has data_section : rw string;
+  
   # Class Method
   static method new : Mojolicious::Lite () {
     
