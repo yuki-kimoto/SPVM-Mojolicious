@@ -317,11 +317,11 @@ class Mojolicious::Routes::Route {
     return $self->inline ? 0 : !@{$self->children};
   }
   
-  method parse : void ($args : object...) {
+  method parse : void ($pattern_string : string, $constraints : Hash = undef) {
     
     my $pattern = $self->pattern;
     
-    $pattern->parse($args);
+    $pattern->parse($pattern_string, $constraints);
     
     my $name = (mutable string)copy($pattern->unparsed // "");
     
@@ -472,10 +472,11 @@ class Mojolicious::Routes::Route {
     return $route;
   }
   
-  method _route : Mojolicious::Routes::Route ($pattern : string, $constraints_arg : Hash) {
+  method _route : Mojolicious::Routes::Route ($pattern : string, $constraints : Hash) {
     
     my $r = Mojolicious::Routes::Route->new;
-    $r->parse($pattern, $constraints_arg);
+    
+    $r->parse($pattern, $constraints);
     
     $self->add_child($r);
     

@@ -33,12 +33,12 @@ class Mojolicious::Routes::Pattern {
   has wildcard_start : rw string;
   
   # Class Methods
-  static method new : Mojolicious::Routes::Pattern ($args : object...) {
+  static method new : Mojolicious::Routes::Pattern ($pattern : string = undef, $constrants : Hash = undef) {
     
     my $self = new Mojolicious::Routes::Pattern;
     
-    if (@$args) {
-      $self->parse($args);
+    if ($pattern || $constrants) {
+      $self->parse($pattern, $constrants);
     }
     
     $self->{placeholder_start} = ":";
@@ -149,22 +149,22 @@ class Mojolicious::Routes::Pattern {
     return $captures_h;
   }
 
-  method parse : void ($args : object...) {
-  
-    my $args_list = List->new($args);
+  method parse : void ($pattern : string, $constrants : Hash = undef) {
     
-    my $pattern = (mutable string)copy($args_list->length % 2 ? ($args_list->shift->(string) // "/") : "/");
+    $pattern //= "/";
     
-    Re->s($pattern, ["^/*|/+", "g"], "/");
+    $pattern = copy $pattern;
+    
+    Re->s((mutable string)$pattern, ["^/*|/+", "g"], "/");
     
     if ($pattern eq "/") {
-      $self->set_constraints(Hash->new((object[])$args_list->get(0))) ;
+      $self->set_constraints($constrants->clone) ;
       return;
     }
     
-    Re->s($pattern, "!/$", "");
+    Re->s((mutable string)$pattern, "!/$", "");
     
-    $self->set_constraints(Hash->new((object[])$args_list->get(0)));
+    $self->set_constraints($constrants->clone);
     
     $self->_tokenize($pattern);
   }
