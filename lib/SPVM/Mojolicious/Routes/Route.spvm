@@ -440,6 +440,9 @@ class Mojolicious::Routes::Route {
       $route->set_inline(1);
     }
     else {
+      if ($methods isa string) {
+        $methods = [(string)$methods];
+      }
       $route->set_methods((string[])$methods);
     }
     
