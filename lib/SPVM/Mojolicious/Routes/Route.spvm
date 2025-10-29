@@ -120,25 +120,6 @@ class Mojolicious::Routes::Route {
     }
   ;
   
-  has requires : rw Hash
-    get {
-      unless (exists $self->{requires}) {
-        $self->{requires} = Hash->new;
-      }
-      
-      return $self->{requires};
-    }
-    set {
-      unless ($_) {
-        die "The requires field value must be defined.";
-      }
-      
-      $self->{requires} = $_;
-      
-      $self->root->cache->set_max_keys(0);
-    }
-  ;
-  
   # Undocumented Fields
   has websocket : byte;
   
@@ -387,8 +368,6 @@ class Mojolicious::Routes::Route {
     
     my $args = List->new($args);
     
-    my $conditions = Hash->new;
-    
     my $constraints = Hash->new;
     
     my $defaults = Hash->new;
@@ -406,31 +385,33 @@ class Mojolicious::Routes::Route {
       my $arg = $args->shift;
       
       # First scalar is the pattern
-      if ($arg isa string && !$pattern) { $pattern = (string)$arg; }
-      
+      if ($arg isa string && !$pattern) {
+        $pattern = (string)$arg;
+      }
       # Scalar
-      elsif ($arg isa string && $args->length) { $conditions->set((string)$arg, $args->shift); }
-      
+      elsif ($arg isa string && $args->length) {
+        die "Condition is not supported.";
+      }
       # Last scalar is the route name
-      elsif ($arg isa string) { $name = (string)$arg; }
-      
+      elsif ($arg isa string) {
+        $name = (string)$arg;
+      }
       # Callback
-      elsif ($arg isa Mojo::Callback) { $defaults->set("cb", $arg); }
-      
+      elsif ($arg isa Mojo::Callback) {
+        $defaults->set("cb", $arg);
+      }
       # Defaults
       elsif (is_options $arg) {
-        $defaults = Hash->new(Fn->merge_options($defaults->to_array, (object[])$arg));
+        $defaults = Hash->new(Fn->merge_options($defaults->to_options, (object[])$arg));
       }
       
       # Constraints
       elsif ($arg isa object[]) {
-        $constraints = Hash->new(Fn->merge_options($constraints->to_array, (object[])$arg));
+        $constraints = Hash->new(Fn->merge_options($constraints->to_options, (object[])$arg));
       }
     }
     
     my $route = $self->_route($pattern, $constraints);
-    
-    $route->set_requires($conditions);
     
     $route->to($defaults);
     

@@ -122,20 +122,6 @@ class Mojolicious::Routes::Match {
       return 0;
     }
     
-    # Conditions
-    if (my $over = $r->requires) {
-      my $conditions = $self->{conditions} //= $self->root->conditions;
-      for my $key (@{$over->keys}) {
-        my $condition = $conditions->get($key);
-        unless ($condition) {
-          return 0;
-        }
-        if (!$condition->($r, $c, $captures, $over->get($key))) {
-          return 0;
-        }
-      }
-    }
-    
     # WebSocket
     if ($r->is_websocket && !$options->{"websocket"}->(int)) {
       return 0;
