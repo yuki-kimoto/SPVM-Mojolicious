@@ -10,11 +10,7 @@ class Mojolicious::Routes::Pattern {
   
   has constraints : rw Hash;
   
-  has types : rw Hash;
-  
   has placeholder_start : rw string;
-  
-  has type_start : rw string;
   
   has placeholders : rw string[];
   
@@ -44,15 +40,13 @@ class Mojolicious::Routes::Pattern {
     
     $self->{placeholder_start} = ":";
     
-    $self->{type_start} = ":";
-    
     $self->{quote_end} = ">";
     
     $self->{quote_start} = "<";
     
     $self->{relaxed_start} = "#";
     
-    $self->{wildcard_start} = "#";
+    $self->{wildcard_start} = "*";
     
     $self->{placeholders} = new string[0];
     
@@ -180,8 +174,6 @@ class Mojolicious::Routes::Pattern {
 
     my $constraints = $self->constraints;
     
-    my $types       = $self->types;
-    
     my $defaults    = $self->defaults;
     
     my $block    = my $regex = "";
@@ -216,12 +208,7 @@ class Mojolicious::Routes::Pattern {
       # Placeholder
       else {
         my $value = (string[])$value;
-        if (@$value > 1) {
-          $part = &_compile_req($types->{$value->[1]} // "?!");
-        }
-        else {
-          $part = $type ? $type eq "relaxed" ? "([^/]+)" : "(.+)" : "([^/.]+)";
-        }
+        $part = $type ? $type eq "relaxed" ? "([^/]+)" : "(.+)" : "([^/.]+)";
         
         # Custom regex
         if (my $c = $constraints->{$value->[0]}) { $part = &_compile_req($c); }
@@ -255,7 +242,6 @@ class Mojolicious::Routes::Pattern {
   method _tokenize : void ($pattern : string) {
     
     my $placeholders = StringList->new_ref($self->placeholders);
-    my $type_start   = $self->type_start;
     my $quote_end    = $self->quote_end;
     my $quote_start  = $self->quote_start;
     my $start        = $self->placeholder_start;
@@ -322,23 +308,6 @@ class Mojolicious::Routes::Pattern {
       else {
         $tree->push(["text", $char, undef]);
       }
-    }
-
-    # Placeholder types
-    for (my $i = @$tree - 1; $i >= 0; $i--) {
-      my $token = (object[])$tree->[$i];
-      unless ($token->[0]->(string) eq "placeholder") {
-        next;
-      }
-      
-      if (my $m = Re->m((string)$token->[1], "^(.+)\Q$type_start\E(.+)$")) {
-        $token->[1] = [$m->cap1, $m->cap2, undef];
-      }
-      else {
-        $token->[1] = [$token->[1], undef, undef];
-      }
-      
-      $placeholders->unshift($token->[1]->(object[])->[0]->(string));
     }
     
     $self->set_unparsed($pattern);

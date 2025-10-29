@@ -223,8 +223,6 @@ class Mojolicious::Routes::Route {
     my $children = List->new_ref($self->{children});
     
     $children->push($route);
-    
-    $route->pattern->set_types($self->root->types);
   }
   
   method remove : void () {
