@@ -358,40 +358,13 @@ class Mojolicious::Routes::Route {
     die "TODO";
   }
   
-  method to : void ($args : object...)  {
+  method to : void ($defaults : Hash)  {
     
-    my $pattern = $self->pattern;
+    my $pattern_defaults = $self->pattern->defaults;
     
-    unless (@$args > 0) {
-      die "Too few arguments.";
-    }
-    
-    my $_ = Mojo::Util->_options($args);
-    my $shortcut = $_->[0];
-    my $default_h = Hash->new((object[])$_->[1]);
-    
-    if ($shortcut) {
-      
-      die "TODO";
-
-=pod
-
-      # Application
-      if (ref $shortcut || $shortcut =~ /^[\w:]+$/) { $defaults{app} = $shortcut }
-      
-      # Controller and action
-      elsif ($shortcut =~ /^([\w\-:]+)?\#(\w+)?$/) {
-        $defaults{controller} = $1 if defined $1;
-        $defaults{action}     = $2 if defined $2;
-      }
-
-=cut
-
-    }
-    
-    for my $key (@{$default_h->keys}) {
-      my $value = $default_h->get($key);
-      $pattern->defaults->set($key, $value);
+    for my $key (@{$defaults->keys}) {
+      my $value = $defaults->{$key};
+      $pattern_defaults->{$key} = $value;
     }
   }
   
