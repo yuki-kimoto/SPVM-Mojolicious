@@ -38,8 +38,6 @@ class Mojolicious::Routes::Route {
   # Fields
   has inline : rw byte;
   
-  has partial : rw byte;
-  
   has children : rw Mojolicious::Routes::Route[];
   
   has parent : rw Mojolicious::Routes::Route
@@ -322,7 +320,7 @@ class Mojolicious::Routes::Route {
     for (my $i = 0; $i < $chain->length; $i++) {
       my $_ = $chain->get($i);
       
-      my $pattern_string = $_->pattern->render($values, !@{$_->children} && !$_->partial);
+      my $pattern_string = $_->pattern->render($values, !@{$_->children});
       
       $pattern_strings_list->push($pattern_string);
     }

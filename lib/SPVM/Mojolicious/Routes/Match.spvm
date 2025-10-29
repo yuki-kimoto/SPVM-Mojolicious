@@ -90,8 +90,7 @@ class Mojolicious::Routes::Match {
     
     # Pattern
     my $path = $path_save;
-    my $partial = $r->partial;
-    my $detect  = (my $endpoint = $r->is_endpoint) && !$partial;
+    my $detect  = (my $endpoint = $r->is_endpoint);
     my $captures = $r->pattern->match_partial(my $_ = [$path], $detect);
     $path = $_->[0];
     unless ($captures) {
@@ -129,11 +128,6 @@ class Mojolicious::Routes::Match {
     
     # Partial
     my $empty = !length $path || $path eq "/";
-    if ($partial) {
-      $captures->set(path => $path);
-      $self->set_endpoint($r);
-      $empty = 1;
-    }
     
     my $stack_list = (List of Hash)List->new_ref($self->stack);
     # Endpoint (or intermediate destination)
