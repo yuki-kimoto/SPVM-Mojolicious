@@ -288,7 +288,7 @@ class Mojolicious::Routes::Pattern {
         unless ($spec++) {
           $tree->push(["placeholder", "", undef]);
         }
-        $tree->[-1]->(string[])->[2] = $char eq $relaxed ? "relaxed" : "wildcard";
+        $tree->[-1][2] = $char eq $relaxed ? "relaxed" : "wildcard";
       }
       
       # Slash
@@ -299,12 +299,12 @@ class Mojolicious::Routes::Pattern {
       
       # Placeholder
       elsif ($spec && ++$more) {
-        my $_ = $tree->[-1]->(string[])->[1];
-        $tree->[-1]->(string[])->[1] =  $_ . $char;
+        my $_ = $tree->[-1][1];
+        $tree->[-1][1] =  $_ . $char;
       }
 
       # Text (optimize slash+text and *+text+slash+text)
-      elsif ($tree->[-1]->(string[])->[0] eq "text") {
+      elsif ($tree->[-1][0] eq "text") {
         my $token = $tree->[-1]->(object[]);
         my $_ = $token->[-1]->(string);
         $token->[-1] = $_ . $char;
