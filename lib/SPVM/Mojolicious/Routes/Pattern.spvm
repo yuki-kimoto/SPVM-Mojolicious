@@ -149,7 +149,7 @@ class Mojolicious::Routes::Pattern {
       my $capture = $captures_list->shift;
       
       if ($capture) {
-        $captures_h->set($placeholder, $capture);
+        $captures_h->{$placeholder} = $capture;
       }
     }
     
