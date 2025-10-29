@@ -6,25 +6,25 @@ class Mojolicious::Routes::Pattern {
   use Mojolicious::Types;
   
   # Fields
-  has defaults : rw Hash;
+  has unparsed : rw string;
   
   has constraints : rw Hash;
   
-  has placeholder_start : rw string;
-  
-  has placeholders : rw string[];
-  
-  has quote_end : rw string;
-  
-  has quote_start : rw string;
-  
   has regex : rw Regex;
   
-  has unparsed : rw string;
+  has placeholder_start : rw string;
   
   has relaxed_start : rw string;
   
   has wildcard_start : rw string;
+  
+  has quote_start : rw string;
+  
+  has quote_end : rw string;
+  
+  has placeholders : rw string[];
+  
+  has defaults : rw Hash;
   
   # Undocumented Fields
   has tree : rw List of string[];
@@ -101,6 +101,76 @@ class Mojolicious::Routes::Pattern {
     return !$path || $path eq "/" ? $captures : undef;
   }
   
+  method parse : void ($pattern : string, $constrants : Hash = undef) {
+    
+    $pattern //= "/";
+    
+    $pattern = copy $pattern;
+    
+    Re->s((mutable string)$pattern, ["^/*|/+", "g"], "/");
+    
+    if ($pattern eq "/") {
+      $self->set_constraints($constrants->clone) ;
+      return;
+    }
+    
+    Re->s((mutable string)$pattern, "!/$", "");
+    
+    $self->set_constraints($constrants->clone);
+    
+    $self->_tokenize($pattern);
+  }
+  
+  method render : string ($values : Hash, $endpoint : int) {
+    
+    # Placeholders can only be optional without a format
+    my $optional = !(my $format = $values->{"format"}->(string));
+    
+    my $str = "";
+    my $tree = $self->tree;
+    for (my $i = @$tree - 1; $i >= 0; $i--) {
+      my $token = $tree->[$i];
+      
+      my $op = $token->[0];
+      my $value = $token->[1];
+      
+      my $part = "";
+      
+      # Text
+      if ($op eq "text") {
+        $part = $value;
+        $optional = 0;
+      }
+      
+      # Slash
+      elsif ($op eq "slash") {
+        unless ($optional) {
+          $part = "/";
+        }
+      }
+      
+      # Placeholder
+      else {
+        my $name = $value;
+        my $default = $self->defaults->{$name}->(string);
+        
+        $part = $values->{$name}->(string) // $default // "";
+        
+        if (!$default || ($default ne $part)) {
+          $optional = 0;
+        }
+        elsif ($optional) {
+          $part = "";
+        }
+      }
+      
+      $str = $part . $str;
+    }
+    
+    # Format can be optional
+    return $endpoint && $format ? "$str.$format" : $str;
+  }
+  
   method match_partial : Hash ($pathref : string[], $detect : int = 0) {
     
     # Compile on demand
@@ -148,26 +218,6 @@ class Mojolicious::Routes::Pattern {
     }
     
     return $captures_h;
-  }
-
-  method parse : void ($pattern : string, $constrants : Hash = undef) {
-    
-    $pattern //= "/";
-    
-    $pattern = copy $pattern;
-    
-    Re->s((mutable string)$pattern, ["^/*|/+", "g"], "/");
-    
-    if ($pattern eq "/") {
-      $self->set_constraints($constrants->clone) ;
-      return;
-    }
-    
-    Re->s((mutable string)$pattern, "!/$", "");
-    
-    $self->set_constraints($constrants->clone);
-    
-    $self->_tokenize($pattern);
   }
   
   private method _compile : void ($detect : int) {
@@ -238,7 +288,7 @@ class Mojolicious::Routes::Pattern {
     $self->set_regex(Regex->new($regex));
   }
   
-  method _tokenize : void ($pattern : string) {
+  private method _tokenize : void ($pattern : string) {
     
     my $placeholders = StringList->new_ref($self->placeholders);
     my $quote_end    = $self->quote_end;
@@ -310,54 +360,4 @@ class Mojolicious::Routes::Pattern {
     $self->set_tree($tree);
   }
   
-  method render : string ($values : Hash, $endpoint : int) {
-    
-    # Placeholders can only be optional without a format
-    my $optional = !(my $format = $values->{"format"}->(string));
-    
-    my $str = "";
-    my $tree = $self->tree;
-    for (my $i = @$tree - 1; $i >= 0; $i--) {
-      my $token = $tree->[$i];
-      
-      my $op = $token->[0];
-      my $value = $token->[1];
-      
-      my $part = "";
-      
-      # Text
-      if ($op eq "text") {
-        $part = $value;
-        $optional = 0;
-      }
-      
-      # Slash
-      elsif ($op eq "slash") {
-        unless ($optional) {
-          $part = "/";
-        }
-      }
-      
-      # Placeholder
-      else {
-        my $name = $value;
-        my $default = $self->defaults->{$name}->(string);
-        
-        $part = $values->{$name}->(string) // $default // "";
-        
-        if (!$default || ($default ne $part)) {
-          $optional = 0;
-        }
-        elsif ($optional) {
-          $part = "";
-        }
-      }
-      
-      $str = $part . $str;
-    }
-    
-    # Format can be optional
-    return $endpoint && $format ? "$str.$format" : $str;
-  }
-
 }

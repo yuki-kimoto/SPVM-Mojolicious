@@ -55,9 +55,7 @@ class Mojolicious::Routes::Match {
     
     # Find endpoint
     else {
-      unless ($route = $self->root->lookup($name)) {
-        return Hash->new({path => $name});
-      }
+      return Hash->new({path => $name});
     }
     
     # Merge values (clear format)
