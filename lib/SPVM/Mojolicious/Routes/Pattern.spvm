@@ -191,7 +191,7 @@ class Mojolicious::Routes::Pattern {
     my $tree = $self->{tree};
     
     for (my $i = @$tree - 1; $i >= 0; $i--) {
-      my $token = (object[])$tree->get($i);
+      my $token = (object[])$tree->[$i];
       
       my $op = (string)$token->[0];
       my $value = $token->[1];
@@ -217,14 +217,14 @@ class Mojolicious::Routes::Pattern {
       else {
         my $value = (string[])$value;
         if (@$value > 1) {
-          $part = &_compile_req($types->get($value->[1]) // "?!");
+          $part = &_compile_req($types->{$value->[1]} // "?!");
         }
         else {
           $part = $type ? $type eq "relaxed" ? "([^/]+)" : "(.+)" : "([^/.]+)";
         }
         
         # Custom regex
-        if (my $c = $constraints->get($value->[0])) { $part = &_compile_req($c); }
+        if (my $c = $constraints->{$value->[0]}) { $part = &_compile_req($c); }
         
         # Optional placeholder
         if ($defaults->exists($value->[0])) {
@@ -245,7 +245,7 @@ class Mojolicious::Routes::Pattern {
     
     # Format
     if ($detect) {
-      $regex .= &_compile_format($constraints->get("format"), $defaults->exists("format")) ;
+      $regex .= &_compile_format($constraints->{"format"}, $defaults->exists("format")) ;
     }
     
     $self->set_regex(Regex->new($regex));
@@ -288,7 +288,7 @@ class Mojolicious::Routes::Pattern {
         unless ($spec++) {
           $tree->push([(object)"placeholder", "", undef]);
         }
-        $tree->get(@$tree - 1)->(object[])->[2] = $char eq $relaxed ? "relaxed" : "wildcard";
+        $tree->[@$tree - 1]->(object[])->[2] = $char eq $relaxed ? "relaxed" : "wildcard";
       }
       
       # Slash
@@ -299,26 +299,24 @@ class Mojolicious::Routes::Pattern {
       
       # Placeholder
       elsif ($spec && ++$more) {
-        my $_ = $tree->get(@$tree - 1)->(object[])->[1]->(string);
-        $tree->get(@$tree - 1)->(object[])->[1] =  $_ . $char;
+        my $_ = $tree->[@$tree - 1]->(object[])->[1]->(string);
+        $tree->[@$tree - 1]->(object[])->[1] =  $_ . $char;
       }
 
       # Text (optimize slash+text and *+text+slash+text)
-      elsif ($tree->get(@$tree - 1)->(object[])->[0]->(string) eq "text") {
-        
-        my $token = $tree->get(@$tree - 1)->(object[]);
-        
-        my $_ = $token->[@$token - 1]->(string);
-        $token->[@$token - 1] = $_ . $char;
+      elsif ($tree->[-1]->(object[])->[0]->(string) eq "text") {
+        my $token = $tree->[-1]->(object[]);
+        my $_ = $token->[-1]->(string);
+        $token->[-1] = $_ . $char;
       }
-      elsif (!$tree->get(@$tree - 2) && $tree->get(@$tree - 1)->(object[])->[0]->(string) eq "slash") {
+      elsif (!$tree->[@$tree - 2] && $tree->[@$tree - 1]->(object[])->[0]->(string) eq "slash") {
         $tree = List->new(["text", "/$char"]);
       }
-      elsif ($tree->get(@$tree - 2) && $tree->get(@$tree - 2)->(object[])->[0]->(string) eq "text" && $tree->get(@$tree - 1)->(object[])->[0]->(string) eq "slash") {
+      elsif ($tree->[@$tree - 2] && $tree->[@$tree - 2]->(object[])->[0]->(string) eq "text" && $tree->[@$tree - 1]->(object[])->[0]->(string) eq "slash") {
         if (@$tree) {
           $tree->pop;
-          my $_ = $tree->get(@$tree - 1)->(object[])->[@$tree]->(string);
-          my $token = $tree->get(@$tree - 1)->(object[]);
+          my $_ = $tree->[@$tree - 1]->(object[])->[@$tree]->(string);
+          my $token = $tree->[@$tree - 1]->(object[]);
           $token->[@$token - 1] = "$_/$char";
         }
       }
@@ -329,7 +327,7 @@ class Mojolicious::Routes::Pattern {
 
     # Placeholder types
     for (my $i = @$tree - 1; $i >= 0; $i--) {
-      my $token = (object[])$tree->get($i);
+      my $token = (object[])$tree->[$i];
       unless ($token->[0]->(string) eq "placeholder") {
         next;
       }
@@ -357,7 +355,7 @@ class Mojolicious::Routes::Pattern {
     my $str = "";
     my $tree = $self->tree;
     for (my $i = @$tree - 1; $i >= 0; $i--) {
-      my $token = (object[])$tree->get($i);
+      my $token = (object[])$tree->[$i];
       
       my $op = (string)$token->[0];
       my $value = $token->[1];
