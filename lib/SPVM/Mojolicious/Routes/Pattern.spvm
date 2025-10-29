@@ -224,7 +224,7 @@ class Mojolicious::Routes::Pattern {
       
       $block = $part . $block;
     }
-
+    
     # Not rooted with a slash
     if ($block) {
       $regex = $block . $regex;
@@ -236,9 +236,8 @@ class Mojolicious::Routes::Pattern {
     }
     
     $self->set_regex(Regex->new($regex));
-
   }
-
+  
   method _tokenize : void ($pattern : string) {
     
     my $placeholders = StringList->new_ref($self->placeholders);
@@ -323,16 +322,16 @@ class Mojolicious::Routes::Pattern {
     my $str = "";
     my $tree = $self->tree;
     for (my $i = @$tree - 1; $i >= 0; $i--) {
-      my $token = (object[])$tree->[$i];
+      my $token = $tree->[$i];
       
-      my $op = (string)$token->[0];
+      my $op = $token->[0];
       my $value = $token->[1];
       
       my $part = "";
       
       # Text
       if ($op eq "text") {
-        $part = (string)$value;
+        $part = $value;
         $optional = 0;
       }
       
@@ -345,13 +344,17 @@ class Mojolicious::Routes::Pattern {
       
       # Placeholder
       else {
-        my $name    = $value->(object[])->[0]->(string);
+        my $name = $value;
         my $default = $self->defaults->{$name}->(string);
         
         $part = $values->{$name}->(string) // $default // "";
         
-        if    (!$default || ($default ne $part)) { $optional = 0; }
-        elsif ($optional)                                { $part     = ""; }
+        if (!$default || ($default ne $part)) {
+          $optional = 0;
+        }
+        elsif ($optional) {
+          $part = "";
+        }
       }
       
       $str = $part . $str;
