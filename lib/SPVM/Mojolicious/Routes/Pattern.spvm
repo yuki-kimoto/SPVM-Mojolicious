@@ -271,7 +271,7 @@ class Mojolicious::Routes::Pattern {
       # Quoted
       if ($char eq $quote_start) {
         if (++$spec) {
-          $tree->push([(object)"placeholder", "", undef]);
+          $tree->push([(string)"placeholder", "", undef]);
         }
       }
       elsif ($char eq $quote_end)   { $spec = $more = 0; }
@@ -279,32 +279,32 @@ class Mojolicious::Routes::Pattern {
       # Placeholder
       elsif (!$more && $char eq $start) {
         unless ($spec++) {
-          $tree->push([(object)"placeholder", "", undef]);
+          $tree->push([(string)"placeholder", "", undef]);
         }
       }
       
       # Relaxed or wildcard (upgrade when quoted)
       elsif (!$more && ($char eq $relaxed || $char eq $wildcard)) {
         unless ($spec++) {
-          $tree->push([(object)"placeholder", "", undef]);
+          $tree->push([(string)"placeholder", "", undef]);
         }
-        $tree->[-1]->(object[])->[2] = $char eq $relaxed ? "relaxed" : "wildcard";
+        $tree->[-1]->(string[])->[2] = $char eq $relaxed ? "relaxed" : "wildcard";
       }
       
       # Slash
       elsif ($char eq "/") {
-        $tree->push([(object)"slash", undef, undef]);
+        $tree->push([(string)"slash", undef, undef]);
         $spec = $more = 0;
       }
       
       # Placeholder
       elsif ($spec && ++$more) {
-        my $_ = $tree->[-1]->(object[])->[1]->(string);
-        $tree->[-1]->(object[])->[1] =  $_ . $char;
+        my $_ = $tree->[-1]->(string[])->[1];
+        $tree->[-1]->(string[])->[1] =  $_ . $char;
       }
 
       # Text (optimize slash+text and *+text+slash+text)
-      elsif ($tree->[-1]->(object[])->[0]->(string) eq "text") {
+      elsif ($tree->[-1]->(string[])->[0] eq "text") {
         my $token = $tree->[-1]->(object[]);
         my $_ = $token->[-1]->(string);
         $token->[-1] = $_ . $char;
@@ -321,7 +321,7 @@ class Mojolicious::Routes::Pattern {
         }
       }
       else {
-        $tree->push([(object)"text", $char, undef]);
+        $tree->push([(string)"text", $char, undef]);
       }
     }
 
@@ -333,10 +333,10 @@ class Mojolicious::Routes::Pattern {
       }
       
       if (my $m = Re->m((string)$token->[1], "^(.+)\Q$type_start\E(.+)$")) {
-        $token->[1] = [(object)$m->cap1, $m->cap2, undef];
+        $token->[1] = [(string)$m->cap1, $m->cap2, undef];
       }
       else {
-        $token->[1] = [(object)$token->[1], undef, undef];
+        $token->[1] = [(string)$token->[1], undef, undef];
       }
       
       $placeholders->unshift($token->[1]->(object[])->[0]->(string));
