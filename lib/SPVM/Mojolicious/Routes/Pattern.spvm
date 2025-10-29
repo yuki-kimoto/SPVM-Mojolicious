@@ -18,8 +18,6 @@ class Mojolicious::Routes::Pattern {
   
   has placeholders : rw string[];
   
-  has tree : rw object[];
-  
   has quote_end : rw string;
   
   has quote_start : rw string;
@@ -31,6 +29,9 @@ class Mojolicious::Routes::Pattern {
   has relaxed_start : rw string;
   
   has wildcard_start : rw string;
+  
+  # Undocumented Fields
+  has tree : rw List of object[];
   
   # Class Methods
   static method new : Mojolicious::Routes::Pattern ($pattern : string = undef, $constrants : Hash = undef) {
@@ -187,7 +188,7 @@ class Mojolicious::Routes::Pattern {
     
     my $optional = 1;
     
-    my $tree_list = (List of object[])List->new_ref($self->{tree});
+    my $tree_list = $self->{tree};
     
     for (my $i = $tree_list->length - 1; $i >= 0; $i--) {
       my $token = (object[])$tree_list->get($i);
@@ -345,7 +346,7 @@ class Mojolicious::Routes::Pattern {
     
     $self->set_unparsed($pattern);
     
-    $self->set_tree($tree_list->get_array);
+    $self->set_tree($tree_list);
   }
   
   method render : string ($values : Hash, $endpoint : int) {
@@ -354,7 +355,7 @@ class Mojolicious::Routes::Pattern {
     my $optional = !(my $format = $values->{"format"}->(string));
     
     my $str = "";
-    my $tree_list = (List of object[])List->new_ref($self->tree);
+    my $tree_list = $self->tree;
     for (my $i = $tree_list->length - 1; $i >= 0; $i--) {
       my $token = (object[])$tree_list->get($i);
       

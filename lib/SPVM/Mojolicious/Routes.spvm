@@ -49,7 +49,7 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     
     unless ($rendered) {
       unless ($stash->{"mojo.routed"}->(int)) {
-       die "Route without action and nothing to render";
+       die "Route without dispatch and nothing to render";
       }
     }
 
