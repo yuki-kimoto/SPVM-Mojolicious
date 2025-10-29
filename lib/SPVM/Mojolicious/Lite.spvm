@@ -33,7 +33,6 @@ class Mojolicious::Lite extends Mojolicious {
     $self->set_moniker($moniker);
     
     my $routes = $self->routes;
-    $routes->set_namespaces(new string[0]);
     
     $self->{routes} = $routes;
     

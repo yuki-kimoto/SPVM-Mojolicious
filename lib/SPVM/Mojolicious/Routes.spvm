@@ -24,8 +24,6 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
   
   has types : rw Hash of string|Regex|string[]|Regex[]|object[];
   
-  has namespaces : rw string[];
-  
   # Class Methods
   static method new : Mojolicious::Routes () {
     
@@ -72,9 +70,6 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     
     $self->{types} = Hash->new;
     $self->{types}->set(num => [Regex->new("[0-9]+")]);
-    
-    $self->{namespaces} = new string[0];
-    
   }
   
   method dynamic_methods : Hash of Hash of Mojo::Callback () {
