@@ -115,10 +115,6 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     # $self->plugins->emit_chain(around_action => @_);
   }
   
-  method lookup : Mojolicious::Routes ($name : string) {
-    
-  }
-  
   method any : Mojolicious::Routes ($args : object...) {
     
     my $route = $self->SUPER::any($args);
