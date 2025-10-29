@@ -174,26 +174,26 @@ class Mojolicious::Routes::Pattern {
 
     my $constraints = $self->constraints;
     
-    my $defaults    = $self->defaults;
+    my $defaults = $self->defaults;
     
-    my $block    = my $regex = "";
+    my $block = my $regex = "";
     
     my $optional = 1;
     
     my $tree = $self->{tree};
     
     for (my $i = @$tree - 1; $i >= 0; $i--) {
-      my $token = (object[])$tree->[$i];
+      my $token = $tree->[$i];
       
-      my $op = (string)$token->[0];
+      my $op = $token->[0];
       my $value = $token->[1];
-      my $type = (string)$token->[2];
+      my $type = $token->[2];
       
       my $part = "";
       
       # Text
       if ($op eq "text") {
-        $part = "\Q" . (string)$value . "\E";
+        $part = "\Q$value\E";
         $optional = 0;
       }
       
@@ -207,14 +207,14 @@ class Mojolicious::Routes::Pattern {
       
       # Placeholder
       else {
-        my $value = (string[])$value;
+        my $name = $value;
         $part = $type ? $type eq "relaxed" ? "([^/]+)" : "(.+)" : "([^/.]+)";
         
         # Custom regex
-        if (my $c = $constraints->{$value->[0]}) { $part = &_compile_req($c); }
+        if (my $c = $constraints->{$name}) { $part = &_compile_req($c); }
         
         # Optional placeholder
-        if ($defaults->exists($value->[0])) {
+        if ($defaults->exists($name)) {
           $part .= "?";
         }
         else {
@@ -291,7 +291,7 @@ class Mojolicious::Routes::Pattern {
       elsif ($tree->[-1][0] eq "text") {
         $tree->[-1][1] .= $char;
       }
-      elsif (!$tree->[@$tree - 2] && $tree->[-1][0] eq "slash") {
+      elsif (@$tree == 1 && $tree->[-1][0] eq "slash") {
         $tree = (List of string[])List->new(["text", "/$char", undef]);
       }
       elsif (@$tree >= 2 && $tree->[-2][0] eq "text" && $tree->[-1][0] eq "slash") {
