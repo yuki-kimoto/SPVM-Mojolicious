@@ -30,27 +30,21 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     return $self;
   }
   
-  static method _render : string ($c : Mojolicious::Controller) {
+  private static method _render : int ($c : Mojolicious::Controller) {
     
-    die "TODO";
-=pod
-
     my $stash = $c->stash;
     
-    if ($stash->{"mojo.rendered"}->(int)) {
-      return undef;
+    if ($c->rendered) {
+      return 0;
     }
     
-    my $rendered = $c->render_maybe;
+    my $rendered = $c->render_maybe(undef);
     
     unless ($rendered) {
-      unless ($stash->{"mojo.routed"}->(int)) {
-       die "Route without dispatch and nothing to render";
+      unless ($c->routed) {
+        die "Route without dispatch and nothing to render";
       }
     }
-
-=cut
-
   }
   
   # Instance Methods
@@ -78,12 +72,10 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     return $ret;
   }
   
-  method continue : void ($c : Mojolicious::Controller) {
-
-=pod
-
-    my $match    = $c->match;
-    my $stack    = $match->stack;
+  method continue : int ($c : Mojolicious::Controller) {
+    
+    my $match = $c->match;
+    my $stack = $match->stack;
     my $position = $match->position;
     
     my $field = $stack->[$position];
@@ -92,19 +84,35 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     }
     
     # Merge captures into stash
-    my $stash = $c->stash;
-    @{$stash->{'mojo.captures'} //= {}}{keys %$field} = values %$field;
-    @$stash{keys %$field} = values %$field;
+    $c->set_captures($field->clone);
     
-    my $continue;
+    my $continue = 0;
     my $last = !$stack->[++$position];
-    if (my $cb = $field->{cb}) { $continue = $self->_callback($c, $cb, $last) }
-    else                       { $continue = $self->_controller($c, $field, $last) }
-    $match->position($position);
-    $self->continue($c) if $last || $continue;
-
-=cut
-
+    if (my $cb = $field->{"cb"}->(Mojo::Callback)) {
+      $continue = $self->_callback($c, $cb, $last);
+    }
+    
+    $match->set_position($position);
+    
+    if ($last || $continue) {
+      $self->continue($c);
+    }
+  }
+  
+  private method _callback : int ($c : Mojolicious::Controller, $cb : Mojo::Callback, $last : int) {
+    
+    if ($last) {
+      $c->set_routed(1);
+    }
+    
+    $c->log->trace("Routing to a callback");
+    
+    return&_action($c->app, $c, $cb, $last);
+  }
+  
+  private static method _action : int ($app : Mojolicious, $c : Mojolicious::Controller, $cb : Mojo::Callback, $last : int) {
+    die "TODO";
+    # $self->plugins->emit_chain(around_action => @_);
   }
   
   method lookup : Mojolicious::Routes ($name : string) {

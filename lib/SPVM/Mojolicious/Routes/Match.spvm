@@ -13,7 +13,7 @@ class Mojolicious::Routes::Match {
   
   has endpoint : rw Mojolicious::Routes::Route;
   
-  has position : int;
+  has position : rw int;
   
   has stack : rw Hash[];
   
