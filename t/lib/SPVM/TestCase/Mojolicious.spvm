@@ -16,6 +16,10 @@ class TestCase::Mojolicious {
     
     my $r = $app->get("/", "a/b");
     
+    unless ($r->name eq "a/b") {
+      return 0;
+    }
+    
     return 1;
   }
 }
