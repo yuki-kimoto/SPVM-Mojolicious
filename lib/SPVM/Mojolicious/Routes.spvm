@@ -225,36 +225,36 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
   
   method match : void ($c : Mojolicious::Controller) {
     
-    die "TODO";
-
-=pod
-
-    # Path (partial path gets priority)
     my $req  = $c->req;
     my $path = $req->url->path->to_route;
-
+    
     # Method (HEAD will be treated as GET)
-    my $method   = uc $req->method;
-    my $override = $req->url->query->clone->param('_method');
-    $method = uc $override if $override && $method eq 'POST';
-    $method = 'GET'        if $method eq 'HEAD';
-
+    my $method = Fn->uc($req->method);
+    if ($method eq "HEAD") {
+      $method = "GET";
+    }
+    
     # Check cache
-    my $ws    = $c->tx->is_websocket ? 1 : 0;
+    my $ws = $c->tx->is_websocket ? 1 : 0;
     my $match = $c->match;
-    $match->root($self);
+    $match->set_root($self);
     my $cache = $self->cache;
     if (my $result = $cache->get("$method:$path:$ws")) {
-      return $match->endpoint($result->{endpoint})->stack($result->{stack});
+      $match->set_endpoint($result->{"endpoint"}->(Mojolicious::Routes::Route));
+      $match->set_stack($result->{"stack"}->(Hash[]));
+      return;
     }
-
+    
     # Check routes
-    $match->find($c => {method => $method, path => $path, websocket => $ws});
-    return undef unless my $route = $match->endpoint;
-    $cache->set("$method:$path:$ws" => {endpoint => $route, stack => $match->stack});
-
-=cut
-
+    $match->find($c => Hash->new({method => $method, path => $path, websocket => $ws}));
+    
+    my $endpoint = $match->endpoint;
+    
+    unless ($endpoint) {
+      return;
+    }
+    
+    $cache->set("$method:$path:$ws" => Hash->new({endpoint => $endpoint, stack => $match->stack}));
   }
 
 }

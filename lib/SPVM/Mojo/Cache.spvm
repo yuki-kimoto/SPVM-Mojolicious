@@ -15,4 +15,13 @@ class Mojo::Cache {
     return $self;
   }
   
+  # Instance Methods
+  method get : Hash ($name : string) {
+    die "TODO";
+  }
+  
+  method set : void ($name : string, $value : Hash) {
+    die "TODO";
+  }
+  
 }

@@ -171,7 +171,7 @@ class Mojolicious::Routes::Pattern {
   }
   
   private method _compile : void ($detect : int) {
-
+    
     my $constraints = $self->constraints;
     
     my $defaults = $self->defaults;
