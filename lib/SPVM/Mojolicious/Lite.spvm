@@ -3,17 +3,9 @@
 
 class Mojolicious::Lite extends Mojolicious {
   
-  use FindBin;
-  use Re;
-  use Mojo::File;
   use Mojolicious::Routes;
   
   version_from Mojolicious;
-  
-  # Fields
-  has routes : rw Mojolicious::Routes;
-  
-  has root : rw Mojolicious::Routes;
   
   # Class Method
   static method new : Mojolicious::Lite () {
@@ -21,22 +13,6 @@ class Mojolicious::Lite extends Mojolicious {
     my $self = new Mojolicious::Lite;
     
     $self->SUPER::init;
-    
-    my $home = FindBin->Bin;
-    
-    my $exe = FindBin->Script;
-    
-    my $moniker = Mojo::File->path($exe)->basename;
-    
-    Re->s((mutable string)$moniker, "\.(pl|pm|t)$", "");
-    
-    $self->set_moniker($moniker);
-    
-    my $routes = $self->routes;
-    
-    $self->{routes} = $routes;
-    
-    $self->{root} = $routes;
     
     return $self;
   }
@@ -93,7 +69,7 @@ class Mojolicious::Lite extends Mojolicious {
   
   method under : Mojolicious::Routes ($args : object...) {
     
-    my $root = $self->root;
+    my $root = $self->{root};
     
     return $self->{routes} = $root->under($args);
   }

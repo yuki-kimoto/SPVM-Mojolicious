@@ -20,6 +20,8 @@ class Mojolicious {
   use Sys;
   use Mojolicious::Helper::Reply;
   use Mojolicious::Commands;
+  use Mojo::File;
+  use FindBin;
   
   # Fields
   has home : rw Mojo::Home;
@@ -39,6 +41,8 @@ class Mojolicious {
   has renderer : rw Mojolicious::Renderer;
   
   has routes : rw Mojolicious::Routes;
+  
+  has root : rw Mojolicious::Routes;
   
   has secrets : rw string[]
     get {
@@ -98,6 +102,8 @@ class Mojolicious {
     
     $self->{routes} = Mojolicious::Routes->new;
     
+    $self->{root} = $self->{routes};
+    
     $self->{commands} = Mojolicious::Commands->new;
     
     $self->{plugins} = Mojolicious::Plugins->new;
@@ -107,6 +113,14 @@ class Mojolicious {
     my $log = Mojo::Log->new;
     $log->set_level(length (my $_ = Sys->env("SPVM_MOJO_LOG_LEVEL")) ? $_ : "info");
     $self->{log} = $log;
+    
+    my $exe = FindBin->Script;
+    
+    my $moniker = Mojo::File->path($exe)->basename;
+    
+    Re->s((mutable string)$moniker, "\.(spvm|t)$", "");
+    
+    $self->set_moniker($moniker);
   }
   
   method build_controller : Mojolicious::Controller ($tx : Mojo::Transaction) {

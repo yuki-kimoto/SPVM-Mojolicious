@@ -14,6 +14,10 @@ class TestCase::Mojolicious {
     
     my $app = Mojolicious::Lite->new;
     
+    unless ($app->moniker eq "basic") {
+      return 0;
+    }
+    
     my $r = $app->get("/", "a/b");
     
     unless ($r->name eq "a/b") {
