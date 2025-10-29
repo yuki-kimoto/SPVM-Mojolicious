@@ -18,8 +18,6 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
   # Fields
   has cache : rw Mojo::Cache;
   
-  has conditions : rw Hash of Mojolicious::Routes::Callback::Condition;
-  
   has shortcuts : rw Hash of Mojo::Callback;
   
   has types : rw Hash of string|Regex|string[]|Regex[]|object[];
@@ -64,8 +62,6 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     
     $self->{cache} = Mojo::Cache->new;
     
-    $self->{conditions} = Hash->new;
-    
     $self->{shortcuts} = Hash->new;
     
     $self->{types} = Hash->new;
@@ -76,13 +72,8 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     return $self->shortcuts;
   }
   
-  method add_condition : void ($name : string, $cb : Mojolicious::Routes::Callback::Condition) {
-    
-    $self->conditions->set($name, $cb);
-  }
-  
   method add_shortcut : void ($name : string, $cb : Mojo::Callback) {
-    $self->conditions->set($name, $cb);
+    $self->shortcuts->set($name, $cb);
   }
   
   method call : object ($name : string, $arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
