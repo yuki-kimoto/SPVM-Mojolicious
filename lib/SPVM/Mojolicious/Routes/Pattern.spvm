@@ -190,7 +190,7 @@ class Mojolicious::Routes::Pattern {
     
     my $tree = $self->{tree};
     
-    for (my $i = $tree->length - 1; $i >= 0; $i--) {
+    for (my $i = @$tree - 1; $i >= 0; $i--) {
       my $token = (object[])$tree->get($i);
       
       my $op = (string)$token->[0];
@@ -288,7 +288,7 @@ class Mojolicious::Routes::Pattern {
         unless ($spec++) {
           $tree->push([(object)"placeholder", "", undef]);
         }
-        $tree->get($tree->length - 1)->(object[])->[2] = $char eq $relaxed ? "relaxed" : "wildcard";
+        $tree->get(@$tree - 1)->(object[])->[2] = $char eq $relaxed ? "relaxed" : "wildcard";
       }
       
       # Slash
@@ -299,26 +299,26 @@ class Mojolicious::Routes::Pattern {
       
       # Placeholder
       elsif ($spec && ++$more) {
-        my $_ = $tree->get($tree->length - 1)->(object[])->[1]->(string);
-        $tree->get($tree->length - 1)->(object[])->[1] =  $_ . $char;
+        my $_ = $tree->get(@$tree - 1)->(object[])->[1]->(string);
+        $tree->get(@$tree - 1)->(object[])->[1] =  $_ . $char;
       }
 
       # Text (optimize slash+text and *+text+slash+text)
-      elsif ($tree->get($tree->length - 1)->(object[])->[0]->(string) eq "text") {
+      elsif ($tree->get(@$tree - 1)->(object[])->[0]->(string) eq "text") {
         
-        my $token = $tree->get($tree->length - 1)->(object[]);
+        my $token = $tree->get(@$tree - 1)->(object[]);
         
         my $_ = $token->[@$token - 1]->(string);
         $token->[@$token - 1] = $_ . $char;
       }
-      elsif (!$tree->get($tree->length - 2) && $tree->get($tree->length - 1)->(object[])->[0]->(string) eq "slash") {
+      elsif (!$tree->get(@$tree - 2) && $tree->get(@$tree - 1)->(object[])->[0]->(string) eq "slash") {
         $tree = List->new(["text", "/$char"]);
       }
-      elsif ($tree->get($tree->length - 2) && $tree->get($tree->length - 2)->(object[])->[0]->(string) eq "text" && $tree->get($tree->length - 1)->(object[])->[0]->(string) eq "slash") {
-        if ($tree->length) {
+      elsif ($tree->get(@$tree - 2) && $tree->get(@$tree - 2)->(object[])->[0]->(string) eq "text" && $tree->get(@$tree - 1)->(object[])->[0]->(string) eq "slash") {
+        if (@$tree) {
           $tree->pop;
-          my $_ = $tree->get($tree->length - 1)->(object[])->[$tree->length]->(string);
-          my $token = $tree->get($tree->length - 1)->(object[]);
+          my $_ = $tree->get(@$tree - 1)->(object[])->[@$tree]->(string);
+          my $token = $tree->get(@$tree - 1)->(object[]);
           $token->[@$token - 1] = "$_/$char";
         }
       }
@@ -328,7 +328,7 @@ class Mojolicious::Routes::Pattern {
     }
 
     # Placeholder types
-    for (my $i = $tree->length - 1; $i >= 0; $i--) {
+    for (my $i = @$tree - 1; $i >= 0; $i--) {
       my $token = (object[])$tree->get($i);
       unless ($token->[0]->(string) eq "placeholder") {
         next;
@@ -356,7 +356,7 @@ class Mojolicious::Routes::Pattern {
     
     my $str = "";
     my $tree = $self->tree;
-    for (my $i = $tree->length - 1; $i >= 0; $i--) {
+    for (my $i = @$tree - 1; $i >= 0; $i--) {
       my $token = (object[])$tree->get($i);
       
       my $op = (string)$token->[0];
