@@ -188,10 +188,10 @@ class Mojolicious::Routes::Pattern {
     
     my $optional = 1;
     
-    my $tree_list = $self->{tree};
+    my $tree = $self->{tree};
     
-    for (my $i = $tree_list->length - 1; $i >= 0; $i--) {
-      my $token = (object[])$tree_list->get($i);
+    for (my $i = $tree->length - 1; $i >= 0; $i--) {
+      my $token = (object[])$tree->get($i);
       
       my $op = (string)$token->[0];
       my $value = $token->[1];
@@ -262,7 +262,7 @@ class Mojolicious::Routes::Pattern {
     my $relaxed      = $self->relaxed_start;
     my $wildcard     = $self->wildcard_start;
     
-    my $tree_list = List->new;
+    my $tree = List->new;
     my $spec = 0;
     my $more = 0;
     for (my $i = 0; $i < length $pattern; $i++) {
@@ -271,7 +271,7 @@ class Mojolicious::Routes::Pattern {
       # Quoted
       if ($char eq $quote_start) {
         if (++$spec) {
-          $tree_list->push([(object)"placeholder", "", undef]);
+          $tree->push([(object)"placeholder", "", undef]);
         }
       }
       elsif ($char eq $quote_end)   { $spec = $more = 0; }
@@ -279,57 +279,57 @@ class Mojolicious::Routes::Pattern {
       # Placeholder
       elsif (!$more && $char eq $start) {
         unless ($spec++) {
-          $tree_list->push([(object)"placeholder", "", undef]);
+          $tree->push([(object)"placeholder", "", undef]);
         }
       }
       
       # Relaxed or wildcard (upgrade when quoted)
       elsif (!$more && ($char eq $relaxed || $char eq $wildcard)) {
         unless ($spec++) {
-          $tree_list->push([(object)"placeholder", "", undef]);
+          $tree->push([(object)"placeholder", "", undef]);
         }
-        $tree_list->get($tree_list->length - 1)->(object[])->[2] = $char eq $relaxed ? "relaxed" : "wildcard";
+        $tree->get($tree->length - 1)->(object[])->[2] = $char eq $relaxed ? "relaxed" : "wildcard";
       }
       
       # Slash
       elsif ($char eq "/") {
-        $tree_list->push([(object)"slash", undef, undef]);
+        $tree->push([(object)"slash", undef, undef]);
         $spec = $more = 0;
       }
       
       # Placeholder
       elsif ($spec && ++$more) {
-        my $_ = $tree_list->get($tree_list->length - 1)->(object[])->[1]->(string);
-        $tree_list->get($tree_list->length - 1)->(object[])->[1] =  $_ . $char;
+        my $_ = $tree->get($tree->length - 1)->(object[])->[1]->(string);
+        $tree->get($tree->length - 1)->(object[])->[1] =  $_ . $char;
       }
 
       # Text (optimize slash+text and *+text+slash+text)
-      elsif ($tree_list->get($tree_list->length - 1)->(object[])->[0]->(string) eq "text") {
+      elsif ($tree->get($tree->length - 1)->(object[])->[0]->(string) eq "text") {
         
-        my $token = $tree_list->get($tree_list->length - 1)->(object[]);
+        my $token = $tree->get($tree->length - 1)->(object[]);
         
         my $_ = $token->[@$token - 1]->(string);
         $token->[@$token - 1] = $_ . $char;
       }
-      elsif (!$tree_list->get($tree_list->length - 2) && $tree_list->get($tree_list->length - 1)->(object[])->[0]->(string) eq "slash") {
-        $tree_list = List->new(["text", "/$char"]);
+      elsif (!$tree->get($tree->length - 2) && $tree->get($tree->length - 1)->(object[])->[0]->(string) eq "slash") {
+        $tree = List->new(["text", "/$char"]);
       }
-      elsif ($tree_list->get($tree_list->length - 2) && $tree_list->get($tree_list->length - 2)->(object[])->[0]->(string) eq "text" && $tree_list->get($tree_list->length - 1)->(object[])->[0]->(string) eq "slash") {
-        if ($tree_list->length) {
-          $tree_list->pop;
-          my $_ = $tree_list->get($tree_list->length - 1)->(object[])->[$tree_list->length]->(string);
-          my $token = $tree_list->get($tree_list->length - 1)->(object[]);
+      elsif ($tree->get($tree->length - 2) && $tree->get($tree->length - 2)->(object[])->[0]->(string) eq "text" && $tree->get($tree->length - 1)->(object[])->[0]->(string) eq "slash") {
+        if ($tree->length) {
+          $tree->pop;
+          my $_ = $tree->get($tree->length - 1)->(object[])->[$tree->length]->(string);
+          my $token = $tree->get($tree->length - 1)->(object[]);
           $token->[@$token - 1] = "$_/$char";
         }
       }
       else {
-        $tree_list->push([(object)"text", $char, undef]);
+        $tree->push([(object)"text", $char, undef]);
       }
     }
 
     # Placeholder types
-    for (my $i = $tree_list->length - 1; $i >= 0; $i--) {
-      my $token = (object[])$tree_list->get($i);
+    for (my $i = $tree->length - 1; $i >= 0; $i--) {
+      my $token = (object[])$tree->get($i);
       unless ($token->[0]->(string) eq "placeholder") {
         next;
       }
@@ -346,7 +346,7 @@ class Mojolicious::Routes::Pattern {
     
     $self->set_unparsed($pattern);
     
-    $self->set_tree($tree_list);
+    $self->set_tree($tree);
   }
   
   method render : string ($values : Hash, $endpoint : int) {
@@ -355,9 +355,9 @@ class Mojolicious::Routes::Pattern {
     my $optional = !(my $format = $values->{"format"}->(string));
     
     my $str = "";
-    my $tree_list = $self->tree;
-    for (my $i = $tree_list->length - 1; $i >= 0; $i--) {
-      my $token = (object[])$tree_list->get($i);
+    my $tree = $self->tree;
+    for (my $i = $tree->length - 1; $i >= 0; $i--) {
+      my $token = (object[])$tree->get($i);
       
       my $op = (string)$token->[0];
       my $value = $token->[1];
