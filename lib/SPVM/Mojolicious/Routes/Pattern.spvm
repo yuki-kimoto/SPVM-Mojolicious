@@ -247,7 +247,7 @@ class Mojolicious::Routes::Pattern {
     my $relaxed      = $self->relaxed_start;
     my $wildcard     = $self->wildcard_start;
     
-    my $tree = (List of string[])List->new;
+    my $tree = (List of string[])List->new(new string[][0]);
     my $spec = 0;
     my $more = 0;
     for (my $i = 0; $i < length $pattern; $i++) {
@@ -259,7 +259,9 @@ class Mojolicious::Routes::Pattern {
           $tree->push(["placeholder", "", undef]);
         }
       }
-      elsif ($char eq $quote_end)   { $spec = $more = 0; }
+      elsif ($char eq $quote_end)   {
+        $spec = $more = 0;
+      }
       
       # Placeholder
       elsif (!$more && $char eq $start) {
@@ -292,11 +294,11 @@ class Mojolicious::Routes::Pattern {
         $tree->[-1][1] .= $char;
       }
       elsif (@$tree == 1 && $tree->[-1][0] eq "slash") {
-        $tree = (List of string[])List->new(["text", "/$char", undef]);
+        $tree = (List of string[])List->new([["text", "/$char", undef]]);
       }
       elsif (@$tree >= 2 && $tree->[-2][0] eq "text" && $tree->[-1][0] eq "slash") {
         $tree->pop;
-        $tree->[-1][1] .= $char;
+        $tree->[-1][1] .= "/$char";
       }
       else {
         $tree->push(["text", $char, undef]);
@@ -306,6 +308,8 @@ class Mojolicious::Routes::Pattern {
     $self->set_unparsed($pattern);
     
     $self->set_tree($tree);
+    
+    warn dump $tree;
   }
   
   method render : string ($values : Hash, $endpoint : int) {

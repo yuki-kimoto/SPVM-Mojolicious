@@ -18,7 +18,7 @@ class TestCase::Mojolicious {
       return 0;
     }
     
-    my $r = $app->get("/a", "a/b");
+    my $r = $app->get("/a/b/:foo/#bar/*baz/d<title>d/c", "a/b");
     
     unless ($r->name eq "a/b") {
       return 0;
