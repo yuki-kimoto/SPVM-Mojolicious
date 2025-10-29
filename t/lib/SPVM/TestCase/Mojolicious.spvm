@@ -14,7 +14,7 @@ class TestCase::Mojolicious {
     
     my $app = Mojolicious::Lite->new;
     
-    
+    my $r = $app->get("/", "a/b");
     
     return 1;
   }
