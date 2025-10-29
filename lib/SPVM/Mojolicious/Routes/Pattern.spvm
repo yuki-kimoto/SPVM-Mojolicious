@@ -305,18 +305,17 @@ class Mojolicious::Routes::Pattern {
 
       # Text (optimize slash+text and *+text+slash+text)
       elsif ($tree->[-1][0] eq "text") {
-        my $token = $tree->[-1]->(object[]);
-        my $_ = $token->[-1]->(string);
-        $token->[-1] = $_ . $char;
+        my $token = $tree->[-1];
+        $token->[-1] .= $char;
       }
-      elsif (!$tree->[@$tree - 2] && $tree->[-1]->(object[])->[0]->(string) eq "slash") {
+      elsif (!$tree->[@$tree - 2] && $tree->[-1][0]->(string) eq "slash") {
         $tree = (List of string[])List->new(["text", "/$char", undef]);
       }
-      elsif (@$tree >= 2 && $tree->[-2]->(object[])->[0]->(string) eq "text" && $tree->[-1]->(object[])->[0]->(string) eq "slash") {
+      elsif (@$tree >= 2 && $tree->[-2][0]->(string) eq "text" && $tree->[-1][0]->(string) eq "slash") {
         if (@$tree) {
           $tree->pop;
-          my $_ = $tree->[-1]->(object[])->[@$tree]->(string);
-          my $token = $tree->[-1]->(object[]);
+          my $_ = $tree->[-1][@$tree]->(string);
+          my $token = $tree->[-1];
           $token->[@$token - 1] = "$_/$char";
         }
       }
