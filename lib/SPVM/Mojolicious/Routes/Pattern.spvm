@@ -308,8 +308,6 @@ class Mojolicious::Routes::Pattern {
     $self->set_unparsed($pattern);
     
     $self->set_tree($tree);
-    
-    warn dump $tree;
   }
   
   method render : string ($values : Hash, $endpoint : int) {
