@@ -20,6 +20,14 @@ class TestCase::Mojolicious {
       return 0;
     }
     
+    my $inline_templates = <<'EOS';
+@@ a/b.html.ep
+
+Hello
+EOS
+    
+    $app->set_inline_templates($inline_templates);
+    
     return 1;
   }
 }

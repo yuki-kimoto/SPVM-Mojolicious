@@ -63,6 +63,8 @@ class Mojolicious {
   
   has defaults : rw Hash;
   
+  has inline_templates : rw string;
+  
   # Class Methods
   static method new : Mojolicious () {
     
