@@ -51,25 +51,6 @@ class Mojolicious::Routes::Route {
   
   has name : rw string;
   
-  has has_websocket : ro int
-    get {
-      unless (exists $self->{has_websocket}) {
-        my $chain = $self->_chain;
-        
-        my $has_websocket = 0;
-        for (my $i = 0; $i < $chain->length; $i++) {
-          my $child = $chain->get($i);
-          
-          if ($child->is_websocket) {
-            $has_websocket = 1;
-          }
-        }
-      }
-      
-      return $self->{has_websocket};
-    }
-  ;
-  
   has methods : rw string[];
   
   # Undocumented Fields
@@ -297,6 +278,20 @@ class Mojolicious::Routes::Route {
     }
     
     return Fn->join("", $pattern_unparseds_list->to_array);
+  }
+  
+  method has_websocket : int () {
+    my $chain = $self->_chain;
+    
+    my $has_websocket = 0;
+    for (my $i = 0; $i < @$chain; $i++) {
+      my $child = $chain->[$i];
+      
+      if ($child->is_websocket) {
+        $has_websocket = 1;
+      }
+    }
+    return $has_websocket;
   }
   
   private method _generate_route : Mojolicious::Routes::Route ($methods : string|string[], $args : object...) {
