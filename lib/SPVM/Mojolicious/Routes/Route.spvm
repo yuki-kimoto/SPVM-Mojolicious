@@ -70,32 +70,7 @@ class Mojolicious::Routes::Route {
     }
   ;
   
-  has methods : rw string[]
-    set ($_ : string|string[]) {
-      
-      my $methods = (string[])undef;
-      if (!$_) {
-        # undef
-      }
-      elsif ($_ isa string) {
-        $methods = [(string)$_];
-      }
-      elsif ($_ isa string[]) {
-        $methods = (string[])$_;
-      }
-      else {
-        die "The methods field value must be a string, a string array.";
-      }
-      
-      if ($methods) {
-        for (my $i = 0; $i < @$methods; $i++) {
-          $methods->[$i] = Fn->uc($methods->[$i]);
-        }
-      }
-      
-      $self->{methods} = $methods;
-    }
-  ;
+  has methods : rw string[];
   
   # Undocumented Fields
   has websocket : byte;
