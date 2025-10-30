@@ -35,51 +35,6 @@ class Mojolicious::Routes::Match {
     $self->_match($self->root, $c, $options);
   }
   
-  method path_for : Hash ($args : object...) {
-    
-    my $_ = Mojo::Util->_options($args);
-    my $name = (string)$_->[0];
-    my $values = Hash->new((object[])$_->[1]);
-    
-    # Current route
-    my $route = (Mojolicious::Routes::Route)undef;
-    my $current = !$name || $name eq "current";
-    
-    if ($current) {
-      unless ($route = $self->endpoint) {
-        return Hash->new;
-      }
-    }
-    
-    # Find endpoint
-    else {
-      return Hash->new({path => $name});
-    }
-    
-    # Merge values (clear format)
-    my $stack_list = (List of Hash)List->new_ref($self->stack);
-    my $captures = (Hash)undef;
-    if ($stack_list->length > 0) {
-      $captures = $stack_list->get($stack_list->length - 1) // Hash->new;
-    }
-    else {
-      $captures = Hash->new;
-    }
-    
-    my $merged = $captures->clone;
-    $merged->merge_options({format => undef});
-    $merged->merge($values);
-    
-    my $pattern     = $route->pattern;
-    my $constraints = $pattern->constraints;
-    
-    if (!$values->exists("format") && $constraints->get("format") && $constraints->get("format")->(string) ne "1") {
-      $merged->set("format", ($current ? $captures->get("format") : undef) // $pattern->defaults->get("format"));
-    }
-    
-    return Hash->new({path => $route->render($merged), websocket => $route->has_websocket});
-  }
-  
   private method _match : int ($r : Mojolicious::Routes::Route, $c : Mojolicious::Controller, $options : Hash) {
     
     my $path = $options->get("path")->(string);
