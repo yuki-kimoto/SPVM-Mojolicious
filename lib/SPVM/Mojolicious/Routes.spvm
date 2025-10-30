@@ -6,7 +6,6 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
   
   use Hash;
   use Mojo::Cache;
-  use Mojolicious::Routes::Callback::Condition;
   use Mojo::DynamicMethods;
   use Mojo::Callback;
   use Regex;
