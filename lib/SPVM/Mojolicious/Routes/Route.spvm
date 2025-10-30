@@ -4,7 +4,7 @@
 class Mojolicious::Routes::Route {
   version_from Mojolicious;
   
-  use Mojo::Util;
+  use Mojolicious::Routes;
   use Mojolicious::Routes::Pattern;
   
   # Class Variables
@@ -193,9 +193,9 @@ class Mojolicious::Routes::Route {
     
     my $pattern_strings = StringList->new;
     for (my $i = 0; $i < @$chain; $i++) {
-      my $_ = $chain->[$i];
+      my $route = $chain->[$i];
       
-      my $pattern_string = $_->pattern->render($values, !@{$_->children});
+      my $pattern_string = $route->pattern->render($values, !@{$_->children});
       
       $pattern_strings->push($pattern_string);
     }
