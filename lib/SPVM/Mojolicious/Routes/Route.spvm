@@ -196,16 +196,16 @@ class Mojolicious::Routes::Route {
     
     my $chain = $self->_chain;
     
-    my $pattern_strings_list = StringList->new;
+    my $pattern_strings = StringList->new;
     for (my $i = 0; $i < $chain->length; $i++) {
       my $_ = $chain->get($i);
       
       my $pattern_string = $_->pattern->render($values, !@{$_->children});
       
-      $pattern_strings_list->push($pattern_string);
+      $pattern_strings->push($pattern_string);
     }
     
-    my $path = Fn->join("", $pattern_strings_list->to_array);
+    my $path = Fn->join("", $pattern_strings->to_array);
     
     return length $path ? $path : "/";
   }
@@ -224,17 +224,17 @@ class Mojolicious::Routes::Route {
     
     my $chain = $self->_chain;
     
-    my $pattern_unparseds_list = StringList->new;
+    my $pattern_unparseds = StringList->new;
     
     for (my $i = 0; $i < $chain->length; $i++) {
       my $chain = $chain->get($i);
       
       my $pattern_unparsed = $chain->pattern->unparsed // "";
       
-      $pattern_unparseds_list->push($pattern_unparsed);
+      $pattern_unparseds->push($pattern_unparsed);
     }
     
-    return Fn->join("", $pattern_unparseds_list->to_array);
+    return Fn->join("", $pattern_unparseds->to_array);
   }
   
   method has_websocket : int () {
