@@ -41,28 +41,13 @@ class Mojolicious::Routes::Route {
   has children : rw Mojolicious::Routes::Route[];
   
   has parent : rw Mojolicious::Routes::Route
-    get {
-      unless (exists $self->{parent}) {
-        $self->{parent} = undef;
-      }
-      
-      return $self->{parent};
-    }
     set {
       $self->{parent} = $_;
       weaken $self->{parent};
     }
   ;
   
-  has pattern : rw Mojolicious::Routes::Pattern
-    get {
-      unless (exists $self->{pattern}) {
-        $self->{pattern} = Mojolicious::Routes::Pattern->new;
-      }
-      
-      return $self->{pattern};
-    }
-  ;
+  has pattern : rw Mojolicious::Routes::Pattern;
   
   has name : rw string;
   
@@ -129,6 +114,8 @@ class Mojolicious::Routes::Route {
   protected method init : void ($options : object[] = undef) {
     
     $self->{children} = new Mojolicious::Routes::Route[0];
+    
+    $self->{pattern} = Mojolicious::Routes::Pattern->new;
   }
   
   method any : Mojolicious::Routes::Route ($args : object...) {
