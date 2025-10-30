@@ -93,26 +93,27 @@ class Mojolicious::Routes::Pattern {
   }
   
   # Instance Methods
-  method match : Hash ($path : string, $detect : int = 0) {
+  method match : Hash ($path : string, $format_detect : int = 0) {
     
-    my $captures = $self->match_partial(my $_ = [$path], $detect);
-    $path = $_->[0];
+    my $path = copy $path;
+    
+    my $captures = $self->match_partial((mutable string)$path, $format_detect);
     
     return !$path || $path eq "/" ? $captures : undef;
   }
   
-  method match_partial : Hash ($pathref : string[], $detect : int = 0) {
+  method match_partial : Hash ($path : mutable string, $format_detect : int = 0) {
     
     # Compile on demand
     unless ($self->{regex}) {
-      $self->_compile($detect);
+      $self->_compile($format_detect);
     }
     
     my $captures_length = 0;
     my $match_start = -1;
     my $match_length = -1;
     my $captures_list = (StringList)undef;
-    if (my $m = $self->regex->match($pathref->[0])) {
+    if (my $m = $self->regex->match($path)) {
       $captures_length = $m->captures_length;
       $match_start = $m->match_start;
       $match_length = $m->match_length;
@@ -128,7 +129,10 @@ class Mojolicious::Routes::Pattern {
       return undef;
     }
     
-    $pathref->[0] = Fn->substr($pathref->[0], $match_start, $match_length);
+    my $new_path = Fn->substr($path, $match_start + $match_length);
+    
+    set_length($path, length $new_path);
+    Fn->memcpy($path, 0, $new_path, 0, length $new_path);
     
     my $captures_h = Hash->new($self->defaults->to_array);
     my $placeholders = StringList->new($self->placeholders);
@@ -220,7 +224,7 @@ class Mojolicious::Routes::Pattern {
     return $endpoint && $format ? "$str.$format" : $str;
   }
   
-  private method _compile : void ($detect : int) {
+  private method _compile : void ($format_detect : int) {
     
     my $constraints = $self->constraints;
     
@@ -281,7 +285,7 @@ class Mojolicious::Routes::Pattern {
     }
     
     # Format
-    if ($detect) {
+    if ($format_detect) {
       $regex .= &_compile_format($constraints->{"format"}, $defaults->exists("format")) ;
     }
     
