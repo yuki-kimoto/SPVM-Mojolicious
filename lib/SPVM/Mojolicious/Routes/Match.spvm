@@ -66,9 +66,15 @@ class Mojolicious::Routes::Match {
     $captures = $self->{captures};
     
     # Method
-    my $methods = $r->methods;
-    
-    if ($methods && !@{Fn->grep([$options : Hash]method : int ($_ : string) { $_ eq $options->get("method")->(string); }, $methods)}) {
+    my $method_match = 0;
+    my $method = $options->get("method")->(string);
+    for my $_ (@{$r->methods}) {
+      if ($method eq $_) {
+        $method_match = 1;
+        last;
+      }
+    }
+    unless ($method_match) {
       return 0;
     }
     
