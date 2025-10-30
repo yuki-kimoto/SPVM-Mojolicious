@@ -165,42 +165,11 @@ class Mojolicious::Routes::Route {
     return (Mojolicious::Routes)$self->_chain->get(0);
   }
   
-  method _chain : List of Mojolicious::Routes::Route () {
-    
-    my $chain = List->new([$self]);
-    
-    while ($self = $self->parent) {
-      $chain->unshift($self);
-    }
-    
-    return $chain;
-  }
-  
   method find : Mojolicious::Routes::Route ($name : string) {
-    return $self->_index->get($name);
-  }
-  
-  private method _index : Hash of Mojolicious::Routes::Route () {
     
-    my $auto = Hash->new;
+    my $routes_h = $self->_index;
     
-    my $children = (List of Mojolicious::Routes::Route)List->new_ref(Array->copy_object_address($self->children));
-    
-    while (my $child = $children->shift) {
-      unless ($auto->get($child->name)) {
-        $auto->set($child->name, $child);
-      }
-      
-      $children->push_($child->children);
-    }
-    
-    my $ret = Hash->new;
-    
-    for my $key (@{$auto->keys}) {
-      $ret->set($key, $auto->get($key));
-    }
-    
-    return $ret;
+    return $routes_h->{$name};
   }
   
   method is_websocket : int () {
@@ -248,11 +217,6 @@ class Mojolicious::Routes::Route {
     return length $path ? $path : "/";
   }
   
-  method suggested_method : string () {
-    
-    die "TODO";
-  }
-  
   method to : void ($defaults : Hash)  {
     
     my $pattern_defaults = $self->pattern->defaults;
@@ -292,6 +256,34 @@ class Mojolicious::Routes::Route {
       }
     }
     return $has_websocket;
+  }
+  
+  private method _chain : List of Mojolicious::Routes::Route () {
+    
+    my $chain = List->new([$self]);
+    
+    while ($self = $self->parent) {
+      $chain->unshift($self);
+    }
+    
+    return $chain;
+  }
+  
+  private method _index : Hash of Mojolicious::Routes::Route () {
+    
+    my $routes = Hash->new;
+    
+    my $children = (List of Mojolicious::Routes::Route)List->new($self->children);
+    
+    while (my $child = $children->shift) {
+      unless ($routes->{$child->name}) {
+        $routes->{$child->name} = $child;
+      }
+      
+      $children->push_($child->children);
+    }
+    
+    return $routes;
   }
   
   private method _generate_route : Mojolicious::Routes::Route ($methods : string|string[], $args : object...) {
@@ -362,7 +354,7 @@ class Mojolicious::Routes::Route {
     return $route;
   }
   
-  method _route : Mojolicious::Routes::Route ($pattern : string, $constraints : Hash) {
+  private method _route : Mojolicious::Routes::Route ($pattern : string, $constraints : Hash) {
     
     my $r = Mojolicious::Routes::Route->new;
     
