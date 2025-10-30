@@ -39,6 +39,11 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     }
   }
   
+  private static method _action : int ($app : Mojolicious, $c : Mojolicious::Controller, $cb : Mojo::Callback, $last : int) {
+    die "TODO";
+    # $self->plugins->emit_chain(around_action => @_);
+  }
+  
   # Instance Methods
   protected method init : void ($options : object[] = undef) {
     
@@ -47,47 +52,15 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     $self->{cache} = Mojo::Cache->new;
   }
   
-  method continue : int ($c : Mojolicious::Controller) {
+  method under : Mojolicious::Routes ($args : object...) {
     
-    my $match = $c->match;
-    my $stack = $match->stack;
-    my $position = $match->position;
+    my $route = $self->SUPER::under($args);
     
-    my $field = $stack->[$position];
-    unless ($field) {
-      return &_render($c);
-    }
+    my $routes = Mojolicious::Routes->new;
     
-    # Merge captures into stash
-    $c->set_captures($field->clone);
+    copy_fields $routes, $route, Mojolicious::Routes::Route;
     
-    my $continue = 0;
-    my $last = !$stack->[++$position];
-    if (my $cb = $field->{"cb"}->(Mojo::Callback)) {
-      $continue = $self->_callback($c, $cb, $last);
-    }
-    
-    $match->set_position($position);
-    
-    if ($last || $continue) {
-      $self->continue($c);
-    }
-  }
-  
-  private method _callback : int ($c : Mojolicious::Controller, $cb : Mojo::Callback, $last : int) {
-    
-    if ($last) {
-      $c->set_routed(1);
-    }
-    
-    $c->log->trace("Routing to a callback");
-    
-    return&_action($c->app, $c, $cb, $last);
-  }
-  
-  private static method _action : int ($app : Mojolicious, $c : Mojolicious::Controller, $cb : Mojo::Callback, $last : int) {
-    die "TODO";
-    # $self->plugins->emit_chain(around_action => @_);
+    return $routes;
   }
   
   method any : Mojolicious::Routes ($args : object...) {
@@ -167,17 +140,6 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     return $routes;
   }
   
-  method under : Mojolicious::Routes ($args : object...) {
-    
-    my $route = $self->SUPER::under($args);
-    
-    my $routes = Mojolicious::Routes->new;
-    
-    copy_fields $routes, $route, Mojolicious::Routes::Route;
-    
-    return $routes;
-  }
-  
   method websocket : Mojolicious::Routes ($args : object...) {
     
     my $route = $self->SUPER::websocket($args);
@@ -235,5 +197,43 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     
     $cache->set("$method:$path:$ws" => Hash->new({endpoint => $endpoint, stack => $match->stack}));
   }
-
+  
+  method continue : int ($c : Mojolicious::Controller) {
+    
+    my $match = $c->match;
+    my $stack = $match->stack;
+    my $position = $match->position;
+    
+    my $field = $stack->[$position];
+    unless ($field) {
+      return &_render($c);
+    }
+    
+    # Merge captures into stash
+    $c->set_captures($field->clone);
+    
+    my $continue = 0;
+    my $last = !$stack->[++$position];
+    if (my $cb = $field->{"cb"}->(Mojo::Callback)) {
+      $continue = $self->_callback($c, $cb, $last);
+    }
+    
+    $match->set_position($position);
+    
+    if ($last || $continue) {
+      $self->continue($c);
+    }
+  }
+  
+  private method _callback : int ($c : Mojolicious::Controller, $cb : Mojo::Callback, $last : int) {
+    
+    if ($last) {
+      $c->set_routed(1);
+    }
+    
+    $c->log->trace("Routing to a callback");
+    
+    return&_action($c->app, $c, $cb, $last);
+  }
+  
 }
