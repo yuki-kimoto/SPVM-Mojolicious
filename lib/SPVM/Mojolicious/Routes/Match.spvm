@@ -49,8 +49,7 @@ class Mojolicious::Routes::Match {
     
     # Pattern
     my $endpoint = $r->is_endpoint;
-    my $detect_format = $endpoint;
-    my $captures = $r->pattern->match_partial((mutable string)$path, $detect_format);
+    my $captures = $r->pattern->match_partial((mutable string)$path);
     unless ($captures) {
       return 0;
     }

@@ -180,17 +180,11 @@ class Mojolicious::Routes::Route {
     return $self->inline ? 0 : !@{$self->children};
   }
   
-  method parse : void ($pattern_string : string, $constraints : Hash = undef) {
+  method parse : void ($pattern_string : string) {
     
     my $pattern = $self->pattern;
     
-    $pattern->parse($pattern_string, $constraints);
-    
-    my $name = (mutable string)copy($pattern->unparsed // "");
-    
-    Re->s($name, ["\W+", "g"], "");
-    
-    $self->{name} = $name;
+    $pattern->parse($pattern_string);
   }
   
   method render : string ($values : Hash) {
@@ -267,8 +261,6 @@ class Mojolicious::Routes::Route {
     
     my $args = List->new($args);
     
-    my $constraints = Hash->new;
-    
     my $defaults = Hash->new;
     
     my $name = (string)undef;
@@ -306,11 +298,11 @@ class Mojolicious::Routes::Route {
       
       # Constraints
       elsif ($arg isa object[]) {
-        $constraints = Hash->new(Fn->merge_options($constraints->to_options, (object[])$arg));
+        die "Constraint is not supported.";
       }
     }
     
-    my $route = $self->_route($pattern, $constraints);
+    my $route = $self->_route($pattern);
     
     if ($methods isa string && $methods->(string) eq "under") {
       $route->set_inline(1);
@@ -329,11 +321,11 @@ class Mojolicious::Routes::Route {
     return $route;
   }
   
-  private method _route : Mojolicious::Routes::Route ($pattern : string, $constraints : Hash) {
+  private method _route : Mojolicious::Routes::Route ($pattern : string) {
     
     my $r = Mojolicious::Routes::Route->new;
     
-    $r->parse($pattern, $constraints);
+    $r->parse($pattern);
     
     $self->add_child($r);
     
