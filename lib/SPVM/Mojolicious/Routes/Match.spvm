@@ -64,8 +64,8 @@ class Mojolicious::Routes::Match {
     $options->set(path => $path);
     
     for my $key (@{$captures->keys}) {
-      my $value = $captures->get($key);
-      $self->{captures}->set($key => $value);
+      my $value = $captures->{$key};
+      $self->{captures}->{$key} = $value;
     }
     
     $captures = $self->{captures};
