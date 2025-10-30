@@ -36,7 +36,15 @@ class Mojolicious::Routes::Route {
   }
   
   # Fields
+  has pattern : rw Mojolicious::Routes::Pattern;
+  
+  has methods : rw string[];
+  
   has inline : rw byte;
+  
+  has websocket : byte;
+  
+  has name : rw string;
   
   has children : rw Mojolicious::Routes::Route[];
   
@@ -47,14 +55,7 @@ class Mojolicious::Routes::Route {
     }
   ;
   
-  has pattern : rw Mojolicious::Routes::Pattern;
-  
-  has name : rw string;
-  
-  has methods : rw string[];
-  
   # Undocumented Fields
-  has websocket : byte;
   
   # Class Methods
   static method new : Mojolicious::Routes::Route () {
@@ -134,7 +135,7 @@ class Mojolicious::Routes::Route {
     
     $route->set_parent($self);
     
-    my $children = List->new_ref($self->{children});
+    my $children = (List of Mojolicious::Routes::Route)List->new_ref($self->{children});
     
     $children->push($route);
   }
@@ -162,7 +163,7 @@ class Mojolicious::Routes::Route {
   
   method root : Mojolicious::Routes () {
     
-    return (Mojolicious::Routes)$self->_chain->get(0);
+    return (Mojolicious::Routes)$self->_chain->[0];
   }
   
   method is_websocket : int () {
