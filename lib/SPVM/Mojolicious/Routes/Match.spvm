@@ -56,6 +56,11 @@ class Mojolicious::Routes::Match {
     $self->{captures} //= Hash->new;
     my $captures_save = $self->{captures}->clone;
     
+    Fn->defer([$options : Hash, $path_save : string, $captures_save : Hash] method : void () {
+      $options->set("path" => $path_save);
+      $options->set("captures" => $captures_save);
+    });
+    
     $options->set(path => $path);
     
     for my $key (@{$captures->keys}) {
@@ -83,7 +88,6 @@ class Mojolicious::Routes::Match {
       return 0;
     }
     
-    # Partial
     my $empty = !length $path || $path eq "/";
     
     my $stack = (List of Hash)List->new_ref($self->stack);
