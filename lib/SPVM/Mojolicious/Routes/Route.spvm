@@ -165,13 +165,6 @@ class Mojolicious::Routes::Route {
     return (Mojolicious::Routes)$self->_chain->get(0);
   }
   
-  method find : Mojolicious::Routes::Route ($name : string) {
-    
-    my $routes_h = $self->_index;
-    
-    return $routes_h->{$name};
-  }
-  
   method is_websocket : int () {
     
     return !!$self->{websocket};
@@ -267,23 +260,6 @@ class Mojolicious::Routes::Route {
     }
     
     return $chain;
-  }
-  
-  private method _index : Hash of Mojolicious::Routes::Route () {
-    
-    my $routes = Hash->new;
-    
-    my $children = (List of Mojolicious::Routes::Route)List->new($self->children);
-    
-    while (my $child = $children->shift) {
-      unless ($routes->{$child->name}) {
-        $routes->{$child->name} = $child;
-      }
-      
-      $children->push_($child->children);
-    }
-    
-    return $routes;
   }
   
   private method _generate_route : Mojolicious::Routes::Route ($methods : string|string[], $args : object...) {
