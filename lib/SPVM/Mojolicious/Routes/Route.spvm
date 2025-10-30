@@ -197,8 +197,8 @@ class Mojolicious::Routes::Route {
     my $chain = $self->_chain;
     
     my $pattern_strings = StringList->new;
-    for (my $i = 0; $i < $chain->length; $i++) {
-      my $_ = $chain->get($i);
+    for (my $i = 0; $i < @$chain; $i++) {
+      my $_ = $chain->[$i];
       
       my $pattern_string = $_->pattern->render($values, !@{$_->children});
       
@@ -226,8 +226,8 @@ class Mojolicious::Routes::Route {
     
     my $pattern_unparseds = StringList->new;
     
-    for (my $i = 0; $i < $chain->length; $i++) {
-      my $chain = $chain->get($i);
+    for (my $i = 0; $i < @$chain; $i++) {
+      my $chain = $chain->[$i];
       
       my $pattern_unparsed = $chain->pattern->unparsed // "";
       
@@ -287,7 +287,7 @@ class Mojolicious::Routes::Route {
         $pattern = (string)$arg;
       }
       # Scalar
-      elsif ($arg isa string && $args->length) {
+      elsif ($arg isa string && @$args) {
         die "Condition is not supported.";
       }
       # Last scalar is the route name
