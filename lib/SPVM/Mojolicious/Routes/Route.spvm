@@ -260,7 +260,7 @@ class Mojolicious::Routes::Route {
   
   private method _chain : List of Mojolicious::Routes::Route () {
     
-    my $chain = List->new([$self]);
+    my $chain = (List of Mojolicious::Routes::Route)List->new([$self]);
     
     while ($self = $self->parent) {
       $chain->unshift($self);
@@ -335,8 +335,6 @@ class Mojolicious::Routes::Route {
     
     my $route = $self->_route($pattern, $constraints);
     
-    $route->to($defaults);
-    
     if ($methods isa string && $methods->(string) eq "under") {
       $route->set_inline(1);
     }
@@ -347,9 +345,9 @@ class Mojolicious::Routes::Route {
       $route->set_methods((string[])$methods);
     }
     
-    if ($name) {
-      $route->set_name($name);
-    }
+    $route->set_name($name);
+    
+    $route->to($defaults);
     
     return $route;
   }
@@ -362,41 +360,21 @@ class Mojolicious::Routes::Route {
     
     $self->add_child($r);
     
-    my $children = $self->children;
-    my $route       = $children->[-1];
-    my $new_pattern = $route->pattern;
+    my $pattern = $r->pattern;
     
     my $has_reserved = 0;
-    for (my $i = 0; $i < @{$new_pattern->placeholders}; $i++) {
-      my $placeholder = $new_pattern->placeholders->[$i];
+    for (my $i = 0; $i < @{$pattern->placeholders}; $i++) {
+      my $placeholder = $pattern->placeholders->[$i];
       if ($self->is_reserved($placeholder)) {
         $has_reserved = 1;
         last;
       }
     }
-    
     if ($has_reserved) {
-      die "Route pattern " . $new_pattern->unparsed . " contains a reserved stash value.";
+      die "Route pattern " . $pattern->unparsed . " contains a reserved stash value.";
     }
     
-    my $old_pattern = $self->pattern;
-    my $constraints = $old_pattern->constraints;
-    
-    if ($constraints->exists("format")) {
-      unless ($new_pattern->constraints->get("format")) {
-        $new_pattern->constraints->set("format", $constraints->get("format"));
-      }
-    }
-    
-    my $defaults = $old_pattern->defaults;
-    
-    if ($defaults->exists("format")) {
-      unless ($new_pattern->defaults->get("format")) {
-        $new_pattern->defaults->set("format", $defaults->get("format"));
-      }
-    }
-    
-    return $route;
+    return $r;
   }
 
 }
