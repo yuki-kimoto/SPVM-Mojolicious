@@ -13,14 +13,12 @@ class Mojolicious::Routes::Match {
   
   has endpoint : rw Mojolicious::Routes::Route;
   
-  has position : rw int;
-  
   has stack : rw Hash[];
+  
+  has position : rw int;
   
   # Undocumented Fields
   has captures : Hash;
-  
-  has conditions : Hash of Mojolicious::Routes::Callback::Condition;
   
   # Class Methods
   static method new : Mojolicious::Routes::Match () {
@@ -84,24 +82,17 @@ class Mojolicious::Routes::Match {
   
   private method _match : int ($r : Mojolicious::Routes::Route, $c : Mojolicious::Controller, $options : Hash) {
     
-    my $path_save = $options->get("path")->(string);
+    my $path = $options->get("path")->(string);
     
     # Pattern
-    my $path = $path_save;
-    my $detect  = (my $endpoint = $r->is_endpoint);
-    my $captures = $r->pattern->match_partial(my $_ = [$path], $detect);
-    $path = $_->[0];
+    my $detect  = !!(my $endpoint = $r->is_endpoint);
+    my $captures = $r->pattern->match($path, $detect);
     unless ($captures) {
       return 0;
     }
     
     $self->{captures} //= Hash->new;
     my $captures_save = $self->{captures}->clone;
-    
-    Fn->defer([$options : Hash, $path_save : string, $captures_save : Hash] method : void () {
-      $options->set("path" => $path_save);
-      $options->set("captures" => $captures_save);
-    });
     
     $options->set(path => $path);
     
