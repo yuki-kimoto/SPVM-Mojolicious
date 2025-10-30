@@ -32,16 +32,23 @@ class Mojolicious::Routes::Match {
   
   # Instance Methods
   method find : void ($c : Mojolicious::Controller, $options : Hash) {
+    
     $self->_match($self->root, $c, $options);
   }
   
   private method _match : int ($r : Mojolicious::Routes::Route, $c : Mojolicious::Controller, $options : Hash) {
     
-    my $path = $options->get("path")->(string);
+    if ($c) {
+      die "The contoroller \$c must not be defined. This is needed for conditions, but SPVM::Mojolicious does not support conditions";
+    }
+    
+    my $path_save = $options->get("path")->(string);
     
     # Pattern
-    my $detect  = !!(my $endpoint = $r->is_endpoint);
-    my $captures = $r->pattern->match($path, $detect);
+    my $path = $path_save;
+    my $detect  = (my $endpoint = $r->is_endpoint);
+    my $captures = $r->pattern->match_partial(my $_ = [$path], $detect);
+    $path = $_->[0];
     unless ($captures) {
       return 0;
     }

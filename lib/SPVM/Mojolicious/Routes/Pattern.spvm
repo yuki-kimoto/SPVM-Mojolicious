@@ -101,6 +101,55 @@ class Mojolicious::Routes::Pattern {
     return !$path || $path eq "/" ? $captures : undef;
   }
   
+  method match_partial : Hash ($pathref : string[], $detect : int = 0) {
+    
+    # Compile on demand
+    unless ($self->{regex}) {
+      $self->_compile($detect);
+    }
+    
+    my $captures_length = 0;
+    my $match_start = -1;
+    my $match_length = -1;
+    my $captures_list = (StringList)undef;
+    if (my $m = $self->regex->match($pathref->[0])) {
+      $captures_length = $m->captures_length;
+      $match_start = $m->match_start;
+      $match_length = $m->match_length;
+      
+      $captures_list = StringList->new;
+      
+      for (my $i = 0; $i < $captures_length; $i++) {
+        $captures_list->push($m->captures->[$i]);
+      }
+    }
+    
+    unless ($captures_length) {
+      return undef;
+    }
+    
+    $pathref->[0] = Fn->substr($pathref->[0], $match_start, $match_length);
+    
+    my $captures_h = Hash->new($self->defaults->to_array);
+    my $placeholders = StringList->new($self->placeholders);
+    $placeholders->push("format");
+    
+    for my $placeholder (@{$placeholders->get_array}) {
+      
+      unless ($captures_list->length) {
+        last;
+      }
+      
+      my $capture = $captures_list->shift;
+      
+      if ($capture) {
+        $captures_h->{$placeholder} = $capture;
+      }
+    }
+    
+    return $captures_h;
+  }
+  
   method parse : void ($pattern : string, $constrants : Hash = undef) {
     
     $pattern //= "/";
@@ -169,55 +218,6 @@ class Mojolicious::Routes::Pattern {
     
     # Format can be optional
     return $endpoint && $format ? "$str.$format" : $str;
-  }
-  
-  method match_partial : Hash ($pathref : string[], $detect : int = 0) {
-    
-    # Compile on demand
-    unless ($self->{regex}) {
-      $self->_compile($detect);
-    }
-    
-    my $captures_length = 0;
-    my $match_start = -1;
-    my $match_length = -1;
-    my $captures_list = (StringList)undef;
-    if (my $m = $self->regex->match($pathref->[0])) {
-      $captures_length = $m->captures_length;
-      $match_start = $m->match_start;
-      $match_length = $m->match_length;
-      
-      $captures_list = StringList->new;
-      
-      for (my $i = 0; $i < $captures_length; $i++) {
-        $captures_list->push($m->captures->[$i]);
-      }
-    }
-    
-    unless ($captures_length) {
-      return undef;
-    }
-    
-    $pathref->[0] = Fn->substr($pathref->[0], $match_start, $match_length);
-    
-    my $captures_h = Hash->new($self->defaults->to_array);
-    my $placeholders = StringList->new($self->placeholders);
-    $placeholders->push("format");
-    
-    for my $placeholder (@{$placeholders->get_array}) {
-      
-      unless ($captures_list->length) {
-        last;
-      }
-      
-      my $capture = $captures_list->shift;
-      
-      if ($capture) {
-        $captures_h->{$placeholder} = $capture;
-      }
-    }
-    
-    return $captures_h;
   }
   
   private method _compile : void ($detect : int) {
