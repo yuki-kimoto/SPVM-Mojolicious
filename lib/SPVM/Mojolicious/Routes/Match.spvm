@@ -4,8 +4,6 @@
 class Mojolicious::Routes::Match {
   version_from Mojolicious;
   
-  use Mojolicious::Controller;
-  use Mojolicious::Routes;
   use Mojolicious::Routes::Route;
   
   # Fields
@@ -31,16 +29,12 @@ class Mojolicious::Routes::Match {
   }
   
   # Instance Methods
-  method find : void ($c : Mojolicious::Controller, $options : Hash) {
+  method find : void ($options : Hash) {
     
-    $self->_match($self->root, $c, $options);
+    $self->_match($self->root, $options);
   }
   
-  private method _match : int ($r : Mojolicious::Routes::Route, $c : Mojolicious::Controller, $options : Hash) {
-    
-    if ($c) {
-      die "The contoroller \$c must not be defined. This is needed for conditions, but SPVM::Mojolicious does not support conditions";
-    }
+  private method _match : int ($r : Mojolicious::Routes::Route, $options : Hash) {
     
     my $path = copy $options->get("path")->(string);
     my $path_save = copy $path;
@@ -114,7 +108,7 @@ class Mojolicious::Routes::Match {
     # Match children
     my $snapshot = (List of Hash)($r->parent ? $stack->clone : List->new(new Hash[0]));
     for my $child (@{$r->children}) {
-      if ($self->_match($child, $c, $options)) {
+      if ($self->_match($child, $options)) {
         return 1;
       }
       $self->set_stack($snapshot->to_array);

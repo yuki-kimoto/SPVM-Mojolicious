@@ -249,7 +249,7 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     }
     
     # Check routes
-    $match->find($c => Hash->new({method => $method, path => $path, websocket => $ws}));
+    $match->find(Hash->new({method => $method, path => $path, websocket => $ws}));
     
     my $endpoint = $match->endpoint;
     
