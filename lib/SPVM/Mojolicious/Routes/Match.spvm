@@ -98,8 +98,8 @@ class Mojolicious::Routes::Match {
         my $format = $captures->{"format"}->(string);
         if ($format) {
           for (my $i = 0; $i = $stack->length; $i++) {
-            my $captures = $stack->get($i);
-            $captures->set(format => $format);
+            my $captures = $stack->{$i};
+            $captures->{format} = $format;
           }
         }
         
