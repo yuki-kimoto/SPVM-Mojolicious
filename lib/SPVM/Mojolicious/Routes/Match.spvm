@@ -48,6 +48,11 @@ class Mojolicious::Routes::Match {
     $self->{captures} //= Hash->new;
     my $captures_save = $self->{captures}->clone;
     
+    Fn->defer([$self : Mojolicious::Routes::Match, $options : Hash, $path_save : string, $captures_save : Hash] method : void () {
+      $options->{"path"} = $path_save;
+      $self->{captures} = $captures_save;
+    });
+    
     # Pattern
     my $endpoint = $r->is_endpoint;
     my $detect_format = $endpoint;
@@ -56,11 +61,6 @@ class Mojolicious::Routes::Match {
     unless ($captures) {
       return 0;
     }
-    
-    Fn->defer([$options : Hash, $path_save : string, $captures_save : Hash] method : void () {
-      $options->set("path" => $path_save);
-      $options->set("captures" => $captures_save);
-    });
     
     $options->set(path => $path);
     
