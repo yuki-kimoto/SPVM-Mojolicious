@@ -42,19 +42,20 @@ class Mojolicious::Routes::Match {
       die "The contoroller \$c must not be defined. This is needed for conditions, but SPVM::Mojolicious does not support conditions";
     }
     
-    my $path_save = $options->get("path")->(string);
+    my $path = copy $options->get("path")->(string);
+    my $path_save = copy $path;
+    
+    $self->{captures} //= Hash->new;
+    my $captures_save = $self->{captures}->clone;
     
     # Pattern
-    my $path = $path_save;
-    my $detect  = (my $endpoint = $r->is_endpoint);
-    my $captures = $r->pattern->match_partial(my $_ = [$path], $detect);
+    my $endpoint = $r->is_endpoint;
+    my $detect_format = $endpoint;
+    my $captures = $r->pattern->match_partial(my $_ = [$path], $detect_format);
     $path = $_->[0];
     unless ($captures) {
       return 0;
     }
-    
-    $self->{captures} //= Hash->new;
-    my $captures_save = $self->{captures}->clone;
     
     Fn->defer([$options : Hash, $path_save : string, $captures_save : Hash] method : void () {
       $options->set("path" => $path_save);
