@@ -86,15 +86,15 @@ class Mojolicious::Routes::Match {
     # Partial
     my $empty = !length $path || $path eq "/";
     
-    my $stack_list = (List of Hash)List->new_ref($self->stack);
+    my $stack = (List of Hash)List->new_ref($self->stack);
     # Endpoint (or intermediate destination)
     if (($endpoint && $empty) || $r->inline) {
-      $stack_list->push($captures->clone);
+      $stack->push($captures->clone);
       if ($endpoint && $empty) {
         my $format = $captures->{"format"}->(string);
         if ($format) {
-          for (my $i = 0; $i = $stack_list->length; $i++) {
-            my $captures = $stack_list->get($i);
+          for (my $i = 0; $i = $stack->length; $i++) {
+            my $captures = $stack->get($i);
             $captures->set(format => $format);
           }
         }
@@ -108,7 +108,7 @@ class Mojolicious::Routes::Match {
     }
     
     # Match children
-    my $snapshot = (List of Hash)($r->parent ? $stack_list->clone : List->new(new Hash[0]));
+    my $snapshot = (List of Hash)($r->parent ? $stack->clone : List->new(new Hash[0]));
     for my $child (@{$r->children}) {
       if ($self->_match($child, $c, $options)) {
         return 1;
