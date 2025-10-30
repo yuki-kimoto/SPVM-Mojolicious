@@ -64,13 +64,7 @@ class Mojolicious::Routes::Route {
     }
   ;
   
-  has name : rw string
-    set {
-      $self->{name} = $_;
-      
-      $self->{custom} = 1;
-    }
-  ;
+  has name : rw string;
   
   has has_websocket : ro int
     get {
@@ -120,8 +114,6 @@ class Mojolicious::Routes::Route {
   
   # Undocumented Fields
   has websocket : byte;
-  
-  has custom : string;
   
   # Class Methods
   static method new : Mojolicious::Routes::Route () {
@@ -249,20 +241,11 @@ class Mojolicious::Routes::Route {
     
     my $auto = Hash->new;
     
-    my $custom = Hash->new;
-    
     my $children = (List of Mojolicious::Routes::Route)List->new_ref(Array->copy_object_address($self->children));
     
     while (my $child = $children->shift) {
-      if ($child->has_custom_name) {
-        unless ($custom->get($child->name)) {
-          $custom->set($child->name, $child);
-        }
-      }
-      else {
-        unless ($auto->get($child->name)) {
-          $auto->set($child->name, $child);
-        }
+      unless ($auto->get($child->name)) {
+        $auto->set($child->name, $child);
       }
       
       $children->push_($child->children);
@@ -274,15 +257,7 @@ class Mojolicious::Routes::Route {
       $ret->set($key, $auto->get($key));
     }
     
-    for my $key (@{$custom->keys}) {
-      $ret->set($key, $custom->get($key));
-    }
-    
     return $ret;
-  }
-  
-  method has_custom_name : int () {
-    return !!$self->{custom};
   }
   
   method is_websocket : int () {
