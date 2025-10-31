@@ -8,6 +8,8 @@ class Mojolicious::Routes::Pattern {
   # Fields
   has unparsed : rw string;
   
+  has defaults : rw Hash;
+  
   has regex : rw Regex;
   
   has placeholder_start : rw string;
@@ -21,8 +23,6 @@ class Mojolicious::Routes::Pattern {
   has quote_end : rw string;
   
   has placeholders : rw string[];
-  
-  has defaults : rw Hash;
   
   # Undocumented Fields
   has tree : List of string[];
@@ -302,6 +302,15 @@ class Mojolicious::Routes::Pattern {
       else {
         $tree->push(["text", $char, undef]);
       }
+    }
+    
+    # Placeholder types
+    for (my $i = @$tree - 1; $i >= 0; $i--) {
+      my $token = $tree->[$i];
+      unless ($token->[0] eq "placeholder") {
+        next;
+      }
+      $placeholders->unshift($token->[1]);
     }
     
     $self->set_unparsed($pattern);
