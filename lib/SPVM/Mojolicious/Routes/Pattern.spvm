@@ -46,6 +46,8 @@ class Mojolicious::Routes::Pattern {
     
     $self->{defaults} = Hash->new;
     
+    $self->{tree} = List->new(new string[][0]);
+    
     if ($pattern) {
       $self->parse($pattern);
     }
@@ -132,9 +134,11 @@ class Mojolicious::Routes::Pattern {
     $self->_tokenize($pattern);
   }
   
-  method render : string ($values : Hash, $endpoint : int) {
+  method render : string ($values : object[]|Hash = undef) {
     
-    my $str = "";
+    my $values = Fn->to_hash($values);
+    
+    my $str = (string)undef;
     my $tree = $self->{tree};
     for (my $i = @$tree - 1; $i >= 0; $i--) {
       my $token = $tree->[$i];
@@ -160,6 +164,10 @@ class Mojolicious::Routes::Pattern {
         my $default = $self->defaults->{$name}->(string);
         
         $part = $values->{$name}->(string) // $default // "";
+      }
+      
+      unless ($str) {
+        $str = "";
       }
       
       $str = $part . $str;

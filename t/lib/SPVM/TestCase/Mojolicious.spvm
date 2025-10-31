@@ -95,6 +95,21 @@ EOS
       }
     }
     
+    # render
+    {
+      {
+        my $pattern_string = "/";
+        my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
+        
+        my $rendered = $pattern->render;
+        
+        unless ($rendered == undef) {
+          return 0;
+        }
+      }
+      
+    }
+    
     return 1;
   }
   
