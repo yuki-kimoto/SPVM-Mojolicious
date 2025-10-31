@@ -129,6 +129,8 @@ lib/SPVM/Mojo/WebSocket/Frame.pm
 lib/SPVM/Mojo/WebSocket/Frame.spvm
 lib/SPVM/Mojolicious.pm
 lib/SPVM/Mojolicious.spvm
+lib/SPVM/Mojolicious/Callback.pm
+lib/SPVM/Mojolicious/Callback.spvm
 lib/SPVM/Mojolicious/Command.pm
 lib/SPVM/Mojolicious/Command.spvm
 lib/SPVM/Mojolicious/Command/Cgi.pm

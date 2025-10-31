@@ -6,6 +6,7 @@ class Mojolicious::Routes::Route {
   
   use Mojolicious::Routes;
   use Mojolicious::Routes::Pattern;
+  use Mojolicious::Callback;
   
   # Class Variables
   # Reserved stash values
