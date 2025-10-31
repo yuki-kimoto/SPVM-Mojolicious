@@ -223,12 +223,21 @@ EOS
         my $pattern_string = "/a";
         my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
         
-        my $captures = $pattern->match("/a");
-        
-        unless ($captures) {
-          return 0;
+        {
+          my $captures = $pattern->match("/a");
+          
+          unless ($captures) {
+            return 0;
+          }
         }
         
+        {
+          my $captures = $pattern->match("/a/b");
+          
+          if ($captures) {
+            return 0;
+          }
+        }
       }
     }
     
