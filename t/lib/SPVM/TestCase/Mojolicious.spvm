@@ -255,6 +255,53 @@ EOS
           }
         }
       }
+      
+      # match_partial
+      {
+        my $pattern_string = "/a";
+        my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
+        
+        {
+          my $path = copy "/a";
+          my $captures = $pattern->match_partial((mutable string)$path);
+          
+          unless ($captures) {
+            return 0;
+          }
+        }
+        
+        {
+          my $path = copy "/a/";
+          my $captures = $pattern->match_partial((mutable string)$path);
+          
+          unless ($captures) {
+            return 0;
+          }
+        }
+        
+        {
+          my $path = copy "/a/b";
+          my $captures = $pattern->match_partial((mutable string)$path);
+          
+          unless ($captures) {
+            return 0;
+          }
+          
+          unless ($path eq "/b") {
+            return 0;
+          }
+          
+        }
+        
+        {
+          my $path = copy "/";
+          my $captures = $pattern->match((mutable string)$path);
+          
+          if ($captures) {
+            return 0;
+          }
+        }
+      }
     }
     
     return 1;
