@@ -312,6 +312,9 @@ class Mojolicious::Routes::Route {
       elsif ($arg isa object[]) {
         die "Constraint is not supported.";
       }
+      else {
+        die "Invalid routing argument.";
+      }
     }
     
     my $route = $self->_route($pattern);
