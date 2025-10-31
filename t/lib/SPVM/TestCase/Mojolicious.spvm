@@ -34,4 +34,10 @@ EOS
     
     return 1;
   }
+  
+  static method mojolicious_routes_pattern : int () {
+    
+    return 1;
+  }
+  
 }
