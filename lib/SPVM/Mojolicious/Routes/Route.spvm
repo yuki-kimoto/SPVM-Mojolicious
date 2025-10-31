@@ -195,7 +195,7 @@ class Mojolicious::Routes::Route {
     for (my $i = 0; $i < @$chain; $i++) {
       my $route = $chain->[$i];
       
-      my $pattern_string = $route->pattern->render($values, !@{$_->children});
+      my $pattern_string = $route->pattern->render($values, !@{$route->children});
       
       $pattern_strings->push($pattern_string);
     }
