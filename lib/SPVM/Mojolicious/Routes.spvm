@@ -214,10 +214,6 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
       $continue = 0;
     }
     
-    if (!$continue && $c->rendered) {
-      die "Not rendered.";
-    }
-    
     my $last = ($position == @$stack - 1);
     if ($last) {
       $continue = 0;
@@ -227,6 +223,11 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     
     if ($continue) {
       return $self->continue($c);
+    }
+    else {
+      unless ($c->rendered) {
+        die "Not rendered.";
+      }
     }
   }
   
