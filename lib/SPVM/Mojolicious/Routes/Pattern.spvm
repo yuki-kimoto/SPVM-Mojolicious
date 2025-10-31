@@ -151,9 +151,6 @@ class Mojolicious::Routes::Pattern {
   
   method render : string ($values : Hash, $endpoint : int) {
     
-    # Placeholders can only be optional without a format
-    my $optional = !(my $format = $values->{"format"}->(string));
-    
     my $str = "";
     my $tree = $self->{tree};
     for (my $i = @$tree - 1; $i >= 0; $i--) {
@@ -167,14 +164,11 @@ class Mojolicious::Routes::Pattern {
       # Text
       if ($op eq "text") {
         $part = $value;
-        $optional = 0;
       }
       
       # Slash
       elsif ($op eq "slash") {
-        unless ($optional) {
-          $part = "/";
-        }
+        $part = "/";
       }
       
       # Placeholder
@@ -183,20 +177,12 @@ class Mojolicious::Routes::Pattern {
         my $default = $self->defaults->{$name}->(string);
         
         $part = $values->{$name}->(string) // $default // "";
-        
-        if (!$default || ($default ne $part)) {
-          $optional = 0;
-        }
-        elsif ($optional) {
-          $part = "";
-        }
       }
       
       $str = $part . $str;
     }
     
-    # Format can be optional
-    return $endpoint && $format ? "$str.$format" : $str;
+    return $str;
   }
   
   private method _compile : void () {
