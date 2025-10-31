@@ -304,8 +304,8 @@ class Mojolicious::Routes::Route {
         $cb = (Mojolicious::Callback)$arg;
       }
       # Defaults
-      elsif (is_options $arg) {
-        $defaults = Hash->new(Fn->merge_options($defaults->to_options, (object[])$arg));
+      elsif (is_options $arg || $arg isa Hash) {
+        $defaults = Fn->to_hash($arg);
       }
       
       # Constraints
