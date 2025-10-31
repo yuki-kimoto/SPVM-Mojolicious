@@ -113,10 +113,8 @@ class Mojolicious::Routes::Pattern {
     Fn->memcpy($path, 0, $new_path, 0, length $new_path);
     
     my $captures_h = Hash->new($self->defaults->to_array);
-    my $placeholders = StringList->new_ref($self->placeholders);
-    $placeholders->push("format");
     
-    for my $placeholder (@{$placeholders->get_array}) {
+    for my $placeholder (@{$self->placeholders}) {
       
       unless ($captures_list->length) {
         last;
