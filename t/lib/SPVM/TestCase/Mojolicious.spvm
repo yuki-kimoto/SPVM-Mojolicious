@@ -108,6 +108,50 @@ EOS
         }
       }
       
+      {
+        my $pattern_string = "/a";
+        my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
+        
+        my $rendered = $pattern->render;
+        
+        unless ($rendered eq "/a") {
+          return 0;
+        }
+      }
+      
+      {
+        my $pattern_string = "/a/";
+        my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
+        
+        my $rendered = $pattern->render;
+        
+        unless ($rendered eq "/a") {
+          return 0;
+        }
+      }
+      
+      {
+        my $pattern_string = "//a//b";
+        my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
+        
+        my $rendered = $pattern->render;
+        
+        unless ($rendered eq "/a/b") {
+          return 0;
+        }
+      }
+      
+      {
+        my $pattern_string = "a";
+        my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
+        
+        my $rendered = $pattern->render;
+        
+        unless ($rendered eq "/a") {
+          return 0;
+        }
+      }
+      
     }
     
     return 1;
