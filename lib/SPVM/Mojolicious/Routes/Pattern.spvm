@@ -133,48 +133,6 @@ class Mojolicious::Routes::Pattern {
     $self->_tokenize($pattern);
   }
   
-  method render : string ($values : object[]|Hash = undef) {
-    
-    my $values = Fn->to_hash($values);
-    
-    my $str = (string)undef;
-    my $tree = $self->{tree};
-    for (my $i = @$tree - 1; $i >= 0; $i--) {
-      my $token = $tree->[$i];
-      
-      my $op = $token->[0];
-      my $value = $token->[1];
-      
-      my $part = "";
-      
-      # Text
-      if ($op eq "text") {
-        $part = $value;
-      }
-      
-      # Slash
-      elsif ($op eq "slash") {
-        $part = "/";
-      }
-      
-      # Placeholder
-      else {
-        my $name = $value;
-        my $default = $self->defaults->{$name}->(string);
-        
-        $part = $values->{$name}->(string) // $default // "";
-      }
-      
-      unless ($str) {
-        $str = "";
-      }
-      
-      $str = $part . $str;
-    }
-    
-    return $str;
-  }
-  
   private method _compile : void () {
     
     my $defaults = $self->defaults;
