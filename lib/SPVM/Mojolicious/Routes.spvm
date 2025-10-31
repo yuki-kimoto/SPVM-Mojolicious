@@ -217,7 +217,6 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     my $last = ($position == @$stack - 1);
     if ($last) {
       $continue = 0;
-      $c->set_routed(1);
     }
     
     $match->set_position($position + 1);

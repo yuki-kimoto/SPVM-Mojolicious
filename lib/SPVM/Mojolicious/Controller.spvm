@@ -49,8 +49,6 @@ class Mojolicious::Controller {
   
   has rendered : rw byte;
   
-  has routed : rw byte;
-  
   has maybe : rw byte;
   
   static method new : Mojolicious::Controller () {
