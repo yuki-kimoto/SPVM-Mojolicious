@@ -66,7 +66,25 @@ EOS
     }
     
     {
+      my $pattern_string = "//";
+      my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
+      
+      unless ($pattern->unparsed == undef) {
+        return 0;
+      }
+    }
+    
+    {
       my $pattern_string = "/a";
+      my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
+      
+      unless ($pattern->unparsed eq "/a") {
+        return 0;
+      }
+    }
+    
+    {
+      my $pattern_string = "/a/";
       my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
       
       unless ($pattern->unparsed eq "/a") {

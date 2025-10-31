@@ -152,7 +152,9 @@ class Mojolicious::Routes::Pattern {
   
   method parse : void ($pattern : string) {
     
-    $pattern //= "/";
+    unless (length $pattern) {
+      $pattern = "/";
+    }
     
     $pattern = copy $pattern;
     
@@ -162,7 +164,7 @@ class Mojolicious::Routes::Pattern {
       return;
     }
     
-    Re->s((mutable string)$pattern, "!/$", "");
+    Re->s((mutable string)$pattern, "/$", "");
     
     $self->_tokenize($pattern);
   }
