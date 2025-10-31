@@ -291,6 +291,24 @@ EOS
             }
           }
           
+          # Relaxed
+          {
+            my $pattern_string = "/<#var1>";
+            my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
+            
+            {
+              my $captures = $pattern->match("/a.json");
+              
+              unless ($captures) {
+                return 0;
+              }
+              
+              unless ($captures->{"var1"}->(string) eq "a.json") {
+                return 0;
+              }
+            }
+          }
+          
         }
       }
       
