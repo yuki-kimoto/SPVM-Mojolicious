@@ -70,24 +70,6 @@ class Mojolicious::Routes::Pattern {
     return "(" . Fn->join("|", $reqs) . ")";
   }
   
-  private static method _compile_format : string ($format : string|string[], $has_default : int) {
-    
-    # No regex
-    unless ($format) {
-      return "";
-    }
-    
-    # Default regex
-    if ($format isa string && (string)$format eq "1") {
-      return "/?(?:\.([^/]+))?$" ;
-    }
-    
-    # Compile custom regex
-    my $regex = "\." . &_compile_req($format);
-    
-    return $has_default ? "/?(?:$regex)?\$" : "/?$regex\$";
-  }
-  
   # Instance Methods
   method match : Hash ($path : string) {
     
