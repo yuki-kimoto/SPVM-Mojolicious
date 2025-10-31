@@ -5,7 +5,7 @@ class Mojolicious::Routes::Match {
   version_from Mojolicious;
   
   use Mojolicious::Routes::Route;
-  use Mojolicious::Routes::Match::Stack;
+  use Mojolicious::Routes::Match::StackData;
   
   # Fields
   has root : rw Mojolicious::Routes;
