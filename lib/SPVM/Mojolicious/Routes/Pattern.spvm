@@ -25,7 +25,7 @@ class Mojolicious::Routes::Pattern {
   has defaults : rw Hash;
   
   # Undocumented Fields
-  has tree : rw List of string[];
+  has tree : List of string[];
   
   # Class Methods
   static method new : Mojolicious::Routes::Pattern ($pattern : string = undef) {
@@ -175,7 +175,7 @@ class Mojolicious::Routes::Pattern {
     my $optional = !(my $format = $values->{"format"}->(string));
     
     my $str = "";
-    my $tree = $self->tree;
+    my $tree = $self->{tree};
     for (my $i = @$tree - 1; $i >= 0; $i--) {
       my $token = $tree->[$i];
       
@@ -346,7 +346,7 @@ class Mojolicious::Routes::Pattern {
     
     $self->set_unparsed($pattern);
     
-    $self->set_tree($tree);
+    $self->{tree} = $tree;
   }
   
 }
