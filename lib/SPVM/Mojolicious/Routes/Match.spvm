@@ -94,8 +94,6 @@ class Mojolicious::Routes::Match {
         
         return 1;
       }
-      $captures->delete("app");
-      $captures->delete("cb");
     }
     
     # Match children

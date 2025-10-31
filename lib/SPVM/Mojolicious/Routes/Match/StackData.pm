@@ -1,4 +1,4 @@
-package SPVM::Mojolicious::Routes::Match::Stack;
+package SPVM::Mojolicious::Routes::Match::StackData;
 
 
 
@@ -8,15 +8,15 @@ package SPVM::Mojolicious::Routes::Match::Stack;
 
 =head1 Name
 
-SPVM::Mojolicious::Routes::Match::Stack - Short Description
+SPVM::Mojolicious::Routes::Match::StackData - Short Description
 
 =head1 Description
 
-Mojolicious::Routes::Match::Stack class in L<SPVM> has methods to do someting.
+Mojolicious::Routes::Match::StackData class in L<SPVM> has methods to do someting.
 
 =head1 Usage
 
-  use Mojolicious::Routes::Match::Stack;
+  use Mojolicious::Routes::Match::StackData;
 
 =head1 Details
 
