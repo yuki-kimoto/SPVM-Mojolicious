@@ -23,23 +23,6 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     return $self;
   }
   
-  private static method _render : int ($c : Mojolicious::Controller) {
-    
-    my $stash = $c->stash;
-    
-    if ($c->rendered) {
-      return 0;
-    }
-    
-    my $rendered = $c->render_maybe(undef);
-    
-    unless ($rendered) {
-      unless ($c->routed) {
-        die "Route without dispatch and nothing to render";
-      }
-    }
-  }
-  
   # Instance Methods
   protected method init : void ($options : object[] = undef) {
     
@@ -156,6 +139,10 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     }
     
     $self->continue($c);
+    
+    unless ($c->rendered) {
+      die "Not rendered.";
+    }
     
     return 1;
   }
