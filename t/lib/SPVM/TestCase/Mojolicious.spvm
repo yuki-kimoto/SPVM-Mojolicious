@@ -232,6 +232,14 @@ EOS
         }
         
         {
+          my $captures = $pattern->match("/a/");
+          
+          unless ($captures) {
+            return 0;
+          }
+        }
+        
+        {
           my $captures = $pattern->match("/a/b");
           
           if ($captures) {
