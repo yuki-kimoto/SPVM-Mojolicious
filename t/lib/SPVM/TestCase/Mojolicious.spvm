@@ -9,6 +9,7 @@ class TestCase::Mojolicious {
   use Mojolicious::Plugin;
   use Mojolicious::Plugins;
   use Mojolicious::Lite;
+  use Mojolicious::Routes::Pattern;
   
   static method test : int () {
     
@@ -36,6 +37,42 @@ EOS
   }
   
   static method mojolicious_routes_pattern : int () {
+    
+    {
+      my $pattern_string = (string)undef;
+      my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
+      
+      unless ($pattern->unparsed == undef) {
+        return 0;
+      }
+    }
+    
+    {
+      my $pattern_string = "";
+      my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
+      
+      unless ($pattern->unparsed == undef) {
+        return 0;
+      }
+    }
+    
+    {
+      my $pattern_string = "/";
+      my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
+      
+      unless ($pattern->unparsed == undef) {
+        return 0;
+      }
+    }
+    
+    {
+      my $pattern_string = "/a";
+      my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
+      
+      unless ($pattern->unparsed eq "/a") {
+        return 0;
+      }
+    }
     
     return 1;
   }

@@ -32,10 +32,6 @@ class Mojolicious::Routes::Pattern {
     
     my $self = new Mojolicious::Routes::Pattern;
     
-    if ($pattern) {
-      $self->parse($pattern);
-    }
-    
     $self->{placeholder_start} = ":";
     
     $self->{relaxed_start} = "#";
@@ -49,6 +45,10 @@ class Mojolicious::Routes::Pattern {
     $self->{placeholders} = new string[0];
     
     $self->{defaults} = Hash->new;
+    
+    if ($pattern) {
+      $self->parse($pattern);
+    }
     
     return $self;
   }
@@ -131,7 +131,7 @@ class Mojolicious::Routes::Pattern {
     Fn->memcpy($path, 0, $new_path, 0, length $new_path);
     
     my $captures_h = Hash->new($self->defaults->to_array);
-    my $placeholders = StringList->new($self->placeholders);
+    my $placeholders = StringList->new_ref($self->placeholders);
     $placeholders->push("format");
     
     for my $placeholder (@{$placeholders->get_array}) {
