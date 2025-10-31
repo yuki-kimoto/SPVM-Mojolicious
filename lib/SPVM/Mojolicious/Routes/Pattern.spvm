@@ -53,23 +53,6 @@ class Mojolicious::Routes::Pattern {
     return $self;
   }
   
-  private static method _compile_req : string ($req : string|string[]) {
-    
-    if ($req isa string) {
-      return "(" . (string)$req . ")";
-    }
-    
-    my $reqs = Array->copy_string_address((string[])$req);
-    
-    Sort->sort_string_desc($reqs);
-    
-    for (my $i = 0; $i < @$reqs; $i++) {
-      $reqs->[$i] = "\Q" . $reqs->[$i] . "\E";
-    }
-    
-    return "(" . Fn->join("|", $reqs) . ")";
-  }
-  
   # Instance Methods
   method match : Hash ($path : string) {
     
