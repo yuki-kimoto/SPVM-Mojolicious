@@ -209,15 +209,27 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     
     $c->set_captures($captures);
     
-    my $continue = 0;
-    my $last = ($position == @$stack - 1);
+    my $continue = 1;
     if (my $cb = $stack_data->route->cb) {
       $c->log->trace("Routing to a callback");
       
       $continue = $cb->($c);
     }
+    elsif (my $template = $stack_data->route->template) {
+      $c->log->trace("Routing to the template $template");
+      
+      my $output = $c->render_maybe($template);
+      
+      if ($output) {
+        $c->set_rendered(1);
+      }
+      
+      $continue = 0;
+    }
     
+    my $last = ($position == @$stack - 1);
     if ($last) {
+      $continue = 0;
       $c->set_routed(1);
     }
     

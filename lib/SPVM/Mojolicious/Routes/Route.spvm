@@ -67,13 +67,6 @@ class Mojolicious::Routes::Route {
     
     $self->init;
     
-    my $cb = [$self : Mojolicious::Routes::Route] method : int ($c : Mojolicious::Controller) {
-      
-      $c->render_maybe($self->template);
-    };
-    $self->set_cb($cb);
-    weaken $cb->{self};
-    
     return $self;
   }
   
