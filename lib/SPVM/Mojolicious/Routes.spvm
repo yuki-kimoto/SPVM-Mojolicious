@@ -6,7 +6,7 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
   
   use Hash;
   use Mojo::Cache;
-  use Mojo::Callback;
+  use Mojolicious::Callback;
   use Mojolicious::Controller;
   
   # Fields
@@ -39,7 +39,7 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     }
   }
   
-  private static method _action : int ($app : Mojolicious, $c : Mojolicious::Controller, $cb : Mojo::Callback, $last : int) {
+  private static method _action : int ($app : Mojolicious, $c : Mojolicious::Controller, $cb : Mojolicious::Callback, $last : int) {
     die "TODO";
     # $self->plugins->emit_chain(around_action => @_);
   }
@@ -214,7 +214,7 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     
     my $continue = 0;
     my $last = !$stack->[++$position];
-    if (my $cb = $field->{"cb"}->(Mojo::Callback)) {
+    if (my $cb = $field->{"cb"}->(Mojolicious::Callback)) {
       $continue = $self->_callback($c, $cb, $last);
     }
     
@@ -225,7 +225,7 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     }
   }
   
-  private method _callback : int ($c : Mojolicious::Controller, $cb : Mojo::Callback, $last : int) {
+  private method _callback : int ($c : Mojolicious::Controller, $cb : Mojolicious::Callback, $last : int) {
     
     if ($last) {
       $c->set_routed(1);
@@ -233,7 +233,7 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     
     $c->log->trace("Routing to a callback");
     
-    return&_action($c->app, $c, $cb, $last);
+    return &_action($c->app, $c, $cb, $last);
   }
   
 }
