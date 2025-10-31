@@ -198,24 +198,6 @@ class Mojolicious::Routes::Route {
     $pattern->parse($pattern_string);
   }
   
-  method render : string ($values : Hash) {
-    
-    my $chain = $self->_chain;
-    
-    my $pattern_strings = StringList->new;
-    for (my $i = 0; $i < @$chain; $i++) {
-      my $route = $chain->[$i];
-      
-      my $pattern_string = $route->pattern->render($values);
-      
-      $pattern_strings->push($pattern_string);
-    }
-    
-    my $path = Fn->join("", $pattern_strings->to_array);
-    
-    return length $path ? $path : "/";
-  }
-  
   method to : void ($defaults : Hash)  {
     
     my $pattern_defaults = $self->pattern->defaults;
