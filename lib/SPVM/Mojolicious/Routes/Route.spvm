@@ -45,8 +45,6 @@ class Mojolicious::Routes::Route {
   
   has websocket : byte;
   
-  has name : rw string;
-  
   has children : rw Mojolicious::Routes::Route[];
   
   has parent : rw Mojolicious::Routes::Route
@@ -275,7 +273,7 @@ class Mojolicious::Routes::Route {
     
     my $defaults = Hash->new;
     
-    my $name = (string)undef;
+    my $template = (string)undef;
     
     my $pattern = (string)undef;
     
@@ -295,9 +293,9 @@ class Mojolicious::Routes::Route {
       elsif ($arg isa string && @$args) {
         die "Condition is not supported.";
       }
-      # Last scalar is the route name
+      # Last scalar is the template
       elsif ($arg isa string) {
-        $name = (string)$arg;
+        $template = (string)$arg;
       }
       # Callback
       elsif ($arg isa Mojo::Callback) {
@@ -326,7 +324,7 @@ class Mojolicious::Routes::Route {
       $route->set_methods((string[])$methods);
     }
     
-    $route->set_name($name);
+    $route->set_template($template);
     
     $route->to($defaults);
     
