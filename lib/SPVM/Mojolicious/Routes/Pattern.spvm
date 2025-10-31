@@ -27,6 +27,8 @@ class Mojolicious::Routes::Pattern {
   # Undocumented Fields
   has tree : List of string[];
   
+  has regex_string : string;
+  
   # Class Methods
   static method new : Mojolicious::Routes::Pattern ($pattern : string = undef) {
     
@@ -62,7 +64,7 @@ class Mojolicious::Routes::Pattern {
     
     my $captures = $self->match_partial((mutable string)$path);
     
-    return !$path || $path eq "/" ? $captures : undef;
+    return !length $path || $path eq "/" ? $captures : undef;
   }
   
   method match_partial : Hash ($path : mutable string) {
@@ -75,37 +77,34 @@ class Mojolicious::Routes::Pattern {
     my $captures_length = 0;
     my $match_start = -1;
     my $match_length = -1;
-    my $captures_list = (StringList)undef;
+    my $captures = (StringList)undef;
     if (my $m = $self->regex->match($path)) {
       $captures_length = $m->captures_length;
       $match_start = $m->match_start;
       $match_length = $m->match_length;
       
-      $captures_list = StringList->new;
+      $captures = StringList->new;
       
       for (my $i = 0; $i < $captures_length; $i++) {
-        $captures_list->push($m->captures->[$i]);
+        $captures->push($m->captures->[$i]);
       }
     }
-    
-    unless ($captures_length) {
+    else {
       return undef;
     }
     
     my $new_path = Fn->substr($path, $match_start + $match_length);
-    
     set_length($path, length $new_path);
     Fn->memcpy($path, 0, $new_path, 0, length $new_path);
     
-    my $captures_h = Hash->new($self->defaults->to_array);
-    
+    my $captures_h = Hash->new($self->defaults->to_options);
     for my $placeholder (@{$self->placeholders}) {
       
-      unless ($captures_list->length) {
+      unless ($captures->length) {
         last;
       }
       
-      my $capture = $captures_list->shift;
+      my $capture = $captures->shift;
       
       if ($capture) {
         $captures_h->{$placeholder} = $capture;
@@ -231,7 +230,11 @@ class Mojolicious::Routes::Pattern {
       $regex = $block . $regex;
     }
     
-    $self->set_regex(Regex->new($regex));
+    $regex = "^$regex";
+    
+    $self->{regex_string} = $regex;
+    
+    $self->set_regex(Regex->new($regex, "s"));
   }
   
   private method _tokenize : void ($pattern : string) {
