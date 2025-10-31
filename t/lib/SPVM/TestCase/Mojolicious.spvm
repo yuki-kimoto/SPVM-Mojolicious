@@ -38,57 +38,60 @@ EOS
   
   static method mojolicious_routes_pattern : int () {
     
+    # unparsed
     {
-      my $pattern_string = (string)undef;
-      my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
-      
-      unless ($pattern->unparsed == undef) {
-        return 0;
+      {
+        my $pattern_string = (string)undef;
+        my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
+        
+        unless ($pattern->unparsed == undef) {
+          return 0;
+        }
       }
-    }
-    
-    {
-      my $pattern_string = "";
-      my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
       
-      unless ($pattern->unparsed == undef) {
-        return 0;
+      {
+        my $pattern_string = "";
+        my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
+        
+        unless ($pattern->unparsed == undef) {
+          return 0;
+        }
       }
-    }
-    
-    {
-      my $pattern_string = "/";
-      my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
       
-      unless ($pattern->unparsed == undef) {
-        return 0;
+      {
+        my $pattern_string = "/";
+        my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
+        
+        unless ($pattern->unparsed == undef) {
+          return 0;
+        }
       }
-    }
-    
-    {
-      my $pattern_string = "//";
-      my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
       
-      unless ($pattern->unparsed == undef) {
-        return 0;
+      {
+        my $pattern_string = "//";
+        my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
+        
+        unless ($pattern->unparsed == undef) {
+          return 0;
+        }
       }
-    }
-    
-    {
-      my $pattern_string = "/a";
-      my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
       
-      unless ($pattern->unparsed eq "/a") {
-        return 0;
+      {
+        my $pattern_string = "/a";
+        my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
+        
+        unless ($pattern->unparsed eq "/a") {
+          return 0;
+        }
       }
-    }
-    
-    {
-      my $pattern_string = "/a/";
-      my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
       
-      unless ($pattern->unparsed eq "/a") {
-        return 0;
+      {
+        my $pattern_string = "/a/";
+        my $pattern = Mojolicious::Routes::Pattern->new($pattern_string);
+        
+        unless ($pattern->unparsed eq "/a") {
+          return 0;
+        }
       }
     }
     
