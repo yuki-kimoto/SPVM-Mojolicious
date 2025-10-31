@@ -188,7 +188,7 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     my $position = $match->position;
     
     unless ($position < @$stack) {
-      die "[Unexpected Error]Invalid stack position";
+      die "[Unexpected Error]Invalid stack position.";
     }
     
     my $stack_data = $stack->[$position];
@@ -205,7 +205,7 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     elsif (my $template = $stack_data->route->template) {
       $c->log->trace("Routing to the template $template");
       
-      my $output = $c->render_maybe($template);
+      my $output = $c->render($template);
       
       if ($output) {
         $c->set_rendered(1);

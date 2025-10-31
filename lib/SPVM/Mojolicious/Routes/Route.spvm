@@ -58,6 +58,10 @@ class Mojolicious::Routes::Route {
   
   has template : rw string;
   
+  has format : rw string;
+  
+  has handler : rw string;
+  
   # Undocumented Fields
   
   # Class Methods
@@ -76,6 +80,10 @@ class Mojolicious::Routes::Route {
     $self->{children} = new Mojolicious::Routes::Route[0];
     
     $self->{pattern} = Mojolicious::Routes::Pattern->new;
+    
+    $self->{format} = "html";
+    
+    $self->{handler} = "ep";
   }
   
   method any : Mojolicious::Routes::Route ($args : object...) {

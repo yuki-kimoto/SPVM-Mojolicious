@@ -49,8 +49,6 @@ class Mojolicious::Controller {
   
   has rendered : rw byte;
   
-  has maybe : rw byte;
-  
   static method new : Mojolicious::Controller () {
     
     my $self = new Mojolicious::Controller;
@@ -169,13 +167,6 @@ class Mojolicious::Controller {
 
 =cut
 
-  }
-  
-  method render_maybe : string ($template : string, $options : object[] = undef) {
-    
-    $options = Fn->merge_options($options, {maybe => 1});
-    
-    return $self->render($template, $options);
   }
   
   method render : string ($template : string, $options : object[] = undef) {
