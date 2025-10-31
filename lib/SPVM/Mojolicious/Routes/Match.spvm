@@ -12,7 +12,7 @@ class Mojolicious::Routes::Match {
   
   has endpoint : rw Mojolicious::Routes::Route;
   
-  has stack : rw Hash[];
+  has stack : rw Mojolicious::Routes::Match::StackData[];
   
   has position : rw int;
   
@@ -24,7 +24,7 @@ class Mojolicious::Routes::Match {
     
     my $self = new Mojolicious::Routes::Match;
     
-    $self->{stack} = new Hash[0];
+    $self->{stack} = new Mojolicious::Routes::Match::StackData[0];
     
     return $self;
   }
@@ -87,7 +87,10 @@ class Mojolicious::Routes::Match {
     my $stack = (List of Hash)List->new_ref($self->stack);
     # Endpoint (or intermediate destination)
     if (($endpoint && $empty) || $r->inline) {
-      $stack->push($captures->clone);
+      my $stack_data = Mojolicious::Routes::Match::StackData->new;
+      $stack_data->set_captures($captures->clone);
+      $stack_data->set_route($r);
+      $stack->push($stack_data);
       if ($endpoint && $empty) {
         
         $self->set_endpoint($r);
@@ -97,7 +100,7 @@ class Mojolicious::Routes::Match {
     }
     
     # Match children
-    my $snapshot = (List of Hash)($r->parent ? $stack->clone : List->new(new Hash[0]));
+    my $snapshot = (List of Mojolicious::Routes::Match::StackData)($r->parent ? $stack->clone : List->new(new Mojolicious::Routes::Match::StackData[0]));
     for my $child (@{$r->children}) {
       if ($self->_match($child, $options)) {
         return 1;
