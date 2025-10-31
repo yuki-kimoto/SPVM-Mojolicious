@@ -277,6 +277,8 @@ class Mojolicious::Routes::Route {
     
     my $pattern = (string)undef;
     
+    my $cb = (Mojolicious::Callback)undef;
+    
     while (1) {
       
       unless (@$args) {
@@ -298,8 +300,8 @@ class Mojolicious::Routes::Route {
         $template = (string)$arg;
       }
       # Callback
-      elsif ($arg isa Mojo::Callback) {
-        $defaults->set("cb", $arg);
+      elsif ($arg isa Mojolicious::Callback) {
+        $cb = (Mojolicious::Callback)$arg;
       }
       # Defaults
       elsif (is_options $arg) {
@@ -325,6 +327,10 @@ class Mojolicious::Routes::Route {
     }
     
     $route->set_template($template);
+    
+    if ($cb) {
+      $route->set_cb($cb);
+    }
     
     $route->to($defaults);
     
