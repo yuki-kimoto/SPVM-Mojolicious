@@ -89,7 +89,7 @@ class Mojolicious::Routes::Match {
     
     my $empty = !length $path || $path eq "/";
     
-    my $stack = (List of Hash)List->new_ref($self->stack);
+    my $stack = (List of Mojolicious::Routes::Match::StackData)List->new_ref($self->stack);
     # Endpoint (or intermediate destination)
     if (($is_endpoint && $empty) || $r->inline) {
       my $stack_data = Mojolicious::Routes::Match::StackData->new;
@@ -103,12 +103,12 @@ class Mojolicious::Routes::Match {
     }
     
     # Match children
-    my $snapshot = (List of Mojolicious::Routes::Match::StackData)($r->parent ? $stack->clone : List->new(new Mojolicious::Routes::Match::StackData[0]));
+    my $snapshot = $r->parent ? (Mojolicious::Routes::Match::StackData[])$stack->to_array : new Mojolicious::Routes::Match::StackData[0];
     for my $child (@{$r->children}) {
       if ($self->_match($child, $options)) {
         return 1;
       }
-      $self->set_stack($snapshot->to_array);
+      $self->set_stack($snapshot);
     }
   }
 
