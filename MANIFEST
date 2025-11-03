@@ -15,8 +15,6 @@ lib/SPVM/Mojo/Asset/Memory.pm
 lib/SPVM/Mojo/Asset/Memory.spvm
 lib/SPVM/Mojo/ByteStream.pm
 lib/SPVM/Mojo/ByteStream.spvm
-lib/SPVM/Mojo/Cache.pm
-lib/SPVM/Mojo/Cache.spvm
 lib/SPVM/Mojo/Callback.pm
 lib/SPVM/Mojo/Callback.spvm
 lib/SPVM/Mojo/Collection.pm
