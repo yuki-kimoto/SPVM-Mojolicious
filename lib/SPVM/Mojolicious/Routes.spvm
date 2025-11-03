@@ -35,10 +35,6 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     
     $self->continue($c);
     
-    unless ($c->rendered) {
-      die "Not rendered.";
-    }
-    
     return 1;
   }
   
