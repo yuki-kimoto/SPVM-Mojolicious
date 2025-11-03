@@ -94,9 +94,6 @@ class Mojolicious::Routes::Route {
       $methods = (string[])$args->[0];
       $shift = 1;
     }
-    else {
-      $methods = new string[0];
-    }
     
     $args = $shift ? (object...)Array->copy_object_address($args, 1, @$args - 1) : $args;
     
