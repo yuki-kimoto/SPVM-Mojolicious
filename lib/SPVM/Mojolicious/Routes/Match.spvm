@@ -66,12 +66,17 @@ class Mojolicious::Routes::Match {
     
     # Method
     my $method_match = 0;
-    my $method = $options->get("method")->(string);
-    for my $_ (@{$r->methods}) {
-      if ($method eq $_) {
-        $method_match = 1;
-        last;
+    if ($r->methods) {
+      my $method = $options->get("method")->(string);
+      for my $_ (@{$r->methods}) {
+        if ($method eq $_) {
+          $method_match = 1;
+          last;
+        }
       }
+    }
+    else {
+      $method_match = 1;
     }
     unless ($method_match) {
       return 0;

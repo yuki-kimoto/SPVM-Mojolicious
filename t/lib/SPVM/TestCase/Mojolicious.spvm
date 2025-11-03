@@ -10,6 +10,7 @@ class TestCase::Mojolicious {
   use Mojolicious::Plugins;
   use Mojolicious::Lite;
   use Mojolicious::Routes::Pattern;
+  use Mojolicious::Routes::Match;
   
   static method test : int () {
     
@@ -32,6 +33,35 @@ Hello
 EOS
     
     $app->set_inline_templates($inline_templates);
+    
+    return 1;
+  }
+  
+  static method mojolicious_routes_match : int () {
+    
+    {
+      my $match = Mojolicious::Routes::Match->new;
+      my $routes = Mojolicious::Routes->new;
+      my $r = $routes->get("/a");
+      
+      $match->set_root($routes);
+      
+      my $path = "/a";
+      
+      $match->find(Hash->new({method => "GET", path => $path}));
+      
+      unless ($match->endpoint == $r) {
+        return 0;
+      }
+      
+      unless (@{$match->stack} == 1) {
+        return 0;
+      }
+      
+      unless ($match->stack->[0]->route == $r) {
+        return 0;
+      }
+    }
     
     return 1;
   }
