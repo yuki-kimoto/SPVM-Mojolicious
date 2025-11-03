@@ -61,6 +61,30 @@ EOS
       unless ($match->stack->[0]->route == $r) {
         return 0;
       }
+      
+      unless ($match->position == 0) {
+        return 0;
+      }
+    }
+    
+    {
+      my $match = Mojolicious::Routes::Match->new;
+      my $routes = Mojolicious::Routes->new;
+      my $r = $routes->get("/a");
+      
+      $match->set_root($routes);
+      
+      my $path = "/a";
+      
+      $match->find(Hash->new({method => "POST", path => $path}));
+      
+      if ($match->endpoint) {
+        return 0;
+      }
+      
+      if (@{$match->stack}) {
+        return 0;
+      }
     }
     
     return 1;
