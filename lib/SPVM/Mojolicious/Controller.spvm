@@ -87,10 +87,6 @@ class Mojolicious::Controller {
     return $tx->res;
   }
   
-  method continue : void () {
-    $self->app->routes->continue($self);
-  }
-  
   method cookie : string ($name : string) {
     
     # Request cookies

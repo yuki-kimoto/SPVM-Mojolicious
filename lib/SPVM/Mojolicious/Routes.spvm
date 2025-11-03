@@ -38,7 +38,7 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     return 1;
   }
   
-  method match : void ($c : Mojolicious::Controller) {
+  private method match : void ($c : Mojolicious::Controller) {
     
     my $req  = $c->req;
     my $path = $req->url->path->to_route;
@@ -63,7 +63,7 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     }
   }
   
-  method continue : int ($c : Mojolicious::Controller) {
+  private method continue : int ($c : Mojolicious::Controller) {
     
     my $match = $c->match;
     my $stack = $match->stack;
