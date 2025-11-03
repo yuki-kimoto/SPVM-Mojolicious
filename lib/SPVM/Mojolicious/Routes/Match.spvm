@@ -10,7 +10,7 @@ class Mojolicious::Routes::Match {
   # Fields
   has root : rw Mojolicious::Routes;
   
-  has endpoint : rw Mojolicious::Routes::Route;
+  has endpoint : ro Mojolicious::Routes::Route;
   
   has stack : rw Mojolicious::Routes::Match::StackData[];
   
@@ -97,9 +97,7 @@ class Mojolicious::Routes::Match {
       $stack_data->set_route($r);
       $stack->push($stack_data);
       if ($endpoint && $empty) {
-        
-        $self->set_endpoint($r);
-        
+        $self->{endpoint} = $r;
         return 1;
       }
     }

@@ -87,32 +87,136 @@ EOS
       }
     }
     
+    # any
     {
-      my $match = Mojolicious::Routes::Match->new;
-      my $routes = Mojolicious::Routes->new;
-      my $r = $routes->any("/a");
-      
-      $match->set_root($routes);
-      
-      my $path = "/a";
-      
-      $match->find(Hash->new({method => "GET", path => $path}));
-      
-      unless ($match->endpoint == $r) {
-        return 0;
+      {
+        my $match = Mojolicious::Routes::Match->new;
+        my $routes = Mojolicious::Routes->new;
+        my $r = $routes->any("/a");
+        
+        $match->set_root($routes);
+        
+        my $path = "/a";
+        
+        $match->find(Hash->new({method => "GET", path => $path}));
+        
+        unless ($match->endpoint == $r) {
+          return 0;
+        }
+        
+        unless (@{$match->stack} == 1) {
+          return 0;
+        }
+        
+        unless ($match->stack->[0]->route == $r) {
+          return 0;
+        }
+        
+        unless ($match->position == 0) {
+          return 0;
+        }
       }
       
-      unless (@{$match->stack} == 1) {
-        return 0;
+      {
+        my $match = Mojolicious::Routes::Match->new;
+        my $routes = Mojolicious::Routes->new;
+        my $r = $routes->any("/a");
+        
+        $match->set_root($routes);
+        
+        my $path = "/a";
+        
+        $match->find(Hash->new({method => "POST", path => $path}));
+        
+        unless ($match->endpoint == $r) {
+          return 0;
+        }
+        
+        unless (@{$match->stack} == 1) {
+          return 0;
+        }
+        
+        unless ($match->stack->[0]->route == $r) {
+          return 0;
+        }
+        
+        unless ($match->position == 0) {
+          return 0;
+        }
       }
       
-      unless ($match->stack->[0]->route == $r) {
-        return 0;
+      {
+        my $match = Mojolicious::Routes::Match->new;
+        my $routes = Mojolicious::Routes->new;
+        my $r = $routes->any(["GET", "POST"], "/a");
+        
+        $match->set_root($routes);
+        
+        my $path = "/a";
+        
+        $match->find(Hash->new({method => "POST", path => $path}));
+        
+        unless ($match->endpoint == $r) {
+          return 0;
+        }
+        
+        unless (@{$match->stack} == 1) {
+          return 0;
+        }
+        
+        unless ($match->stack->[0]->route == $r) {
+          return 0;
+        }
+        
+        unless ($match->position == 0) {
+          return 0;
+        }
       }
       
-      unless ($match->position == 0) {
-        return 0;
+      {
+        my $match = Mojolicious::Routes::Match->new;
+        my $routes = Mojolicious::Routes->new;
+        my $r = $routes->any(["GET", "POST"], "/a");
+        
+        $match->set_root($routes);
+        
+        my $path = "/a";
+        
+        $match->find(Hash->new({method => "GET", path => $path}));
+        
+        unless ($match->endpoint == $r) {
+          return 0;
+        }
+        
+        unless (@{$match->stack} == 1) {
+          return 0;
+        }
+        
+        unless ($match->stack->[0]->route == $r) {
+          return 0;
+        }
+        
+        unless ($match->position == 0) {
+          return 0;
+        }
       }
+      
+      {
+        my $match = Mojolicious::Routes::Match->new;
+        my $routes = Mojolicious::Routes->new;
+        my $r = $routes->any(["GET", "POST"], "/a");
+        
+        $match->set_root($routes);
+        
+        my $path = "/a";
+        
+        $match->find(Hash->new({method => "PUT", path => $path}));
+        
+        if (@{$match->stack}) {
+          return 0;
+        }
+      }
+      
     }
     
     return 1;
