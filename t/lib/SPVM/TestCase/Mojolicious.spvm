@@ -109,6 +109,27 @@ EOS
         }
       }
       
+      {
+        my $match = Mojolicious::Routes::Match->new;
+        my $routes = Mojolicious::Routes->new;
+        my $r = $routes->get("/a/:var1");
+        
+        $match->set_root($routes);
+        
+        my $path = "/a/1";
+        
+        $match->find(Hash->new({method => "GET", path => $path}));
+        
+        unless ($match->endpoint) {
+          return 0;
+        }
+        
+        unless (@{$match->stack} == 1) {
+          return 0;
+        }
+        
+      }
+      
     }
     
     # any
@@ -223,27 +244,6 @@ EOS
         unless ($match->position == 0) {
           return 0;
         }
-      }
-      
-      {
-        my $match = Mojolicious::Routes::Match->new;
-        my $routes = Mojolicious::Routes->new;
-        my $r = $routes->any(["GET", "POST"], "/a");
-        
-        $match->set_root($routes);
-        
-        my $path = "/a";
-        
-        $match->find(Hash->new({method => "PUT", path => $path}));
-        
-        if (@{$match->stack}) {
-          return 0;
-        }
-        
-        if ($match->endpoint) {
-          return 0;
-        }
-        
       }
       
       {
