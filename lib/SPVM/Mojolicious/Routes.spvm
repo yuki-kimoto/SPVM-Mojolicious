@@ -5,13 +5,9 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
   version_from Mojolicious;
   
   use Hash;
-  use Mojo::Cache;
   use Mojolicious::Callback;
   use Mojolicious::Controller;
   use Mojolicious::Routes::Match::StackData;
-  
-  # Fields
-  has cache : rw Mojo::Cache;
   
   # Class Methods
   static method new : Mojolicious::Routes () {
@@ -27,8 +23,6 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
   protected method init : void ($options : object[] = undef) {
     
     $self->SUPER::init;
-    
-    $self->{cache} = Mojo::Cache->new;
   }
   
   method dispatch : int ($c : Mojolicious::Controller) {
@@ -59,16 +53,9 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
       $method = "GET";
     }
     
-    # Check cache
     my $ws = $c->tx->is_websocket ? 1 : 0;
     my $match = $c->match;
     $match->set_root($self);
-    my $cache = $self->cache;
-    if (my $result = $cache->get("$method:$path:$ws")) {
-      $match->set_endpoint($result->{"endpoint"}->(Mojolicious::Routes::Route));
-      $match->set_stack($result->{"stack"}->(Mojolicious::Routes::Match::StackData[]));
-      return;
-    }
     
     # Check routes
     $match->find(Hash->new({method => $method, path => $path, websocket => $ws}));
@@ -78,8 +65,6 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     unless ($endpoint) {
       return;
     }
-    
-    $cache->set("$method:$path:$ws" => Hash->new({endpoint => $endpoint, stack => $match->stack}));
   }
   
   method continue : int ($c : Mojolicious::Controller) {
