@@ -42,8 +42,6 @@ class Mojolicious {
   
   has routes : rw Mojolicious::Routes;
   
-  has root : rw Mojolicious::Routes;
-  
   has secrets : rw string[]
     get {
       unless (exists $self->{secrets}) {
@@ -101,8 +99,6 @@ class Mojolicious {
     $self->{sessions} = Mojolicious::Sessions->new;
     
     $self->{routes} = Mojolicious::Routes->new;
-    
-    $self->{root} = $self->{routes};
     
     $self->{commands} = Mojolicious::Commands->new;
     
