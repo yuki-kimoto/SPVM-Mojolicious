@@ -215,6 +215,11 @@ EOS
         if (@{$match->stack}) {
           return 0;
         }
+        
+        if ($match->endpoint) {
+          return 0;
+        }
+        
       }
       
     }
