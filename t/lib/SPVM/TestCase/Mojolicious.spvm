@@ -246,6 +246,27 @@ EOS
         
       }
       
+      {
+        my $match = Mojolicious::Routes::Match->new;
+        my $routes = Mojolicious::Routes->new;
+        my $r = $routes->any(["GET", "POST"], "/a");
+        
+        $match->set_root($routes);
+        
+        my $path = "/a";
+        
+        $match->find(Hash->new({method => "PUT", path => $path}));
+        
+        if (@{$match->stack}) {
+          return 0;
+        }
+        
+        if ($match->endpoint) {
+          return 0;
+        }
+        
+      }
+      
     }
     
     return 1;
