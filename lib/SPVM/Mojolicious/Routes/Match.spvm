@@ -49,7 +49,7 @@ class Mojolicious::Routes::Match {
     });
     
     # Pattern
-    my $endpoint = $r->is_endpoint;
+    my $is_endpoint = $r->is_endpoint;
     my $captures = $r->pattern->match_partial((mutable string)$path);
     unless ($captures) {
       return 0;
@@ -91,12 +91,12 @@ class Mojolicious::Routes::Match {
     
     my $stack = (List of Hash)List->new_ref($self->stack);
     # Endpoint (or intermediate destination)
-    if (($endpoint && $empty) || $r->inline) {
+    if (($is_endpoint && $empty) || $r->inline) {
       my $stack_data = Mojolicious::Routes::Match::StackData->new;
       $stack_data->set_captures($captures->clone);
       $stack_data->set_route($r);
       $stack->push($stack_data);
-      if ($endpoint && $empty) {
+      if ($is_endpoint && $empty) {
         $self->{endpoint} = $r;
         return 1;
       }
