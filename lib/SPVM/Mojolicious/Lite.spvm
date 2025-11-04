@@ -28,11 +28,6 @@ class Mojolicious::Lite extends Mojolicious {
     return $self->routes->delete($args);
   }
   
-  method del : Mojolicious::Routes::Route ($args : object...) {
-    
-    return $self->delete($args);
-  }
-  
   method get : Mojolicious::Routes::Route ($args : object...) {
     
     return $self->routes->get($args);
