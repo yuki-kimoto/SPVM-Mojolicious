@@ -11,6 +11,8 @@ class TestCase::Mojolicious {
   use Mojolicious::Lite;
   use Mojolicious::Routes::Pattern;
   use Mojolicious::Routes::Match;
+  use Mojolicious::Controller;
+  use Mojo::Message::Request;
   
   static method test : int () {
     
@@ -33,6 +35,11 @@ Hello
 EOS
     
     $app->set_inline_templates($inline_templates);
+    
+    return 1;
+  }
+  
+  static method mojolicious_routes : int () {
     
     return 1;
   }
