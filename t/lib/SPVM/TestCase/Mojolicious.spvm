@@ -42,6 +42,69 @@ EOS
   static method mojolicious_routes : int () {
     
     {
+      my $path = "/a/1/b/2";
+      
+      my $tx = Mojo::Transaction::HTTP->new;
+      $tx->req->url->path->parse($path);
+      $tx->req->set_method("GET");
+      
+      my $app = Mojolicious::Lite->new;
+      my $results = Hash->new;
+      
+      my $r = $app->under([$results : Hash] method : int ($c : Mojolicious::Controller) {
+        
+        $results->{"under1"} = 1;
+        
+        return 1;
+      });
+      
+      {
+        my $r = $r->under("/a/:var1", [$results : Hash] method : int ($c : Mojolicious::Controller) {
+          
+          $results->{"under2"} = 1;
+          
+          return 1;
+        });
+        
+        $r->get("/b/:var2", [$results : Hash] method : int ($c : Mojolicious::Controller) {
+          
+          $results->{"path"} = $c->req->url->path->to_string;
+          
+          $results->{"captures"} = $c->captures;
+          
+          $c->set_rendered(1);
+        });
+      }
+      
+      my $c = Mojolicious::Controller->new;
+      $c->set_tx($tx);
+      $c->set_app($app);
+      
+      $app->routes->dispatch($c);
+      
+      unless ($results->{"under1"} && $results->{"under1"}->(int) == 1) {
+        return 0;
+      }
+      
+      unless ($results->{"under2"} && $results->{"under2"}->(int) == 1) {
+        return 0;
+      }
+      
+      unless ($results->{"path"}->(string) eq $path) {
+        return 0;
+      }
+      
+      unless ($results->{"captures"}->(Hash)->{"var1"}->(string) eq "1") {
+        return 0;
+      }
+      
+      unless ($results->{"captures"}->(Hash)->{"var2"}->(string) eq "2") {
+        return 0;
+      }
+      
+    }
+    
+    {
       my $path = "/";
       
       my $tx = Mojo::Transaction::HTTP->new;

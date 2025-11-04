@@ -53,8 +53,10 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     my $match = $c->match;
     $match->set_root($self);
     
+    my $options = Hash->new({method => $method, path => $path, websocket => $ws});
+    
     # Check routes
-    $match->find(Hash->new({method => $method, path => $path, websocket => $ws}));
+    $match->find($options);
     
     my $endpoint = $match->endpoint;
     
