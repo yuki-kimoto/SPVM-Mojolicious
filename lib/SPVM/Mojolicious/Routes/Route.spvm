@@ -137,38 +137,6 @@ class Mojolicious::Routes::Route {
     return $route;
   }
   
-  method add_child : void ($route : Mojolicious::Routes::Route)  {
-    
-    $route->remove;
-    
-    $route->set_parent($self);
-    
-    my $children = (List of Mojolicious::Routes::Route)List->new_ref($self->{children});
-    
-    $children->push($route);
-  }
-  
-  method remove : void () {
-    
-    my $parent = $self->parent;
-    
-    unless ($parent) {
-      return;
-    }
-    
-    my $new_children = (List of Mojolicious::Routes::Route)List->new(new Mojolicious::Routes::Route[0]);
-    for (my $i = 0; $i < @{$parent->children}; $i++) {
-      my $child = $parent->children->[$i];
-      
-      unless ($child == $self) {
-        $new_children->push($child);
-      }
-    }
-    $parent->set_children($new_children->get_array);
-    
-    $self->set_parent(undef);
-  }
-  
   method root : Mojolicious::Routes () {
     
     return (Mojolicious::Routes)$self->_chain->[0];
@@ -234,6 +202,38 @@ class Mojolicious::Routes::Route {
       }
     }
     return $has_websocket;
+  }
+  
+  private method add_child : void ($route : Mojolicious::Routes::Route)  {
+    
+    $route->remove;
+    
+    $route->set_parent($self);
+    
+    my $children = (List of Mojolicious::Routes::Route)List->new_ref($self->{children});
+    
+    $children->push($route);
+  }
+  
+  private method remove : void () {
+    
+    my $parent = $self->parent;
+    
+    unless ($parent) {
+      return;
+    }
+    
+    my $new_children = (List of Mojolicious::Routes::Route)List->new(new Mojolicious::Routes::Route[0]);
+    for (my $i = 0; $i < @{$parent->children}; $i++) {
+      my $child = $parent->children->[$i];
+      
+      unless ($child == $self) {
+        $new_children->push($child);
+      }
+    }
+    $parent->set_children($new_children->get_array);
+    
+    $self->set_parent(undef);
   }
   
   private method _chain : List of Mojolicious::Routes::Route () {
