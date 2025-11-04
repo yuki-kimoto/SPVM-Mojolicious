@@ -16,13 +16,11 @@ my $api = SPVM::api();
 
 my $start_memory_blocks_count = $api->get_memory_blocks_count;
 
-ok(SPVM::TestCase::Mojolicious->test);
+ok(SPVM::TestCase::Mojolicious->mojolicious_routes_pattern);
 
-# Version check
-{
-  my $version_string = SPVM::Fn->get_version_string("Mojolicious");
-  is($SPVM::Mojolicious::VERSION, $version_string);
-}
+ok(SPVM::TestCase::Mojolicious->mojolicious_routes_match);
+
+ok(SPVM::TestCase::Mojolicious->mojolicious_routes);
 
 SPVM::Fn->destroy_runtime_permanent_vars;
 

@@ -184,5 +184,6 @@ t/basic.t
 t/lib/SPVM/TestCase/Mojolicious.spvm
 t/lib/SPVM/TestCase/Online.spvm
 t/online.t
+t/routes.t
 t/webapp/basic.pl
 TODO.txt
