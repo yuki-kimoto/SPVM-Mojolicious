@@ -92,11 +92,11 @@ EOS
       {
         my $match = Mojolicious::Routes::Match->new;
         my $routes = Mojolicious::Routes->new;
-        my $r = $routes->get("/");
+        my $r = $routes->get("/a");
         
         $match->set_root($routes);
         
-        my $path = "/";
+        my $path = "/a";
         
         $match->find(Hash->new({method => "POST", path => $path}));
         
@@ -105,6 +105,26 @@ EOS
         }
         
         if (@{$match->stack}) {
+          return 0;
+        }
+      }
+      
+      {
+        my $match = Mojolicious::Routes::Match->new;
+        my $routes = Mojolicious::Routes->new;
+        my $r = $routes->put("/");
+        
+        $match->set_root($routes);
+        
+        my $path = "/";
+        
+        $match->find(Hash->new({method => "PUT", path => $path}));
+        
+        unless ($match->endpoint) {
+          return 0;
+        }
+        
+        unless (@{$match->stack} == 1) {
           return 0;
         }
       }
