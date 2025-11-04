@@ -83,7 +83,7 @@ class Mojolicious::Routes::Match {
     }
     
     # WebSocket
-    if ($r->is_websocket && !$options->{"websocket"}->(int)) {
+    if ($r->is_websocket && !($options->{"websocket"} ? $options->{"websocket"}->(int) : 0)) {
       return 0;
     }
     
