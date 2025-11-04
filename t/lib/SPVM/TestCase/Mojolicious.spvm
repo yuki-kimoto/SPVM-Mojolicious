@@ -41,6 +41,40 @@ EOS
   
   static method mojolicious_routes : int () {
     
+    {
+      my $path = "/";
+      
+      my $tx = Mojo::Transaction::HTTP->new;
+      $tx->req->url->path->parse($path);
+      $tx->req->set_method("GET");
+      
+      my $app = Mojolicious::Lite->new;
+      my $results = Hash->new;;
+      $app->get("/", [$results : Hash] method : int ($c : Mojolicious::Controller) {
+        
+        $results->{"path"} = $c->req->url->path->to_string;
+        
+        $results->{"success"} = 1;
+        
+        $c->set_rendered(1);
+      });
+      
+      my $c = Mojolicious::Controller->new;
+      $c->set_tx($tx);
+      $c->set_app($app);
+      
+      $app->routes->dispatch($c);
+      
+      unless ($results->{"path"}->(string) eq "/") {
+        return 0;
+      }
+      
+      unless ($results->{"success"}->(int) == 1) {
+        return 0;
+      }
+      
+    }
+    
     return 1;
   }
   

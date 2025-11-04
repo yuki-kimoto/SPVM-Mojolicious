@@ -34,7 +34,19 @@ class Mojolicious::Controller {
     }
   ;
   
-  has match : rw Mojolicious::Routes::Match;
+  has match : rw Mojolicious::Routes::Match
+    get {
+      unless (exists $self->{match}) {
+        my $match = Mojolicious::Routes::Match->new;
+        
+        $match->set_root($self->app->routes);
+        
+        $self->{match} = $match;
+      }
+      
+      return $self->{match};
+    }
+  ;
   
   has stash : rw Hash;
   
@@ -43,7 +55,15 @@ class Mojolicious::Controller {
   has session : rw Hash;
   
   # Fields that is originally stash mojo.xxx
-  has log : rw Mojo::Log;
+  has log : rw Mojo::Log
+    get {
+      unless (exists $self->{log}) {
+        $self->{log} = $self->app->log->context("[" . $self->req->request_id . "]");
+      }
+      
+      return $self->{log};
+    }
+  ;
   
   has captures : rw Hash;
   
@@ -52,14 +72,6 @@ class Mojolicious::Controller {
   static method new : Mojolicious::Controller () {
     
     my $self = new Mojolicious::Controller;
-    
-    my $match = Mojolicious::Routes::Match->new;
-    
-    $match->set_root($self->app->routes);
-    
-    $self->{match} = $match;
-    
-    $self->{log} = $self->app->log->context("[" . $self->req->request_id . "]");
     
     return $self;
   }
