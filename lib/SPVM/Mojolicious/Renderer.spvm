@@ -23,8 +23,6 @@ class Mojolicious::Renderer {
   
   has paths : rw string[];
   
-  has data_section : rw string;
-  
   # Undocumented Fields
   has templates : Hash of string[];
   
@@ -85,7 +83,7 @@ class Mojolicious::Renderer {
     $self->{handlers}->set($name, $cb);
   }
   
-  method get_data_template : string ($options : object[]) {
+  method get_data_template : string ($options : object[], $data : string) {
     
     my $template = $self->template_name($options);
     
@@ -93,7 +91,7 @@ class Mojolicious::Renderer {
       return undef;
     }
     
-    return Mojo::Util->get_data_template($self->data_section, $template);
+    return Mojo::Util->get_data_template($data, $template);
   }
   
   method template_name : string ($options : Hash|object[]) {
