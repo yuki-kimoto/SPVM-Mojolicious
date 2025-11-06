@@ -83,7 +83,7 @@ class Mojolicious::Renderer {
     $self->{handlers}->set($name, $cb);
   }
   
-  method get_data_template : string ($options : object[], $data : string) {
+  method get_data_template : string ($options : object[], $data : string = undef) {
     
     my $template = $self->template_name($options);
     
