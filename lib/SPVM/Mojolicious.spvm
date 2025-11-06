@@ -163,11 +163,6 @@ class Mojolicious {
     }
   }
   
-  method helper : void ($name : string, $cb : Mojo::Callback) {
-    
-    $self->renderer->add_helper($name, $cb);
-  }
-  
   method hook : void ($name : string, $cb : Mojo::Callback)  {
     
     $self->plugins->on($name, $cb);
