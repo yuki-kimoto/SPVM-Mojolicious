@@ -83,7 +83,7 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
     my $r = $stack_data->route;
     
     my $continue = 1;
-    if (my $cb = $r->cb) {
+    if (my $cb = $r->pattern->defaults->{"cb"}->(Mojolicious::Callback)) {
       $c->log->trace("Routing to a callback");
       
       $continue = $cb->($c);

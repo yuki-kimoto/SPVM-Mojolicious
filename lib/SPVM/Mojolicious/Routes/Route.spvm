@@ -54,8 +54,6 @@ class Mojolicious::Routes::Route {
     }
   ;
   
-  has cb : rw Mojolicious::Callback;
-  
   # Undocumented Fields
   
   # Class Methods
@@ -303,7 +301,7 @@ class Mojolicious::Routes::Route {
     $route->pattern->defaults->{"template"} = $template;
     
     if ($cb) {
-      $route->set_cb($cb);
+      $defaults->{"cb"} = $cb;
     }
     
     $route->to($defaults);
