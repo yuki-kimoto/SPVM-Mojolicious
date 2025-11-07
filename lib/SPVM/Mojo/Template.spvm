@@ -51,6 +51,14 @@ class Mojo::Template {
     
     $self->{unparsed} = "";
     
+    $self->{tag_start} = "<%";
+    
+    $self->{tag_end} = "%>";
+    
+    $self->{line_start} = "%";
+    
+    $self->{expression_mark} = "=";
+    
     $self->{capture_end} = "end";
     
     $self->{capture_start} = "begin";
@@ -59,19 +67,11 @@ class Mojo::Template {
     
     $self->{escape_mark} = "=";
     
-    $self->{expression_mark} = "=";
-    
     $self->{trim_mark} = "=";
-    
-    $self->{line_start} = "%";
     
     $self->{replace_mark} = "%";
     
     $self->{name} = "template";
-    
-    $self->{tag_start} = "<%";
-    
-    $self->{tag_end} = "%>";
     
     $self->{tree} = new string[][0];
     
@@ -87,43 +87,45 @@ class Mojo::Template {
     
     # Clean start
     $self->set_unparsed($template);
-    my $tree = (List of string[])List->new_ref(new string[][0]);
+    my $tree = (List of string[])List->new(new string[][0]);
     $self->set_tree($tree->get_array);
     $self->set_compiled(undef);
     
-    my $tag     = $self->tag_start;
-    my $replace = $self->replace_mark;
-    my $expr    = $self->expression_mark;
-    my $escp    = $self->escape_mark;
-    my $cpen    = $self->capture_end;
-    my $cmnt    = $self->comment_mark;
-    my $cpst    = $self->capture_start;
-    my $trim    = $self->trim_mark;
-    my $end     = $self->tag_end;
-    my $start   = $self->line_start;
+    my $tag_start = $self->tag_start; # <%
+    my $tag_end = $self->tag_end; # %>
+    my $line_start = $self->line_start; # %
+    my $expression_mark = $self->expression_mark; # =
     
-    my $line_re  = "^(\s*)\Q$start\E(?:(\Q$replace\E)|(\Q$cmnt\E)|(\Q$expr\E))?(.*)$";
-    my $token_re = "(\Q$tag\E(?:\Q$replace\E|\Q$cmnt\E)|\Q$tag$expr\E(?:\Q$escp\E)?(?:\s*\Q$cpen\E\b)?|\Q$tag\E(?:\s*\Q$cpen\E\b)?|(?:\b\Q$cpst\E\s*)?(?:\Q$trim\E)?\Q$end\E)";
-    my $cpen_re = "^\Q$tag\E(?:\Q$expr\E)?(?:\Q$escp\E)?\s*\Q$cpen\E(.*)$";
-    my $end_re  = "^(?:(\Q$cpst\E)\s*)?(\Q$trim\E)?\Q$end\E$";
+    my $capture_end = $self->capture_end;
+    my $capture_start = $self->capture_start;
+    
+    my $escape_mark = $self->escape_mark; # =
+    my $comment_mark = $self->comment_mark;
+    my $replace_mark = $self->replace_mark; # %
+    my $trim_mark    = $self->trim_mark;
+    
+    my $line_start_re  = "^(\s*)\Q$line_start\E(?:(\Q$replace_mark\E)|(\Q$comment_mark\E)|(\Q$expression_mark\E))?(.*)$";
+    my $token_re = "(\Q$tag_start\E(?:\Q$replace_mark\E|\Q$comment_mark\E)|\Q$tag_start$expression_mark\E(?:\Q$escape_mark\E)?(?:\s*\Q$capture_end\E\b)?|\Q$tag_start\E(?:\s*\Q$capture_end\E\b)?|(?:\b\Q$capture_start\E\s*)?(?:\Q$trim_mark\E)?\Q$tag_end\E)";
+    my $capture_end_re = "^\Q$tag_start\E(?:\Q$expression_mark\E)?(?:\Q$escape_mark\E)?\s*\Q$capture_end\E(.*)$";
+    my $tag_end_re  = "^(?:(\Q$capture_start\E)\s*)?(\Q$trim_mark\E)?\Q$tag_end\E$";
     
     # Split lines
     my $op = "text";
-    my $trimming = (string)undef;
+    my $trim_markming = (string)undef;
     my $capture = 0;
     for my $line (@{Fn->split("\n", $template)}) {
       
       # Turn Perl line into mixed line
-      if ($op eq "text" && (my $m = Re->m($line, $line_re))) {
+      if ($op eq "text" && (my $m = Re->m($line, $line_start_re))) {
         
         # Escaped start
-        if ($m->cap2) { $line = $m->cap1 . $start . $m->cap5; }
+        if ($m->cap2) { $line = $m->cap1 . $line_start . $m->cap5; }
         
         # Comment
-        elsif ($m->cap3) { $line = $tag . $m->cap3 . "$trim$end"; }
+        elsif ($m->cap3) { $line = $tag_start . $m->cap3 . "$trim_mark$tag_end"; }
         
         # Expression or code
-        else { $line = $m->cap4 ? $m->cap1 . $tag . $m->cap4 . $m->cap5 . $end : $tag . $m->cap5 . "$trim$end"; }
+        else { $line = $m->cap4 ? $m->cap1 . $tag_start . $m->cap4 . $m->cap5 . $tag_end : $tag_start . $m->cap5 . "$trim_mark$tag_end"; }
       }
       
       # Escaped line ending
@@ -137,13 +139,13 @@ class Mojo::Template {
       for my $token (@{Re->split($token_re, $line)}) {
         
         # Capture end
-        if (my $m = Re->m($token, $cpen_re)) {
-          $token = $tag . $m->cap1;
+        if (my $m = Re->m($token, $capture_end_re)) {
+          $token = $tag_start . $m->cap1;
           $capture = 1;
         }
         
         # End
-        if ($op ne "text" && (my $m = Re->m($token, $end_re))) {
+        if ($op ne "text" && (my $m = Re->m($token, $tag_end_re))) {
           
           # Capture start
           if ($m->cap1) {
@@ -151,7 +153,7 @@ class Mojo::Template {
           }
           
           # Trim left side
-          if (($trimming = $m->cap2) && $tree->length > 1) {
+          if (($trim_markming = $m->cap2) && $tree->length > 1) {
             &_trim($tree);
           }
           
@@ -160,29 +162,29 @@ class Mojo::Template {
         }
         
         # Code
-        elsif ($token eq $tag) { $op = "code"; }
+        elsif ($token eq $tag_start) { $op = "code"; }
         
         # Expression
-        elsif ($token eq "$tag$expr") { $op = "expr"; }
+        elsif ($token eq "$tag_start$expression_mark") { $op = "expr"; }
         
         # Expression that needs to be escaped
-        elsif ($token eq "$tag$expr$escp") { $op = "escp"; }
+        elsif ($token eq "$tag_start$expression_mark$escape_mark") { $op = "escp"; }
         
         # Comment
-        elsif ($token eq "$tag$cmnt") { $op = "cmnt"; }
+        elsif ($token eq "$tag_start$comment_mark") { $op = "cmnt"; }
         
         # Text (comments are just ignored)
         elsif ($op ne "cmnt") {
           
           # Replace
-          if ($token eq "$tag$replace") {
-            $token = $tag ;
+          if ($token eq "$tag_start$replace_mark") {
+            $token = $tag_start ;
           }
           
           # Trim right side (convert whitespace to line noise)
-          if ($trimming && (my $r = Re->s((mutable string)$token, "^(\s+)", ""))) {
+          if ($trim_markming && (my $r = Re->s((mutable string)$token, "^(\s+)", ""))) {
             $tree->push(["code", $r->match->cap1]);
-            $trimming = 0;
+            $trim_markming = 0;
           }
           
           # Token (with optional capture end)
@@ -196,7 +198,7 @@ class Mojo::Template {
         || (@$tree < 4 || $tree->[-3][0] ne "text" || !Re->m($tree->[-3][1], "\n$")
         || ((@$tree >= 2 && $tree->[-2][0] ne "line") || $tree->[-1][0] ne "text")))
       {
-        $tree->push(["line"]);
+        $tree->push(["line", undef]);
         next;
       }
       
