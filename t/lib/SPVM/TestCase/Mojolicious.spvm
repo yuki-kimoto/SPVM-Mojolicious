@@ -23,9 +23,13 @@ class TestCase::Mojolicious {
       return 0;
     }
     
-    my $r = $app->get("/a/b/:foo/#bar/*baz/d<title>d/c", "a/b");
+    my $r = $app->get("/a/b/:foo/#bar/*baz/d<title>d/c", {foo => "1", bar => "2", baz => "3"}, "a/b");
     
     unless ($r->pattern->defaults->{"template"}->(string) eq "a/b") {
+      return 0;
+    }
+    
+    unless ($r->pattern->defaults->{"foo"}->(string) eq "1") {
       return 0;
     }
     
