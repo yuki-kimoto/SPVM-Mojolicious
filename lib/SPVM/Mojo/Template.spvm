@@ -192,9 +192,9 @@ class Mojo::Template {
       }
       
       # Optimize successive text lines separated by a newline
-      if ($tree->[-4] && $tree->[-4]->[0] ne "line"
-        || (!$tree->[-3] || $tree->[-3]->[0] ne "text" || !Re->m($tree->[-3]->[1], "\n$")
-        || ($tree->[-2]->[0] ne "line" || $tree->[-1]->[0] ne "text")))
+      if (@$tree >= 4 && $tree->[-4] && $tree->[-4][0] ne "line"
+        || (@$tree < 4 || $tree->[-3][0] ne "text" || !Re->m($tree->[-3][1], "\n$")
+        || ((@$tree >= 2 && $tree->[-2][0] ne "line") || $tree->[-1][0] ne "text")))
       {
         $tree->push(["line"]);
         next;
@@ -210,15 +210,15 @@ class Mojo::Template {
     
     # Skip captures
     my $len = $tree->length;
-    my $i = $tree->[-2]->[0] eq "cpst" || $tree->[-2]->[0] eq "cpen" ? $len - 3 : $len - 2;
+    my $i = $tree->[-2][0] eq "cpst" || $tree->[-2][0] eq "cpen" ? $len - 3 : $len - 2;
     
     # Only trim text
-    unless ($tree->[$i]->[0] eq "text") {
+    unless ($tree->[$i][0] eq "text") {
       return;
     }
     
     # Convert whitespace text to line noise
-    if (my $r = Re->s((mutable string)$tree->[$i]->[1], "(\s+)$", "")) {
+    if (my $r = Re->s((mutable string)$tree->[$i][1], "(\s+)$", "")) {
       $tree->splice($i, 0, ["code", $r->match->cap1]);
     }
     
