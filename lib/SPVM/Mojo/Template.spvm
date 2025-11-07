@@ -103,7 +103,7 @@ class Mojo::Template {
     my $start   = $self->line_start;
     
     my $line_re  = "^(\s*)\Q$start\E(?:(\Q$replace\E)|(\Q$cmnt\E)|(\Q$expr\E))?(.*)$";
-    my $token_re = "(\Q$tag\E(?:\Q$replace\E|\Q$cmnt\E)|\Q$tag$expr\E(?:\Q$escp\E)?(?:\s*\Q$cpen\E(?!\w))?|\Q$tag\E(?:\s*\Q$cpen\E(?!\w))?|(?:(?<!\w)\Q$cpst\E\s*)?(?:\Q$trim\E)?\Q$end\E)";
+    my $token_re = "(\Q$tag\E(?:\Q$replace\E|\Q$cmnt\E)|\Q$tag$expr\E(?:\Q$escp\E)?(?:\s*\Q$cpen\E\b)?|\Q$tag\E(?:\s*\Q$cpen\E\b)?|(?:\b\Q$cpst\E\s*)?(?:\Q$trim\E)?\Q$end\E)";
     my $cpen_re = "^\Q$tag\E(?:\Q$expr\E)?(?:\Q$escp\E)?\s*\Q$cpen\E(.*)$";
     my $end_re  = "^(?:(\Q$cpst\E)\s*)?(\Q$trim\E)?\Q$end\E$";
     
