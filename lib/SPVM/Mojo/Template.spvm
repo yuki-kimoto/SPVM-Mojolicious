@@ -89,7 +89,7 @@ class Mojo::Template {
     $self->set_unparsed($template);
     my $tree = (List of string[])List->new_ref(new string[][0]);
     $self->set_tree($tree->get_array);
-    $self->set_compiled(0);
+    $self->set_compiled(undef);
     
     my $tag     = $self->tag_start;
     my $replace = $self->replace_mark;
@@ -231,7 +231,9 @@ class Mojo::Template {
     # Use a local stack trace for compile exceptions
     my $compiled = $self->compiled;
     unless ($compiled) {
+    
       $self->_compile;
+      
       my $code = $self->code;
       
       unless ($compiled = Native->use_anon_class($code)) {
@@ -253,15 +255,19 @@ class Mojo::Template {
     my $tree = (List of string[])List->new($self->tree);
     my $escape = 1;
     
+    warn dump $tree;
+    
     my $blocks = StringList->new;
     my $i = 0;
     my $capture = (string)undef;
     my $multi = 0;
-    while (++$i <= $tree->length && (my $next = $tree->[$i])) {
-      my $_ = $tree->[$i - 1];
+    for (my $i = 0; $i < @$tree - 1; $i++) {
       
-      my $op = $_->[0];
-      my $value = $_->[1];
+      my $token = $tree->[$i];
+      my $op = $token->[0];
+      my $value = $token->[1];
+      
+      my $next = $tree->[$i + 1];
       
       if ($op eq "line") {
         $blocks->push("");
@@ -273,6 +279,8 @@ class Mojo::Template {
       
       my $newline = length $value != $value_length;
       
+      $blocks->push("");
+        
       # Text (quote and fix line ending)
       if ($op eq "text") {
         if (length $value) {
