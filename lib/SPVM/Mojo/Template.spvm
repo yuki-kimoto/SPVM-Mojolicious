@@ -276,30 +276,22 @@ class Mojo::Template {
       # Text (quote and fix line ending)
       if ($op eq "text") {
         if (length $value) {
-          my $_ = $blocks->get($blocks->length - 1);
-          $_ .= "\$_O .= <<'END_OF_STRING';\n" . $value . "END_OF_STRING\n" ;
-          $blocks->set($blocks->length - 1, $_ );
+          $blocks->[-1] .= "\$_O .= <<'END_OF_STRING';\n" . $value . "END_OF_STRING\n" ;
         }
       }
       
       # Code or multi-line expression
       elsif ($op eq "code" || $multi) {
-        my $_ = $blocks->get($blocks->length - 1);
-        $_ .= $value;
-        $blocks->set($blocks->length - 1, $_);
+        $blocks->[-1] .= $value;
       }
 # Capture end
       elsif ($op eq "cpen") {
-        my $_ = $blocks->get($blocks->length - 1);
-        $_ .= "return Mojo::ByteStream->new(\$_O) }";
-        $blocks->set($blocks->length - 1, $_);
+        $blocks->[-1] .= "return Mojo::ByteStream->new(\$_O) }";
         
         # No following code
-        my $_ = $blocks->get($blocks->length - 1);
         if ($next->[0] ne "cpst" && (Re->m($next->[1] // "", "^\s*$"))) {
-          $_ .= ";" ;
+          $blocks->[-1] .= ";" ;
         }
-        $blocks->set($blocks->length - 1, $_);
       }
       
       # Expression
@@ -307,35 +299,27 @@ class Mojo::Template {
 
         # Escaped
         if (!$multi && ($op eq "escp" && !$escape || $op eq "expr" && $escape)) {
-          my $_ = $blocks->get($blocks->length - 1);
-          $_ .= "\$_O .= Mojo::Util->xml_escape($value)";
-          $blocks->set($blocks->length - 1, $_);
+          $blocks->[-1] .= "\$_O .= Mojo::Util->xml_escape($value)";
         }
-
+        
         # Raw
         elsif (!$multi) {
-          my $_ = $blocks->get($blocks->length - 1);
-          $_ .= "\$_O .= $value";
-          $blocks->set($blocks->length - 1, $_);
+          $blocks->[-1] .= "\$_O .= $value";
         }
-
+        
         # Multi-line
         $multi = !$next || $next->[0] ne "text";
-
+        
         # Append semicolon
-        my $_ = $blocks->get($blocks->length - 1);
         unless ($multi || $capture) {
-          $_ .= ";";
+          $blocks->[-1] .= ";";
         }
-        $blocks->set($blocks->length - 1, $_);
       }
-
+      
       # Capture start
       if    ($op eq "cpst") { $capture = 1; }
       elsif ($capture) {
-        my $_ = $blocks->get($blocks->length - 1);
-        $_ .= "method : void () { my \$_O = \"\"; ";
-        $blocks->set($blocks->length - 1, $_);
+        $blocks->[-1] .= "method : void () { my \$_O = \"\"; ";
         $capture = 0;
       }
     }
