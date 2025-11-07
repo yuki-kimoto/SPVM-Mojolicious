@@ -13,6 +13,7 @@ class TestCase::Mojolicious {
   use Mojolicious::Routes::Match;
   use Mojolicious::Controller;
   use Mojo::Message::Request;
+  use Mojo::Template;
   
   static method test : int () {
     
@@ -1038,6 +1039,20 @@ EOS
   }
   
   static method template : int () {
+    
+    {
+      my $mt = Mojo::Template->new;
+      
+      my $code = <<'EOS';
+a
+EOS
+      
+      my $output = $mt->render($code);
+      
+      unless (Re->m($output, "^\s*a\s*$")) {
+        return 0;
+      }
+    }
     
     return 1;
   }

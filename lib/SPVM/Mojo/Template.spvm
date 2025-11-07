@@ -245,7 +245,7 @@ class Mojo::Template {
       $self->set_compiled($compiled);
     }
     
-    my $output = (string)Native::MethodCall->call_class_method($compiled, "", [$options]);
+    my $output = (string)Native::MethodCall->call_class_method($compiled, "code", [$options]);
     
     return $output;
   }
@@ -255,9 +255,12 @@ class Mojo::Template {
     my $tree = (List of string[])List->new($self->tree);
     my $escape = 1;
     
-    warn dump $tree;
-    
     my $blocks = StringList->new;
+    
+    $blocks->push("class {");
+    $blocks->push("static method code : string (\$options : Hash) {");
+    $blocks->push("my \$_O = \"\";");
+    
     my $i = 0;
     my $capture = (string)undef;
     my $multi = 0;
@@ -284,7 +287,7 @@ class Mojo::Template {
       # Text (quote and fix line ending)
       if ($op eq "text") {
         if (length $value) {
-          $blocks->[-1] .= "\$_O .= <<'END_OF_STRING';\n" . $value . "END_OF_STRING\n" ;
+          $blocks->[-1] .= "\$_O .= <<'END_OF_STRING';\n" . $value . "\nEND_OF_STRING\n" ;
         }
       }
       
@@ -331,6 +334,10 @@ class Mojo::Template {
         $capture = 0;
       }
     }
+    
+    $blocks->push("return \$_O;");
+    $blocks->push("} # End of method");
+    $blocks->push("} # End of class");
     
     $self->set_code(Fn->join("\n", $blocks->to_array));
     
