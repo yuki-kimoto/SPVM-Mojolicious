@@ -225,7 +225,9 @@ class Mojo::Template {
     
   }
   
-  method process : string ($args : object[]) {
+  method process : string ($options : Hash|object[] = undef) {
+    
+    my $options = Fn->to_hash($options);
     
     # Use a local stack trace for compile exceptions
     my $compiled = $self->compiled;
@@ -242,7 +244,7 @@ class Mojo::Template {
       $self->set_compiled($compiled);
     }
     
-    my $output = (string)Native::MethodCall->call_class_method($compiled, "", $args);
+    my $output = (string)Native::MethodCall->call_class_method($compiled, "", [$options]);
     
     return $output;
   }
