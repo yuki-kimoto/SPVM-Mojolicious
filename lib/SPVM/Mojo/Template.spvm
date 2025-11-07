@@ -113,7 +113,7 @@ class Mojo::Template {
     
     # Split lines
     my $op = "text";
-    my $trim_markming = (string)undef;
+    my $trimming = (string)undef;
     my $capture = 0;
     for my $line (@{Fn->split("\n", $template)}) {
       
@@ -155,7 +155,7 @@ class Mojo::Template {
           }
           
           # Trim left side
-          if (($trim_markming = $m->cap2) && $tree->length > 1) {
+          if (($trimming = $m->cap2) && $tree->length > 1) {
             &_trim($tree);
           }
           
@@ -184,9 +184,9 @@ class Mojo::Template {
           }
           
           # Trim right side (convert whitespace to line noise)
-          if ($trim_markming && (my $r = Re->s((mutable string)$token, "^(\s+)", ""))) {
+          if ($trimming && (my $r = Re->s((mutable string)$token, "^(\s+)", ""))) {
             $tree->push(["code", $r->match->cap1]);
-            $trim_markming = 0;
+            $trimming = 0;
           }
           
           # Token (with optional capture end)
