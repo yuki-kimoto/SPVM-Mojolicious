@@ -96,18 +96,20 @@ class Mojo::Template {
     my $line_start = $self->line_start; # %
     my $expression_mark = $self->expression_mark; # =
     
-    my $capture_end = $self->capture_end;
-    my $capture_start = $self->capture_start;
-    
     my $escape_mark = $self->escape_mark; # =
     my $comment_mark = $self->comment_mark;
     my $replace_mark = $self->replace_mark; # %
     my $trim_mark    = $self->trim_mark;
     
-    my $line_start_re  = "^(\s*)\Q$line_start\E(?:(\Q$replace_mark\E)|(\Q$comment_mark\E)|(\Q$expression_mark\E))?(.*)$";
-    my $token_re = "(\Q$tag_start\E(?:\Q$replace_mark\E|\Q$comment_mark\E)|\Q$tag_start$expression_mark\E(?:\Q$escape_mark\E)?(?:\s*\Q$capture_end\E\b)?|\Q$tag_start\E(?:\s*\Q$capture_end\E\b)?|(?:\b\Q$capture_start\E\s*)?(?:\Q$trim_mark\E)?\Q$tag_end\E)";
+    my $capture_start = $self->capture_start; # begin
+    my $capture_end = $self->capture_end; # end
+    
+    my $line_code_re  = "^(\s*)\Q$line_start\E(?:(\Q$replace_mark\E)|(\Q$comment_mark\E)|(\Q$expression_mark\E))?(.*)$";
+    
+    my $code_re = "(\Q$tag_start\E(?:\Q$replace_mark\E|\Q$comment_mark\E)|\Q$tag_start$expression_mark\E(?:\Q$escape_mark\E)?(?:\s*\Q$capture_end\E\b)?|\Q$tag_start\E(?:\s*\Q$capture_end\E\b)?|(?:\b\Q$capture_start\E\s*)?(?:\Q$trim_mark\E)?\Q$tag_end\E)";
+    
+    my $capture_start_re  = "^(?:(\Q$capture_start\E)\s*)?(\Q$trim_mark\E)?\Q$tag_end\E$";
     my $capture_end_re = "^\Q$tag_start\E(?:\Q$expression_mark\E)?(?:\Q$escape_mark\E)?\s*\Q$capture_end\E(.*)$";
-    my $tag_end_re  = "^(?:(\Q$capture_start\E)\s*)?(\Q$trim_mark\E)?\Q$tag_end\E$";
     
     # Split lines
     my $op = "text";
@@ -116,7 +118,7 @@ class Mojo::Template {
     for my $line (@{Fn->split("\n", $template)}) {
       
       # Turn Perl line into mixed line
-      if ($op eq "text" && (my $m = Re->m($line, $line_start_re))) {
+      if ($op eq "text" && (my $m = Re->m($line, $line_code_re))) {
         
         # Escaped start
         if ($m->cap2) { $line = $m->cap1 . $line_start . $m->cap5; }
@@ -136,7 +138,7 @@ class Mojo::Template {
       }
       
       # Mixed line
-      for my $token (@{Re->split($token_re, $line)}) {
+      for my $token (@{Re->split($code_re, $line)}) {
         
         # Capture end
         if (my $m = Re->m($token, $capture_end_re)) {
@@ -145,7 +147,7 @@ class Mojo::Template {
         }
         
         # End
-        if ($op ne "text" && (my $m = Re->m($token, $tag_end_re))) {
+        if ($op ne "text" && (my $m = Re->m($token, $capture_start_re))) {
           
           # Capture start
           if ($m->cap1) {
