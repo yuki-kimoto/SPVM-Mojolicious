@@ -1037,4 +1037,9 @@ EOS
     return 1;
   }
   
+  static method template : int () {
+    
+    return 1;
+  }
+  
 }
