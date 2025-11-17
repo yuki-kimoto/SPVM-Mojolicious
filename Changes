@@ -1,3 +1,6 @@
+0.033 2025-11-17
+  [Requirement Changes]
+    * Require SPVM::Regex 0.254.
 0.032 2025-11-04
   [Changes]
     * Improve Mojolicious::Routes classes.
