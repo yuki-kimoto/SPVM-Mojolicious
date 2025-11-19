@@ -89,6 +89,20 @@ EOS
       my $mt = Mojo::Template->new;
       
       my $code = <<'EOS';
+\"'
+EOS
+      
+      my $output = $mt->render($code);
+      
+      unless (Re->m($output, "^\\\\\"'\s*$")) {
+        return 0;
+      }
+    }
+    
+    {
+      my $mt = Mojo::Template->new;
+      
+      my $code = <<'EOS';
 a
 <%
   my $num = 1;
