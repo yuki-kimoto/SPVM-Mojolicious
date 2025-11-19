@@ -199,19 +199,8 @@ class Mojo::Template {
         }
       }
       
-      # Optimize successive text lines separated by a newline
-      if (@$tree >= 4 && $tree->[-4] && $tree->[-4][0] ne "line"
-        || (@$tree < 4 || $tree->[-3][0] ne "text" || !Re->m($tree->[-3][1], "\n$")
-        || ((@$tree >= 2 && $tree->[-2][0] ne "line") || $tree->[-1][0] ne "text")))
-      {
-        $tree->push(["line", undef]);
-        next;
-      }
-      
-      my $_ = $tree->[-3];
-      $_->[1] .= $tree->pop->[1];
+      $tree->push(["line", undef]);
     }
-    
   }
   
   static method _trim : void ($tree : List of string[]) {
