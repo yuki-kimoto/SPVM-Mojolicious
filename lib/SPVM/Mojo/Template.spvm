@@ -39,6 +39,8 @@ class Mojo::Template {
   
   has tag_end : rw string;
   
+  has auto_escape : rw byte;
+  
   # Undocumented Fields
   has tree : rw string[][];
 
@@ -259,11 +261,12 @@ class Mojo::Template {
   private method _compile : void () {
     
     my $tree = (List of string[])List->new($self->tree);
-    my $escape = 1;
+    my $escape = $self->auto_escape;
     
     my $blocks = StringList->new;
     
     $blocks->push("class {");
+    $blocks->push("  use Mojo::Util;");
     $blocks->push("static method code : string (\$options : Hash) {");
     $blocks->push("my \$_O = \"\";");
     

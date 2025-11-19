@@ -78,6 +78,35 @@ EOS
       }
     }
     
+    {
+      my $mt = Mojo::Template->new;
+      
+      my $code = <<'EOS';
+<%= 123 %>
+EOS
+      
+      my $output = $mt->render($code);
+      
+      unless (Re->m($output, "123")) {
+        return 0;
+      }
+    }
+    
+    {
+      my $mt = Mojo::Template->new;
+      $mt->set_auto_escape(1);
+      
+      my $code = <<'EOS';
+<%= "&<>\"'" %>
+EOS
+      
+      my $output = $mt->render($code);
+      
+      unless (Re->m($output, "&amp;&lt;&gt;&quot;&#39;")) {
+        return 0;
+      }
+    }
+    
     return 1;
   }
   
