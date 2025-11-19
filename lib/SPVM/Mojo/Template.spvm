@@ -267,6 +267,7 @@ class Mojo::Template {
     
     $blocks->push("class {");
     $blocks->push("  use Mojo::Util;");
+    $blocks->push("  use Mojo::ByteStream;");
     $blocks->push("static method code : string (\$options : Hash) {");
     $blocks->push("my \$_O = \"\";");
     
@@ -322,7 +323,8 @@ class Mojo::Template {
 
         # Escaped
         if (!$multi && ($op eq "escp" && !$escape || $op eq "expr" && $escape)) {
-          $blocks->[-1] .= "\$_O .= Mojo::Util->xml_escape($value)";
+          $blocks->[-1] .= "my \$_ = (object)$value;";
+          $blocks->[-1] .= "\$_O .= \$_ isa Mojo::ByteStream ? \$_->(Mojo::ByteStream)->to_string : Mojo::Util->xml_escape((string)\$_);";
         }
         
         # Raw

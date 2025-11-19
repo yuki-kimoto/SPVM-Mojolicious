@@ -121,7 +121,22 @@ EOS
         return 0;
       }
     }
-    
+
+    {
+      my $mt = Mojo::Template->new;
+      $mt->set_auto_escape(1);
+      
+      my $code = <<'EOS';
+<%= Mojo::ByteStream->new("&<>") %>
+EOS
+      
+      my $output = $mt->render($code);
+      
+      unless (Re->m($output, "&<>")) {
+        return 0;
+      }
+    }
+
     {
       my $mt = Mojo::Template->new;
       
