@@ -49,13 +49,38 @@ EOS
     {
       my $mt = Mojo::Template->new;
       
+      my $code = "";
+      
+      my $output = $mt->render($code);
+      
+      unless (Re->m($output, "^\s*$")) {
+        return 0;
+      }
+    }
+    
+    {
+      my $mt = Mojo::Template->new;
+      
+      my $code = <<'EOS';
+EOS
+      
+      my $output = $mt->render($code);
+      
+      unless (Re->m($output, "^\s*$")) {
+        return 0;
+      }
+    }
+    
+    {
+      my $mt = Mojo::Template->new;
+      
       my $code = <<'EOS';
 a
 EOS
       
       my $output = $mt->render($code);
       
-      unless (Re->m($output, "^\s*a\s*$")) {
+      unless (Re->m($output, "^a\s*$")) {
         return 0;
       }
     }
@@ -87,7 +112,7 @@ EOS
       
       my $output = $mt->render($code);
       
-      unless (Re->m($output, "123")) {
+      unless (Re->m($output, "^\s*123\s*$")) {
         return 0;
       }
     }
@@ -102,7 +127,7 @@ EOS
       
       my $output = $mt->render($code);
       
-      unless (Re->m($output, "&amp;&lt;&gt;&quot;&#39;")) {
+      unless (Re->m($output, "^\s*&amp;&lt;&gt;&quot;&#39;\s*$")) {
         return 0;
       }
     }
@@ -117,7 +142,7 @@ EOS
       
       my $output = $mt->render($code);
       
-      unless (Re->m($output, "&<>")) {
+      unless (Re->m($output, "^\s*&<>\s*$")) {
         return 0;
       }
     }
@@ -132,7 +157,7 @@ EOS
       
       my $output = $mt->render($code);
       
-      unless (Re->m($output, "&<>")) {
+      unless (Re->m($output, "^\s*&<>\s*$")) {
         return 0;
       }
     }
