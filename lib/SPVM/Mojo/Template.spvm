@@ -273,25 +273,20 @@ class Mojo::Template {
       
       my $next = $tree->[$i + 1];
       
-      if ($op eq "line") {
-        $blocks->push("");
-        next;
-      }
-      
       my $value_length = length $value;
       
       $value = copy $value;
       
-      Fn->chomp((mutable string)$value);
-      
-      my $newline = length $value != $value_length;
-      
       $blocks->push("");
-        
+      
       # Text (quote and fix line ending)
-      if ($op eq "text") {
+      if ($op eq "line") {
+        $blocks->[-1] .= "\$_O .= \"\\n\";" ;
+      }
+      elsif ($op eq "text") {
         if (length $value) {
           $blocks->[-1] .= "\$_O .= <<'END_OF_STRING';\n" . $value . "\nEND_OF_STRING\n" ;
+          $blocks->[-1] .= "Fn->chomp((mutable string)\$_O);" ;
         }
       }
       

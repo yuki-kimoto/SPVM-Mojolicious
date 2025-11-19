@@ -194,6 +194,20 @@ EOS
       }
     }
     
+    {
+      my $mt = Mojo::Template->new;
+      
+      my $code = <<'EOS';
+a<%= 123 %>b
+EOS
+      
+      my $output = $mt->render($code);
+      
+      unless (Re->m($output, "^\s*a123b\s*$")) {
+        return 0;
+      }
+    }
+    
     return 1;
   }
   
