@@ -199,7 +199,9 @@ class Mojo::Template {
         }
       }
       
-      $tree->push(["line", undef]);
+      if ($op eq "text") {
+        $tree->push(["line", undef]);
+      }
     }
   }
   
