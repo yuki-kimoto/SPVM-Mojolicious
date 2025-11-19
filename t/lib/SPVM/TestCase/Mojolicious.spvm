@@ -107,6 +107,22 @@ EOS
       }
     }
     
+    {
+      my $mt = Mojo::Template->new;
+      
+      my $code = <<'EOS';
+a
+% my $num = 1;
+b
+EOS
+      
+      my $output = $mt->render($code);
+      
+      unless (Re->m($output, "^\s*a\s+b\s*$")) {
+        return 0;
+      }
+    }
+    
     return 1;
   }
   
