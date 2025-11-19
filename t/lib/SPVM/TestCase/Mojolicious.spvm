@@ -45,9 +45,7 @@ EOS
   }
   
   static method template : int () {
-
-=pod
-
+    
     {
       my $mt = Mojo::Template->new;
       
@@ -61,9 +59,7 @@ EOS
         return 0;
       }
     }
-
-=cut
-
+    
     {
       my $mt = Mojo::Template->new;
       
