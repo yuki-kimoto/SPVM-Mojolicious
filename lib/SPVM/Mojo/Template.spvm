@@ -115,31 +115,33 @@ class Mojo::Template {
     my $op = "text";
     my $trimming = (string)undef;
     my $capture = 0;
-    for my $line (@{Fn->split("\n", $template)}) {
+    my $lines = Fn->split("\n", $template);
+    
+    for my $line (@$lines) {
       
       # Turn Perl line into mixed line
       if ($op eq "text" && (my $m = Re->m($line, $line_code_re))) {
         
         # Escaped start
-        if ($m->cap2) { $line = $m->cap1 . $line_start . $m->cap5; }
+        if (length $m->cap2) { $line = $m->cap1 . $line_start . $m->cap5; }
         
         # Comment
-        elsif ($m->cap3) { $line = $tag_start . $m->cap3 . "$trim_mark$tag_end"; }
+        elsif (length $m->cap3) { $line = $tag_start . $m->cap3 . "$trim_mark$tag_end"; }
         
         # Expression or code
-        else { $line = $m->cap4 ? $m->cap1 . $tag_start . $m->cap4 . $m->cap5 . $tag_end : $tag_start . $m->cap5 . "$trim_mark$tag_end"; }
+        else { $line = length $m->cap4 ? $m->cap1 . $tag_start . $m->cap4 . $m->cap5 . $tag_end : $tag_start . $m->cap5 . "$trim_mark$tag_end"; }
       }
       
       # Escaped line ending
       if (!Re->s((mutable string)$line, "\\\\\\\\$", "\\\\\n")) {
-        if (Re->s((mutable string)$line, "\\$", "")) {
+        if (Re->s((mutable string)$line, "\\\\$", "")) {
           $line .= "\n";
         }
       }
       
       # Mixed line
-      for my $token (@{Re->split($code_re, $line)}) {
-        
+      my $tokens = Re->split($code_re, $line);
+      for my $token (@$tokens) {
         # Capture end
         if (my $m = Re->m($token, $capture_end_re)) {
           $token = $tag_start . $m->cap1;
@@ -150,12 +152,12 @@ class Mojo::Template {
         if ($op ne "text" && (my $m = Re->m($token, $capture_start_re))) {
           
           # Capture start
-          if ($m->cap1) {
+          if (length $m->cap1) {
             $tree->splice($tree->length - 1, 0, ["cpst"]);
           }
           
           # Trim left side
-          if (($trimming = $m->cap2) && $tree->length > 1) {
+          if (length($trimming = $m->cap2) && $tree->length > 1) {
             &_trim($tree);
           }
           
@@ -282,6 +284,9 @@ class Mojo::Template {
       }
       
       my $value_length = length $value;
+      
+      $value = copy $value;
+      
       Fn->chomp((mutable string)$value);
       
       my $newline = length $value != $value_length;
