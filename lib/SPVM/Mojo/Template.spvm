@@ -135,9 +135,10 @@ class Mojo::Template {
       }
       
       # Escaped line ending
-      if (!Re->s((mutable string)$line, "\\\\\\\\$", "\\\\\n")) {
+      my $escape_line_ending = 0;
+      if (!Re->s((mutable string)$line, "\\\\\\\\$", "\\")) {
         if (Re->s((mutable string)$line, "\\\\$", "")) {
-          $line .= "\n";
+          $escape_line_ending = 1;
         }
       }
       
@@ -199,7 +200,7 @@ class Mojo::Template {
         }
       }
       
-      if ($op eq "text") {
+      if ($op eq "text" && !$escape_line_ending) {
         $tree->push(["line", undef]);
       }
     }
