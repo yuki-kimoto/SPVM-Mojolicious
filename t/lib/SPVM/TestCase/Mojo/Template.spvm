@@ -193,58 +193,58 @@ EOS
       }
     }
     
-    # Comment
+    return 1;
+  }
+  
+  static method comment : int () {
+    
     {
-      {
-        my $mt = Mojo::Template->new;
-        
-      my $code = <<'EOS';
+      my $mt = Mojo::Template->new;
+      
+    my $code = <<'EOS';
 % my $num = 123;
 %= $num
 EOS
-        
-        my $output = $mt->render($code);
-        
-        unless (Re->m($output, "123")) {
-          return 0;
-        }
-      }
       
-      {
-        my $mt = Mojo::Template->new;
-        
-      my $code = <<'EOS';
+      my $output = $mt->render($code);
+      
+      unless (Re->m($output, "123")) {
+        return 0;
+      }
+    }
+    
+    {
+      my $mt = Mojo::Template->new;
+      
+    my $code = <<'EOS';
 % my $num = 123;
 %# my $num = 456;
 %= $num
 EOS
-        
-        my $output = $mt->render($code);
-        
-        unless (Re->m($output, "123")) {
-          return 0;
-        }
-      }
       
-      {
-        my $mt = Mojo::Template->new;
-        
-      my $code = <<'EOS';
+      my $output = $mt->render($code);
+      
+      unless (Re->m($output, "123")) {
+        return 0;
+      }
+    }
+    
+    {
+      my $mt = Mojo::Template->new;
+      
+    my $code = <<'EOS';
 <% my $num = 123; %>
 <%# my $num = 456; %>
 %= $num
 EOS
-        
-        my $output = $mt->render($code);
-        
-        unless (Re->m($output, "123")) {
-          return 0;
-        }
-      }
       
+      my $output = $mt->render($code);
+      
+      unless (Re->m($output, "123")) {
+        return 0;
+      }
     }
     
     return 1;
   }
-  
 }
