@@ -6,7 +6,7 @@ use FindBin;
 use lib "$FindBin::Bin/lib";
 BEGIN { $ENV{SPVM_BUILD_DIR} = "$FindBin::Bin/.spvm_build"; }
 
-use SPVM 'TestCase::Mojolicious';
+use SPVM 'TestCase::Mojo::Template';
 
 use SPVM 'Mojolicious';
 use SPVM::Mojolicious;
@@ -16,7 +16,7 @@ my $api = SPVM::api();
 
 my $start_memory_blocks_count = $api->get_memory_blocks_count;
 
-ok(SPVM::TestCase::Mojolicious->template);
+ok(SPVM::TestCase::Mojo::Template->basic);
 
 SPVM::Fn->destroy_runtime_permanent_vars;
 
