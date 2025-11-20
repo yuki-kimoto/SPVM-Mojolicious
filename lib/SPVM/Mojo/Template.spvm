@@ -223,7 +223,7 @@ class Mojo::Template {
     
   }
   
-  method process : string ($options : Hash|object[] = undef) {
+  method process : string ($options : Hash|object[] = undef, $c : Mojolicious::Controller = undef) {
     
     my $options = Fn->to_hash($options);
     
@@ -244,7 +244,7 @@ class Mojo::Template {
       $self->set_compiled($compiled);
     }
     
-    my $output = (string)Native::MethodCall->call_class_method($compiled, "code", [$options]);
+    my $output = (string)Native::MethodCall->call_class_method($compiled, "code", [(object)$options, $c]);
     
     return $output;
   }
@@ -259,7 +259,7 @@ class Mojo::Template {
     $blocks->push("class {");
     $blocks->push("  use Mojo::Util;");
     $blocks->push("  use Mojo::ByteStream;");
-    $blocks->push("static method code : string (\$options : Hash) {");
+    $blocks->push("static method code : string (\$options : Hash = undef, \$c : Mojolicious::Controller = undef) {");
     $blocks->push("my \$_O = \"\";");
     
     my $i = 0;
