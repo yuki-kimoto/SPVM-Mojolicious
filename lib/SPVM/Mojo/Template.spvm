@@ -202,10 +202,13 @@ class Mojo::Template {
         }
       }
       
-      if ($op eq "text" && !$escape_line_ending) {
+      if ($op eq "text" && !$trimming && !$escape_line_ending) {
         $tree->push(["line", undef]);
       }
     }
+    
+    # Hint at end
+    $tree->push(["text", ""]);
   }
   
   static method _trim : void ($tree : List of string[]) {
@@ -220,6 +223,9 @@ class Mojo::Template {
     }
     
     # Convert whitespace text to line noise
+    if (is_read_only $tree->[$i][1]) {
+      $tree->[$i][1] = copy $tree->[$i][1];
+    }
     if (my $r = Re->s((mutable string)$tree->[$i][1], "(\s+)$", "")) {
       $tree->splice($i, 0, ["code", $r->match->cap1]);
     }
