@@ -101,7 +101,7 @@ class Mojo::Template {
     my $escape_mark = $self->escape_mark; # =
     my $comment_mark = $self->comment_mark;
     my $replace_mark = $self->replace_mark; # %
-    my $trim_mark    = $self->trim_mark;
+    my $trim_mark    = $self->trim_mark; # =
     
     my $capture_start = $self->capture_start; # begin
     my $capture_end = $self->capture_end; # end

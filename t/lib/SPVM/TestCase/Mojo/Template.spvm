@@ -303,4 +303,37 @@ EOS
     return 1;
   }
   
+  static method replace_mark : int () {
+    
+    {
+      my $mt = Mojo::Template->new;
+      
+    my $code = <<'EOS';
+%%
+EOS
+      
+      my $output = $mt->render($code);
+      
+      unless (Re->m($output, "^\s*%\s*$")) {
+        return 0;
+      }
+    }
+    
+    {
+      my $mt = Mojo::Template->new;
+      
+    my $code = <<'EOS';
+<%%
+EOS
+      
+      my $output = $mt->render($code);
+      
+      unless (Re->m($output, "^\s*<%\s*$")) {
+        return 0;
+      }
+    }
+    
+    return 1;
+  }
+  
 }
