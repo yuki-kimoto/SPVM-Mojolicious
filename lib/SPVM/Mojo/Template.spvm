@@ -115,7 +115,6 @@ class Mojo::Template {
     
     # Split lines
     my $op = "text";
-    my $trimming = 0;
     my $capture = 0;
     my $lines = Fn->split("\n", $template);
     
@@ -128,10 +127,10 @@ class Mojo::Template {
         if (length $m->cap2) { $line = $m->cap1 . $line_start . $m->cap5; }
         
         # Comment
-        elsif (length $m->cap3) { $line = $tag_start . $m->cap3 . "$trim_mark$tag_end"; }
+        elsif (length $m->cap3) { $line = $tag_start . $m->cap3 . "$tag_end"; }
         
         # Expression or code
-        else { $line = length $m->cap4 ? $m->cap1 . $tag_start . $m->cap4 . $m->cap5 . $tag_end : $tag_start . $m->cap5 . "$trim_mark$tag_end"; }
+        else { $line = length $m->cap4 ? $m->cap1 . $tag_start . $m->cap4 . $m->cap5 . $tag_end : $tag_start . $m->cap5 . "$tag_end"; }
       }
       
       # Escaped line ending
@@ -159,11 +158,8 @@ class Mojo::Template {
             $tree->splice($tree->length - 1, 0, ["cpst"]);
           }
           
-          $trimming = !!length $m->cap2;
-          
-          # Trim left side
-          if ($trimming && $tree->length > 1) {
-            &_trim($tree);
+          if (length $m->cap2) {
+            die "Do not support trim mark =%>";
           }
           
           # Hint at end
@@ -184,16 +180,9 @@ class Mojo::Template {
         
         # Text (comments are just ignored)
         elsif ($op ne "cmnt") {
-          
           # Replace
           if ($token eq "$tag_start$replace_mark") {
             $token = $tag_start ;
-          }
-          
-          # Trim right side (convert whitespace to line noise)
-          if ($trimming && (my $r = Re->s((mutable string)$token, "^(\s+)", ""))) {
-            $tree->push(["code", $r->match->cap1]);
-            $trimming = 0;
           }
           
           # Token (with optional capture end)
@@ -202,34 +191,13 @@ class Mojo::Template {
         }
       }
       
-      if ($op eq "text" && !$trimming && !$escape_line_ending) {
+      if ($op eq "text" && !$escape_line_ending) {
         $tree->push(["line", undef]);
       }
     }
     
     # Hint at end
     $tree->push(["text", ""]);
-  }
-  
-  static method _trim : void ($tree : List of string[]) {
-    
-    # Skip captures
-    my $len = $tree->length;
-    my $i = $tree->[-2][0] eq "cpst" || $tree->[-2][0] eq "cpen" ? $len - 3 : $len - 2;
-    
-    # Only trim text
-    unless ($tree->[$i][0] eq "text") {
-      return;
-    }
-    
-    # Convert whitespace text to line noise
-    if (is_read_only $tree->[$i][1]) {
-      $tree->[$i][1] = copy $tree->[$i][1];
-    }
-    if (my $r = Re->s((mutable string)$tree->[$i][1], "(\s+)$", "")) {
-      $tree->splice($i, 0, ["code", $r->match->cap1]);
-    }
-    
   }
   
   method process : string ($options : Hash|object[] = undef, $c : Mojolicious::Controller = undef) {
