@@ -60,6 +60,21 @@ EOS
       my $mt = Mojo::Template->new;
       
       my $code = <<'EOS';
+  a
+  a
+EOS
+      
+      my $output = $mt->render($code);
+      
+      unless (Re->m($output, "  a\n  a\n")) {
+        return 0;
+      }
+    }
+    
+    {
+      my $mt = Mojo::Template->new;
+      
+      my $code = <<'EOS';
 \"'
 EOS
       
