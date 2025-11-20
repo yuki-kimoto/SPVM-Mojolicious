@@ -17,8 +17,8 @@ my $api = SPVM::api();
 my $start_memory_blocks_count = $api->get_memory_blocks_count;
 
 ok(SPVM::TestCase::Mojo::Template->basic);
+ok(SPVM::TestCase::Mojo::Template->xml_escape);
 ok(SPVM::TestCase::Mojo::Template->comment);
-
 
 SPVM::Fn->destroy_runtime_permanent_vars;
 
