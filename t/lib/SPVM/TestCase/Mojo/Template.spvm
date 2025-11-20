@@ -20,6 +20,22 @@ class TestCase::Mojo::Template {
     {
       my $mt = Mojo::Template->new;
       
+    my $code = <<'EOS';
+<% for (my $i = 0; $i < 3; $i++) { %>
+  a
+<% } %>
+EOS
+      
+      my $output = $mt->render($code);
+      
+      unless (Re->m($output, "  a\n  a\n  a\n")) {
+        return 0;
+      }
+    }
+    
+    {
+      my $mt = Mojo::Template->new;
+      
       my $code = "";
       
       my $output = $mt->render($code);

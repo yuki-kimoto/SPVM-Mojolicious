@@ -142,6 +142,7 @@ class Mojo::Template {
       }
       
       # Mixed line
+      my $has_text = 0;
       my $tokens = Re->split($code_re, $line);
       for my $token (@$tokens) {
         # Capture end
@@ -188,10 +189,13 @@ class Mojo::Template {
           # Token (with optional capture end)
           $tree->push($capture ? ["cpen"] : [$op, $token]);
           $capture = 0;
+          if ($op eq "text" && length $token) {
+            $has_text++;
+          }
         }
       }
       
-      if ($op eq "text" && !$escape_line_ending) {
+      if ($op eq "text" && $has_text && !$escape_line_ending) {
         $tree->push(["line", undef]);
       }
     }
