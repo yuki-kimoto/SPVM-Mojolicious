@@ -115,7 +115,7 @@ class Mojo::Template {
     
     # Split lines
     my $op = "text";
-    my $trimming = (string)undef;
+    my $trimming = 0;
     my $capture = 0;
     my $lines = Fn->split("\n", $template);
     
@@ -159,8 +159,10 @@ class Mojo::Template {
             $tree->splice($tree->length - 1, 0, ["cpst"]);
           }
           
+          $trimming = !!length $m->cap2;
+          
           # Trim left side
-          if (length($trimming = $m->cap2) && $tree->length > 1) {
+          if ($trimming && $tree->length > 1) {
             &_trim($tree);
           }
           
