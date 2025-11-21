@@ -367,4 +367,8 @@ EOS
     return 1;
   }
   
+  static method basic_v2 : int () {
+    
+    return 1;
+  }
 }
