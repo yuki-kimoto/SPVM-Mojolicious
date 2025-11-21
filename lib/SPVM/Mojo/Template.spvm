@@ -88,7 +88,7 @@ class Mojo::Template {
   method parse : void ($template : string) {
     
     my $tree_tmp = $self->tokenize($template);
-    $tree_tmp = $self->check($tree_tmp);
+    $self->check($tree_tmp);
     
     # warn dump $tree_tmp;
     
@@ -209,7 +209,7 @@ class Mojo::Template {
     $tree->push(["text", ""]);
   }
   
-  private method check : string[][] ($tree : string[][]) {
+  private method check : void ($tree : string[][]) {
     
     # Process trim mark
     for (my $tree_index = 0; $tree_index < @$tree; $tree_index++) {
@@ -279,8 +279,6 @@ class Mojo::Template {
       }
       
     }
-    
-    return $tree;
   }
   
   private method tokenize : string[][] ($template : string) {
