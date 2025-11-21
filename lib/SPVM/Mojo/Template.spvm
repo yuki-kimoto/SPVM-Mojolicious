@@ -87,6 +87,8 @@ class Mojo::Template {
   
   method parse : void ($template : string) {
     
+    my $tree_tmp = $self->tokenize($template);
+    
     # Clean start
     $self->set_unparsed($template);
     my $tree = (List of string[])List->new(new string[][0]);
@@ -235,6 +237,10 @@ class Mojo::Template {
     my $is_capture_end = 0;
     for my $line (@$lines) {
       
+      if (is_read_only $line) {
+        $line = copy $line;
+      }
+      
       # Turn Perl line into mixed line
       if ($op eq "text" && (my $m = Re->m($line, $line_code_re))) {
         
@@ -265,7 +271,7 @@ class Mojo::Template {
           $is_capture_end = 1;
         }
         
-        # End
+        # Tag End
         if ($op ne "text" && (my $m = Re->m($token, $tag_end_re))) {
           
           # Capture start
@@ -273,32 +279,34 @@ class Mojo::Template {
             $tree->push(["cpst"]);
           }
           
-          my $trim = 0;
+          my $trim = (string)undef;
           if (length $m->cap2) {
-            $trim = 1;
+            $trim = "trim";
           }
           $tree->push(["tag_end", $trim]);
+          
+          $op = "text";
         }
         
-        # Comment
+        # Tag start - Comment
         elsif ($token eq "$tag_start$comment_mark") {
           $op = "cmnt";
           $tree->push(["tag_start", $op]);
         }
         
-        # Expression that needs to be escaped
+        # Tag start - Expression that needs to be escaped
         elsif ($token eq "$tag_start$expression_mark$escape_mark") {
           $op = "escp";
           $tree->push(["tag_start", $op]);
         }
         
-        # Expression
+        # Tag start - Expression
         elsif ($token eq "$tag_start$expression_mark") {
           $op = "expr";
           $tree->push(["tag_start", $op]);
         }
         
-        # Code
+        # Tag start
         elsif ($token eq $tag_start) {
           $op = "code";
           $tree->push(["tag_start", $op]);
