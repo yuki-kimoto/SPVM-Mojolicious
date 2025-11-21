@@ -382,6 +382,8 @@ EOS
 EOS
       
       $mt->parse_v2($code);
+      
+      warn dump $mt->tree;
     }
     
     return 1;

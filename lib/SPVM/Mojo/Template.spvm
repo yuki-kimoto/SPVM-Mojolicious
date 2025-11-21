@@ -214,7 +214,7 @@ class Mojo::Template {
     
     my $tree = $self->tokenize($template);
     
-    $self->check($tree);
+    $tree = $self->check($tree);
     
     $self->set_tree($tree);
   }
@@ -356,7 +356,9 @@ class Mojo::Template {
     return $tree->to_array;
   }
   
-  private method check : void ($tree : string[][]) {
+  private method check : string[][] ($tree : string[][]) {
+    
+    my $tree = (string[][])Array->copy_object_address($tree);
     
     # Process trim mark
     for (my $tree_index = 0; $tree_index < @$tree; $tree_index++) {
@@ -472,6 +474,7 @@ class Mojo::Template {
       }
     }
     
+    return $tree;
   }
   
   method process : string ($options : Hash|object[] = undef, $c : Mojolicious::Controller = undef) {
