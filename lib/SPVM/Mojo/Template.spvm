@@ -90,7 +90,7 @@ class Mojo::Template {
     my $tree_tmp = $self->tokenize($template);
     $self->check($tree_tmp);
     
-    warn dump $tree_tmp;
+    # warn dump $tree_tmp;
     
     # Clean start
     $self->set_unparsed($template);
@@ -365,9 +365,6 @@ class Mojo::Template {
           $tree->push(["tag_end", $trim]);
           
           $op = "text";
-          
-          # Hint at end
-          $tree->push([$op, ""]);
         }
         
         # Tag start - Comment
@@ -413,6 +410,7 @@ class Mojo::Template {
       }
       
       unless ($escape_line_ending) {
+        $tree->push([$op, "\n"]);
         $tree->push(["line_end", undef]);
       }
     }
