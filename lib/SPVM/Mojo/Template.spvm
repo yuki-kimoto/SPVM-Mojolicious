@@ -90,8 +90,6 @@ class Mojo::Template {
     my $tree_tmp = $self->tokenize($template);
     $self->check($tree_tmp);
     
-    # warn dump $tree_tmp;
-    
     # Clean start
     $self->set_unparsed($template);
     my $tree = (List of string[])List->new(new string[][0]);
@@ -209,109 +207,16 @@ class Mojo::Template {
     $tree->push(["text", ""]);
   }
   
-  private method check : void ($tree : string[][]) {
+  method parse_v2 : void ($template : string) {
     
-    # Process trim mark
-    for (my $tree_index = 0; $tree_index < @$tree; $tree_index++) {
-      
-      my $token = $tree->[$tree_index];
-      
-      my $op = $token->[0];
-      
-      if ($op eq "tag_end") {
-        my $trim = $token->[1];
-        
-        if ($trim) {
-          # Remove previous spaces
-          my $tag_start_index = -1;
-          for (my $tree_index_prev = $tree_index - 1; $tree_index_prev >= 0; $tree_index_prev--) {
-            my $token_prev = $tree->[$tree_index_prev];
-            my $op_prev = $token_prev->[0];
-            
-            if ($op_prev eq "tag_start") {
-              $tag_start_index = $tree_index_prev;
-            }
-          }
-          if ($tag_start_index >= 0) {
-            for (my $tree_index_prev = $tag_start_index - 1; $tree_index_prev >= 0; $tree_index_prev--) {
-              my $token_prev = $tree->[$tree_index_prev];
-              my $op_prev = $token_prev->[0];
-              
-              if ($op_prev eq "text") {
-                if (my $m = Re->m($token_prev->[1], "(.*?)\s+$")) {
-                  $token_prev->[1] = $m->cap1;
-                }
-                if (length $token_prev->[1]) {
-                  last;
-                }
-              }
-              else {
-                last;
-              }
-            }
-          }
-          
-          # Remove later spaces
-          for (my $tree_index_later = $tree_index + 1; $tree_index_later < @$tree; $tree_index_later++) {
-            my $token_later = $tree->[$tree_index_later];
-            
-            my $op_later = $token_later->[0];
-            unless ($op_later eq "text" | $op_later eq "line_end") {
-              last;
-            }
-            
-            if ($op_later eq "text") {
-              if (my $m = Re->m($token_later->[1], "^\s+(.*)")) {
-                $token_later->[1] = $m->cap1;
-              }
-              if (length $token_later->[1]) {
-                last;
-              }
-            }
-            else {
-              last;
-            }
-          }
-        }
-      }
-    }
+    $self->set_unparsed($template);
+    $self->set_compiled(undef);
     
-    # Merge text
-    my $tree_index = 0;
-    while (1) {
-      
-      if ($tree_index == @$tree) {
-        last;
-      }
-      
-      my $base_tree_index = -1;
-      
-      my $token = $tree->[$tree_index];
-      my $op = $token->[0];
-      
-      if ($op eq "text") {
-        $base_tree_index = $tree_index;
-        my $next = 0;
-        while (1) {
-          $tree_index++;
-          if ($tree->[$tree_index][0] eq "text") {
-            $tree->[$base_tree_index][1] .= $tree->[$tree_index][1];
-            $tree->[$tree_index][1] = "";
-          }
-          else {
-            $next = 1;
-            last;
-          }
-        }
-        
-        if ($next) {
-          next;
-        }
-      }
-      
-      $tree_index++;
-    }
+    my $tree = $self->tokenize($template);
     
+    $self->check($tree);
+    
+    $self->set_tree($tree);
   }
   
   private method tokenize : string[][] ($template : string) {
@@ -449,6 +354,111 @@ class Mojo::Template {
     }
     
     return $tree->to_array;
+  }
+  
+  private method check : void ($tree : string[][]) {
+    
+    # Process trim mark
+    for (my $tree_index = 0; $tree_index < @$tree; $tree_index++) {
+      
+      my $token = $tree->[$tree_index];
+      
+      my $op = $token->[0];
+      
+      if ($op eq "tag_end") {
+        my $trim = $token->[1];
+        
+        if ($trim) {
+          # Remove previous spaces
+          my $tag_start_index = -1;
+          for (my $tree_index_prev = $tree_index - 1; $tree_index_prev >= 0; $tree_index_prev--) {
+            my $token_prev = $tree->[$tree_index_prev];
+            my $op_prev = $token_prev->[0];
+            
+            if ($op_prev eq "tag_start") {
+              $tag_start_index = $tree_index_prev;
+            }
+          }
+          if ($tag_start_index >= 0) {
+            for (my $tree_index_prev = $tag_start_index - 1; $tree_index_prev >= 0; $tree_index_prev--) {
+              my $token_prev = $tree->[$tree_index_prev];
+              my $op_prev = $token_prev->[0];
+              
+              if ($op_prev eq "text") {
+                if (my $m = Re->m($token_prev->[1], "(.*?)\s+$")) {
+                  $token_prev->[1] = $m->cap1;
+                }
+                if (length $token_prev->[1]) {
+                  last;
+                }
+              }
+              else {
+                last;
+              }
+            }
+          }
+          
+          # Remove later spaces
+          for (my $tree_index_later = $tree_index + 1; $tree_index_later < @$tree; $tree_index_later++) {
+            my $token_later = $tree->[$tree_index_later];
+            
+            my $op_later = $token_later->[0];
+            unless ($op_later eq "text" | $op_later eq "line_end") {
+              last;
+            }
+            
+            if ($op_later eq "text") {
+              if (my $m = Re->m($token_later->[1], "^\s+(.*)")) {
+                $token_later->[1] = $m->cap1;
+              }
+              if (length $token_later->[1]) {
+                last;
+              }
+            }
+            else {
+              last;
+            }
+          }
+        }
+      }
+    }
+    
+    # Merge text
+    my $tree_index = 0;
+    while (1) {
+      
+      if ($tree_index == @$tree) {
+        last;
+      }
+      
+      my $base_tree_index = -1;
+      
+      my $token = $tree->[$tree_index];
+      my $op = $token->[0];
+      
+      if ($op eq "text") {
+        $base_tree_index = $tree_index;
+        my $next = 0;
+        while (1) {
+          $tree_index++;
+          if ($tree->[$tree_index][0] eq "text") {
+            $tree->[$base_tree_index][1] .= $tree->[$tree_index][1];
+            $tree->[$tree_index][1] = "";
+          }
+          else {
+            $next = 1;
+            last;
+          }
+        }
+        
+        if ($next) {
+          next;
+        }
+      }
+      
+      $tree_index++;
+    }
+    
   }
   
   method process : string ($options : Hash|object[] = undef, $c : Mojolicious::Controller = undef) {
