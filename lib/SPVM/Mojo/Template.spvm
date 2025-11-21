@@ -161,7 +161,7 @@ class Mojo::Template {
           
           # Capture start
           if (length $m->cap1) {
-            $tree->splice($tree->length - 1, 0, ["cpst"]);
+            $tree->splice($tree->length - 1, 0, ["capture_start"]);
           }
           
           if (length $m->cap2) {
@@ -192,7 +192,7 @@ class Mojo::Template {
           }
           
           # Token (with optional capture end)
-          $tree->push($capture ? ["cpen"] : [$op, $token]);
+          $tree->push($capture ? ["capture_end"] : [$op, $token]);
           $capture = 0;
           if ($op eq "text" && length $token) {
             $has_text++;
@@ -388,7 +388,7 @@ class Mojo::Template {
           
           # Capture start
           if (length $m->cap1) {
-            $tree->push(["cpst"]);
+            $tree->push(["capture_start"]);
           }
           
           my $trim = (string)undef;
@@ -428,7 +428,7 @@ class Mojo::Template {
         else {
           # Token (with optional capture end)
           if ($is_capture_end) {
-            $tree->push(["cpen"]);
+            $tree->push(["capture_end"]);
           }
           else {
             # Replace
@@ -523,11 +523,11 @@ class Mojo::Template {
         $blocks->[-1] .= $value;
       }
 # Capture end
-      elsif ($op eq "cpen") {
+      elsif ($op eq "capture_end") {
         $blocks->[-1] .= "return Mojo::ByteStream->new(\$_O) }";
         
         # No following code
-        if ($next->[0] ne "cpst" && (Re->m($next->[1] // "", "^\s*$"))) {
+        if ($next->[0] ne "capture_start" && (Re->m($next->[1] // "", "^\s*$"))) {
           $blocks->[-1] .= ";" ;
         }
       }
@@ -556,7 +556,7 @@ class Mojo::Template {
       }
       
       # Capture start
-      if    ($op eq "cpst") { $capture = 1; }
+      if    ($op eq "capture_start") { $capture = 1; }
       elsif ($capture) {
         $blocks->[-1] .= "method : void () { my \$_O = \"\"; ";
         $capture = 0;
