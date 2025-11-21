@@ -274,8 +274,44 @@ class Mojo::Template {
           }
         }
       }
-      
     }
+    
+    # Merge text
+    my $tree_index = 0;
+    while (1) {
+      
+      if ($tree_index == @$tree) {
+        last;
+      }
+      
+      my $base_tree_index = -1;
+      
+      my $token = $tree->[$tree_index];
+      my $op = $token->[0];
+      
+      if ($op eq "text") {
+        $base_tree_index = $tree_index;
+        my $next = 0;
+        while (1) {
+          $tree_index++;
+          if ($tree->[$tree_index][0] eq "text") {
+            $tree->[$base_tree_index][1] .= $tree->[$tree_index][1];
+            $tree->[$tree_index][1] = "";
+          }
+          else {
+            $next = 1;
+            last;
+          }
+        }
+        
+        if ($next) {
+          next;
+        }
+      }
+      
+      $tree_index++;
+    }
+    
   }
   
   private method tokenize : string[][] ($template : string) {
