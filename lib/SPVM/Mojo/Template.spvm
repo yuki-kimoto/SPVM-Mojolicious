@@ -487,6 +487,107 @@ class Mojo::Template {
     return $output;
   }
   
+  private method _compile_v2 : void () {
+    
+    my $tree = (List of string[])List->new($self->tree);
+    my $escape = $self->auto_escape;
+    
+    my $blocks = StringList->new;
+    
+    $blocks->push("class {");
+    $blocks->push("  use Mojo::Util;");
+    $blocks->push("  use Mojo::ByteStream;");
+    $blocks->push("static method code : string (\$options : Hash = undef, \$c : Mojolicious::Controller = undef) {");
+    $blocks->push("my \$_O = \"\";");
+    
+    my $i = 0;
+    my $capture = (string)undef;
+    my $multi = 0;
+    for (my $i = 0; $i < @$tree - 1; $i++) {
+      
+      my $token = $tree->[$i];
+      my $op = $token->[0];
+      my $value = $token->[1];
+      
+      my $next = $tree->[$i + 1];
+      
+      my $value_length = length $value;
+      
+      $value = copy $value;
+      
+      $blocks->push("");
+      
+      # Text (quote and fix line ending)
+      if ($op eq "text") {
+        if (length $value) {
+          my $lines = Fn->split("\n", $value, -1);
+          
+          $blocks->[-1] .= "\$_O .= <<'END_OF_STRING';\n";
+          
+          for my $line (@$lines) {
+            $blocks->[-1] .= "$line\n" ;
+          }
+          
+          $blocks->[-1] .= "END_OF_STRING\n";
+          
+          $blocks->[-1] .= "Fn->chomp((mutable string)\$_O);" ;
+        }
+      }
+      
+      # Code or multi-line expression
+      elsif ($op eq "code" || $multi) {
+        $blocks->[-1] .= $value;
+      }
+# Capture end
+      elsif ($op eq "capture_end") {
+        $blocks->[-1] .= "return Mojo::ByteStream->new(\$_O) }";
+        
+        # No following code
+        if ($next->[0] ne "capture_start" && (Re->m($next->[1] // "", "^\s*$"))) {
+          $blocks->[-1] .= ";" ;
+        }
+      }
+      
+      # Expression
+      if ($op eq "expr" || $op eq "escp") {
+
+        # Escaped
+        if (!$multi && ($op eq "escp" && !$escape || $op eq "expr" && $escape)) {
+          $blocks->[-1] .= "my \$_ = (object)$value;";
+          $blocks->[-1] .= "\$_O .= \$_ isa Mojo::ByteStream ? \$_->(Mojo::ByteStream)->to_string : Mojo::Util->xml_escape((string)\$_);";
+        }
+        
+        # Raw
+        elsif (!$multi) {
+          $blocks->[-1] .= "\$_O .= $value";
+        }
+        
+        # Multi-line
+        $multi = !$next || $next->[0] ne "text";
+        
+        # Append semicolon
+        unless ($multi || $capture) {
+          $blocks->[-1] .= ";";
+        }
+      }
+      
+      # Capture start
+      if    ($op eq "capture_start") { $capture = 1; }
+      elsif ($capture) {
+        $blocks->[-1] .= "method : void () { my \$_O = \"\"; ";
+        $capture = 0;
+      }
+    }
+    
+    $blocks->push("return \$_O;");
+    $blocks->push("} # End of method");
+    $blocks->push("} # End of class");
+    
+    $self->set_code(Fn->join("\n", $blocks->to_array));
+    
+    $self->set_tree(new string[][0]);
+  }
+  
   private method _compile : void () {
     
     my $tree = (List of string[])List->new($self->tree);
