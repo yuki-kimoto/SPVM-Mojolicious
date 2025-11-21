@@ -261,7 +261,7 @@ class Mojo::Template {
             }
             
             if ($op_later eq "LF") {
-              $tree->[$tree_index_later] = ["text", ""];
+              $token_later->[1] = "ignore";
             }
             elsif ($op_later eq "text") {
               if (my $m = Re->m($token_later->[1], "^\s+(.*)")) {
