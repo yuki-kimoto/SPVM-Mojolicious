@@ -365,6 +365,9 @@ class Mojo::Template {
           $tree->push(["tag_end", $trim]);
           
           $op = "text";
+          
+          # Hint at end
+          $tree->push([$op, ""]);
         }
         
         # Tag start - Comment
