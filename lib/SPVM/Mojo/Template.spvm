@@ -244,7 +244,7 @@ class Mojo::Template {
     my $capture_end_re = "^\Q$tag_start\E(?:\Q$expression_mark\E)?(?:\Q$escape_mark\E)?\s*\Q$capture_end\E(.*)$";
     
     # Split lines
-    my $lines = Fn->split("\n", $template, -1);
+    my $lines = Fn->split("\n", $template);
     
     my $op = "text";
     my $is_capture_end = 0;
@@ -423,8 +423,8 @@ class Mojo::Template {
       }
     }
     
-    # Merge text, etc
-    for my $target_op (@{["text", "cmnt", "excaped_expression", "expression", "code"]}) {
+    # Merge text and expression
+    for my $target_op (@{["text", "excaped_expression", "expression"]}) {
       my $tree_index = 0;
       while (1) {
         
@@ -442,7 +442,17 @@ class Mojo::Template {
           my $next = 0;
           while (1) {
             $tree_index++;
-            if ($tree->[$tree_index][0] eq $target_op) {
+            if ($tree_index + 2 < @$tree && $tree->[$tree_index][0] eq "line_end" && $tree->[$tree_index + 1][0] eq "line_start" && $tree->[$tree_index + 2][0] eq $target_op) {
+              $tree->[$base_tree_index][1] .= $tree->[$tree_index + 2][1];
+              $tree->[$tree_index][0] = "none";
+              $tree->[$tree_index][1] = "";
+              $tree->[$tree_index + 1][0] = "none";
+              $tree->[$tree_index + 1][1] = "";
+              $tree->[$tree_index + 2][0] = "none";
+              $tree->[$tree_index + 2][1] = "";
+              $tree_index += 2;
+            }
+            elsif ($tree->[$tree_index][0] eq $target_op) {
               $tree->[$base_tree_index][1] .= $tree->[$tree_index][1];
               $tree->[$tree_index][0] = "none";
               $tree->[$tree_index][1] = "";

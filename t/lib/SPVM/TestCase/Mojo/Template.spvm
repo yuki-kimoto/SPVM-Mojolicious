@@ -369,6 +369,22 @@ EOS
   
   static method basic_v2 : int () {
     
+    {
+      my $mt = Mojo::Template->new;
+      
+    my $code = <<'EOS';
+  a
+  b
+  c
+<%
+  1;
+%>
+EOS
+      
+      $mt->parse_v2($code);
+    }
+    
     return 1;
   }
+  
 }
