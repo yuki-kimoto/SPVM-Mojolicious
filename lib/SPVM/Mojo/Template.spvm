@@ -90,7 +90,7 @@ class Mojo::Template {
     my $tree_tmp = $self->tokenize($template);
     $self->check($tree_tmp);
     
-    # warn dump $tree_tmp;
+    warn dump $tree_tmp;
     
     # Clean start
     $self->set_unparsed($template);
@@ -201,7 +201,7 @@ class Mojo::Template {
       }
       
       if ($op eq "text" && $has_text && !$escape_line_ending) {
-        $tree->push(["line", undef]);
+        $tree->push(["line_end", undef]);
       }
     }
     
@@ -256,11 +256,11 @@ class Mojo::Template {
             my $token_later = $tree->[$tree_index_later];
             
             my $op_later = $token_later->[0];
-            unless ($op_later eq "text" | $op_later eq "LF") {
+            unless ($op_later eq "text" | $op_later eq "line_end") {
               last;
             }
             
-            if ($op_later eq "LF") {
+            if ($op_later eq "line_end") {
               $token_later->[1] = "ignore";
             }
             elsif ($op_later eq "text") {
@@ -314,7 +314,7 @@ class Mojo::Template {
       
       my $line = $lines->[$line_index];
       
-      $tree->push(["line_number", $line_index + 1]);
+      $tree->push(["line_start", $line_index + 1]);
       
       if (is_read_only $line) {
         $line = copy $line;
@@ -413,7 +413,7 @@ class Mojo::Template {
       }
       
       unless ($escape_line_ending) {
-        $tree->push(["LF", undef]);
+        $tree->push(["line_end", undef]);
       }
     }
     
@@ -477,7 +477,7 @@ class Mojo::Template {
       $blocks->push("");
       
       # Text (quote and fix line ending)
-      if ($op eq "line") {
+      if ($op eq "line_end") {
         $blocks->[-1] .= "\$_O .= \"\\n\";" ;
       }
       elsif ($op eq "text") {
