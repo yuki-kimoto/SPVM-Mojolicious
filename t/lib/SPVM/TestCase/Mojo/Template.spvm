@@ -719,4 +719,25 @@ EOS
     return 1;
   }
   
+  static method trim_mark_v2 : int () {
+    
+    {
+      my $mt = Mojo::Template->new;
+      
+    my $code = <<'EOS';
+% for (my $i = 0; $i < 3; $i++) {
+  <%= "a" =%>  
+% }
+EOS
+      
+      my $output = $mt->render_v2($code);
+      
+      unless (Re->m($output, "aaa")) {
+        return 0;
+      }
+    }
+    
+    return 1;
+  }
+  
 }

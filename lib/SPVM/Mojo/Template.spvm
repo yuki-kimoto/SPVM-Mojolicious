@@ -379,8 +379,10 @@ class Mojo::Template {
             
             if ($op_prev eq "tag_start") {
               $tag_start_index = $tree_index_prev;
+              last;
             }
           }
+          
           if ($tag_start_index >= 0) {
             for (my $tree_index_prev = $tag_start_index - 1; $tree_index_prev >= 0; $tree_index_prev--) {
               my $token_prev = $tree->[$tree_index_prev];
@@ -604,8 +606,6 @@ class Mojo::Template {
     $blocks->push("} # End of class");
     
     $self->set_code(Fn->join("\n", $blocks->to_array));
-    
-    $self->set_tree(new string[][0]);
   }
   
   private method _compile : void () {

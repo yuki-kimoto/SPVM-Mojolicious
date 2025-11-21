@@ -16,11 +16,17 @@ my $api = SPVM::api();
 
 my $start_memory_blocks_count = $api->get_memory_blocks_count;
 
+=pod
+
 ok(SPVM::TestCase::Mojo::Template->basic_v2);
 ok(SPVM::TestCase::Mojo::Template->xml_escape_v2);
 ok(SPVM::TestCase::Mojo::Template->comment_v2);
 ok(SPVM::TestCase::Mojo::Template->escape_line_ending_v2);
 ok(SPVM::TestCase::Mojo::Template->replace_mark_v2);
+
+=cut
+
+ok(SPVM::TestCase::Mojo::Template->trim_mark_v2);
 
 =pod
 
