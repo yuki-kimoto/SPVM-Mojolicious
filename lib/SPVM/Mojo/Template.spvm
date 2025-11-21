@@ -474,7 +474,19 @@ class Mojo::Template {
       }
     }
     
-    return $tree;
+    my $new_tree = (List of string[])List->new(new string[][0]);
+    for (my $tree_index = 0; $tree_index < @$tree; $tree_index++) {
+      
+      my $token = $tree->[$tree_index];
+      
+      my $op = $token->[0];
+      
+      unless ($op eq "none") {
+        $new_tree->push($token);
+      }
+    }
+    
+    return $new_tree->to_array;
   }
   
   method process : string ($options : Hash|object[] = undef, $c : Mojolicious::Controller = undef) {
