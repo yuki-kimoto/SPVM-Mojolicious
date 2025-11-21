@@ -335,7 +335,7 @@ class Mojo::Template {
       }
       
       unless ($escape_line_ending) {
-        $tree->push(["LF"]);
+        $tree->push(["LF", undef]);
       }
     }
     
