@@ -223,6 +223,33 @@ class Mojo::Template {
         
         if ($trim) {
           # Remove previous spaces
+          my $tag_start_index = -1;
+          for (my $tree_index_prev = $tree_index - 1; $tree_index_prev >= 0; $tree_index_prev--) {
+            my $token_prev = $tree->[$tree_index_prev];
+            my $op_prev = $token_prev->[0];
+            
+            if ($op_prev eq "tag_start") {
+              $tag_start_index = $tree_index_prev;
+            }
+          }
+          if ($tag_start_index >= 0) {
+            for (my $tree_index_prev = $tag_start_index - 1; $tree_index_prev >= 0; $tree_index_prev--) {
+              my $token_prev = $tree->[$tree_index_prev];
+              my $op_prev = $token_prev->[0];
+              
+              if ($op_prev eq "text") {
+                if (my $m = Re->m($token_prev->[1], "(.*?)\s+$")) {
+                  $token_prev->[1] = $m->cap1;
+                }
+                if (length $token_prev->[1]) {
+                  last;
+                }
+              }
+              else {
+                last;
+              }
+            }
+          }
           
           # Remove later spaces
           for (my $tree_index_later = $tree_index + 1; $tree_index_later < @$tree; $tree_index_later++) {
