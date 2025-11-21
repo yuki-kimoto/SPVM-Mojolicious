@@ -599,4 +599,56 @@ EOS
     return 1;
   }
   
+  static method comment_v2 : int () {
+    
+    {
+      my $mt = Mojo::Template->new;
+      
+    my $code = <<'EOS';
+% my $num = 123;
+%= $num
+EOS
+      
+      my $output = $mt->render_v2($code);
+      
+      unless (Re->m($output, "123")) {
+        return 0;
+      }
+    }
+    
+    {
+      my $mt = Mojo::Template->new;
+      
+    my $code = <<'EOS';
+% my $num = 123;
+%# my $num = 456;
+%= $num
+EOS
+      
+      my $output = $mt->render_v2($code);
+      
+      unless (Re->m($output, "123")) {
+        return 0;
+      }
+    }
+    
+    {
+      my $mt = Mojo::Template->new;
+      
+    my $code = <<'EOS';
+<% my $num = 123; %>
+<%# my $num = 456; %>
+%= $num
+EOS
+      
+      my $output = $mt->render_v2($code);
+      
+      unless (Re->m($output, "123")) {
+        return 0;
+      }
+    }
+    
+    return 1;
+  }
+  
 }

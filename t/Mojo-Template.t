@@ -18,6 +18,7 @@ my $start_memory_blocks_count = $api->get_memory_blocks_count;
 
 ok(SPVM::TestCase::Mojo::Template->basic_v2);
 ok(SPVM::TestCase::Mojo::Template->xml_escape_v2);
+ok(SPVM::TestCase::Mojo::Template->comment_v2);
 
 =pod
 
