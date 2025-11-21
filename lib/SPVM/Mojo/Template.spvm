@@ -88,6 +88,9 @@ class Mojo::Template {
   method parse : void ($template : string) {
     
     my $tree_tmp = $self->tokenize($template);
+    $tree_tmp = $self->check($tree_tmp);
+    
+    # warn dump $tree_tmp;
     
     # Clean start
     $self->set_unparsed($template);
@@ -204,6 +207,53 @@ class Mojo::Template {
     
     # Hint at end
     $tree->push(["text", ""]);
+  }
+  
+  private method check : string[][] ($tree : string[][]) {
+    
+    # Process trim mark
+    for (my $tree_index = 0; $tree_index < @$tree; $tree_index++) {
+      
+      my $token = $tree->[$tree_index];
+      
+      my $op = $token->[0];
+      
+      if ($op eq "tag_end") {
+        my $trim = $token->[1];
+        
+        if ($trim) {
+          # Remove previous spaces
+          
+          # Remove later spaces
+          for (my $tree_index_later = $tree_index + 1; $tree_index_later < @$tree; $tree_index_later++) {
+            my $token_later = $tree->[$tree_index_later];
+            
+            my $op_later = $token_later->[0];
+            unless ($op_later eq "text" | $op_later eq "LF") {
+              last;
+            }
+            
+            if ($op_later eq "LF") {
+              $tree->[$tree_index_later] = ["text", ""];
+            }
+            elsif ($op_later eq "text") {
+              if (my $m = Re->m($token_later->[1], "^\s+(.*)")) {
+                $token_later->[1] = $m->cap1;
+              }
+              if (length $token_later->[1]) {
+                last;
+              }
+            }
+            else {
+              last;
+            }
+          }
+        }
+      }
+      
+    }
+    
+    return $tree;
   }
   
   private method tokenize : string[][] ($template : string) {
