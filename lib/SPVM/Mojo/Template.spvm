@@ -500,6 +500,32 @@ class Mojo::Template {
     return $output;
   }
   
+  method process_v2 : string ($options : Hash|object[] = undef, $c : Mojolicious::Controller = undef) {
+    
+    my $options = Fn->to_hash($options);
+    
+    # Use a local stack trace for compile exceptions
+    my $compiled = $self->compiled;
+    unless ($compiled) {
+    
+      $self->_compile_v2;
+      
+      my $code = $self->code;
+      
+      unless ($compiled = Native->use_anon_class($code)) {
+        # TODO 
+        # return Mojo::Exception->new($@)->inspect($self->unparsed, $code)->trace->verbose(1)
+        die $self->unparsed;
+      }
+      
+      $self->set_compiled($compiled);
+    }
+    
+    my $output = (string)Native::MethodCall->call_class_method($compiled, "code", [(object)$options, $c]);
+    
+    return $output;
+  }
+  
   private method _compile_v2 : void () {
     
     my $tree = (List of string[])List->new($self->tree);
@@ -660,6 +686,15 @@ class Mojo::Template {
     $self->set_code(Fn->join("\n", $blocks->to_array));
     
     $self->set_tree(new string[][0]);
+  }
+  
+  method render_v2 : string ($template : string, $args : object[] = undef) {
+    
+    $self->parse_v2($template);
+    
+    my $output = $self->process_v2($args);
+    
+    return $output;
   }
   
   method render : string ($template : string, $args : object[] = undef) {
