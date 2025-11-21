@@ -373,17 +373,162 @@ EOS
       my $mt = Mojo::Template->new;
       
     my $code = <<'EOS';
+% for (my $i = 0; $i < 3; $i++) {
   a
-  b
-  c
-<%
-  1;
-%>
+% }
 EOS
       
-      $mt->parse_v2($code);
+      my $output = $mt->render_v2($code);
       
-      # warn dump $mt->tree;
+      unless (Re->m($output, "  a\n  a\n  a\n")) {
+        return 0;
+      }
+    }
+    
+    {
+      my $mt = Mojo::Template->new;
+      
+      my $code = "";
+      
+      my $output = $mt->render_v2($code);
+      
+      unless (Re->m($output, "^\s*$")) {
+        return 0;
+      }
+    }
+    
+    {
+      my $mt = Mojo::Template->new;
+      
+      my $code = <<'EOS';
+EOS
+      
+      my $output = $mt->render_v2($code);
+      
+      unless (Re->m($output, "^\s*$")) {
+        return 0;
+      }
+    }
+    
+    {
+      my $mt = Mojo::Template->new;
+      
+      my $code = <<'EOS';
+a
+EOS
+      
+      my $output = $mt->render_v2($code);
+      
+      unless (Re->m($output, "^a\s*$")) {
+        return 0;
+      }
+    }
+    
+    {
+      my $mt = Mojo::Template->new;
+      
+      my $code = <<'EOS';
+  a
+  a
+EOS
+      
+      my $output = $mt->render_v2($code);
+      
+      unless (Re->m($output, "  a\n  a\n")) {
+        return 0;
+      }
+    }
+    
+    {
+      my $mt = Mojo::Template->new;
+      
+      my $code = <<'EOS';
+\"'
+EOS
+      
+      my $output = $mt->render_v2($code);
+      
+      unless (Re->m($output, "^\\\\\"'\s*$")) {
+        return 0;
+      }
+    }
+    
+    {
+      my $mt = Mojo::Template->new;
+      
+      my $code = <<'EOS';
+a
+<%
+  my $num = 1;
+%>
+b
+EOS
+      
+      my $output = $mt->render_v2($code);
+      
+      unless (Re->m($output, "^\s*a\s+b\s*$")) {
+        return 0;
+      }
+    }
+    
+    {
+      my $mt = Mojo::Template->new;
+      
+      my $code = <<'EOS';
+<%= 123 %>
+EOS
+      
+      my $output = $mt->render_v2($code);
+      
+      unless (Re->m($output, "^\s*123\s*$")) {
+        return 0;
+      }
+    }
+    
+    {
+      my $mt = Mojo::Template->new;
+      
+      my $code = <<'EOS';
+a
+% my $num = 1;
+b
+EOS
+      
+      my $output = $mt->render_v2($code);
+      
+      unless (Re->m($output, "^\s*a\s+b\s*$")) {
+        return 0;
+      }
+    }
+    
+    {
+      my $mt = Mojo::Template->new;
+      
+      my $code = <<'EOS';
+a
+%= 123
+b
+EOS
+      
+      my $output = $mt->render_v2($code);
+      
+      unless (Re->m($output, "a\s*123\s*b")) {
+        return 0;
+      }
+    }
+    
+    {
+      my $mt = Mojo::Template->new;
+      
+      my $code = <<'EOS';
+a<%= 123 %>b
+EOS
+      
+      my $output = $mt->render_v2($code);
+      
+      unless (Re->m($output, "^\s*a123b\s*$")) {
+        return 0;
+      }
     }
     
     return 1;
