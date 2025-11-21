@@ -15,7 +15,7 @@ class TestCase::Mojo::Template {
   use Mojo::Message::Request;
   use Mojo::Template;
   
-  static method basic_v2 : int () {
+  static method basic : int () {
     
     {
       my $mt = Mojo::Template->new;
@@ -26,7 +26,7 @@ class TestCase::Mojo::Template {
 % }
 EOS
       
-      my $output = $mt->render_v2($code);
+      my $output = $mt->render($code);
       
       unless (Re->m($output, "  a\n  a\n  a\n")) {
         return 0;
@@ -38,7 +38,7 @@ EOS
       
       my $code = "";
       
-      my $output = $mt->render_v2($code);
+      my $output = $mt->render($code);
       
       unless (Re->m($output, "^\s*$")) {
         return 0;
@@ -51,7 +51,7 @@ EOS
       my $code = <<'EOS';
 EOS
       
-      my $output = $mt->render_v2($code);
+      my $output = $mt->render($code);
       
       unless (Re->m($output, "^\s*$")) {
         return 0;
@@ -65,7 +65,7 @@ EOS
 a
 EOS
       
-      my $output = $mt->render_v2($code);
+      my $output = $mt->render($code);
       
       unless (Re->m($output, "^a\s*$")) {
         return 0;
@@ -80,7 +80,7 @@ EOS
   a
 EOS
       
-      my $output = $mt->render_v2($code);
+      my $output = $mt->render($code);
       
       unless (Re->m($output, "  a\n  a\n")) {
         return 0;
@@ -94,7 +94,7 @@ EOS
 \"'
 EOS
       
-      my $output = $mt->render_v2($code);
+      my $output = $mt->render($code);
       
       unless (Re->m($output, "^\\\\\"'\s*$")) {
         return 0;
@@ -112,7 +112,7 @@ a
 b
 EOS
       
-      my $output = $mt->render_v2($code);
+      my $output = $mt->render($code);
       
       unless (Re->m($output, "^\s*a\s+b\s*$")) {
         return 0;
@@ -126,7 +126,7 @@ EOS
 <%= 123 %>
 EOS
       
-      my $output = $mt->render_v2($code);
+      my $output = $mt->render($code);
       
       unless (Re->m($output, "^\s*123\s*$")) {
         return 0;
@@ -142,7 +142,7 @@ a
 b
 EOS
       
-      my $output = $mt->render_v2($code);
+      my $output = $mt->render($code);
       
       unless (Re->m($output, "^\s*a\s+b\s*$")) {
         return 0;
@@ -158,7 +158,7 @@ a
 b
 EOS
       
-      my $output = $mt->render_v2($code);
+      my $output = $mt->render($code);
       
       unless (Re->m($output, "a\s*123\s*b")) {
         return 0;
@@ -172,7 +172,7 @@ EOS
 a<%= 123 %>b
 EOS
       
-      my $output = $mt->render_v2($code);
+      my $output = $mt->render($code);
       
       unless (Re->m($output, "^\s*a123b\s*$")) {
         return 0;
@@ -187,7 +187,7 @@ a<%= 2 +
 10 %>b
 EOS
       
-      my $output = $mt->render_v2($code);
+      my $output = $mt->render($code);
       
       unless (Re->m($output, "^\s*a12b\s*$")) {
         return 0;
@@ -197,7 +197,7 @@ EOS
     return 1;
   }
   
-  static method xml_escape_v2 : int () {
+  static method xml_escape : int () {
     
     {
       my $mt = Mojo::Template->new;
@@ -207,7 +207,7 @@ EOS
 <%= "&<>\"'" %>
 EOS
       
-      my $output = $mt->render_v2($code);
+      my $output = $mt->render($code);
       
       unless (Re->m($output, "^\s*&amp;&lt;&gt;&quot;&#39;\s*$")) {
         return 0;
@@ -222,7 +222,7 @@ EOS
 <%== "&<>" %>
 EOS
       
-      my $output = $mt->render_v2($code);
+      my $output = $mt->render($code);
       
       unless (Re->m($output, "^\s*&<>\s*$")) {
         return 0;
@@ -237,7 +237,7 @@ EOS
 <%= Mojo::ByteStream->new("&<>") %>
 EOS
       
-      my $output = $mt->render_v2($code);
+      my $output = $mt->render($code);
       
       unless (Re->m($output, "^\s*&<>\s*$")) {
         return 0;
@@ -252,7 +252,7 @@ EOS
 %== "&<>"
 EOS
       
-      my $output = $mt->render_v2($code);
+      my $output = $mt->render($code);
       
       unless (Re->m($output, "^\s*&<>\s*$")) {
         return 0;
@@ -262,7 +262,7 @@ EOS
     return 1;
   }
   
-  static method comment_v2 : int () {
+  static method comment : int () {
     
     {
       my $mt = Mojo::Template->new;
@@ -272,7 +272,7 @@ EOS
 %= $num
 EOS
       
-      my $output = $mt->render_v2($code);
+      my $output = $mt->render($code);
       
       unless (Re->m($output, "123")) {
         return 0;
@@ -288,7 +288,7 @@ EOS
 %= $num
 EOS
       
-      my $output = $mt->render_v2($code);
+      my $output = $mt->render($code);
       
       unless (Re->m($output, "123")) {
         return 0;
@@ -304,7 +304,7 @@ EOS
 %= $num
 EOS
       
-      my $output = $mt->render_v2($code);
+      my $output = $mt->render($code);
       
       unless (Re->m($output, "123")) {
         return 0;
@@ -314,7 +314,7 @@ EOS
     return 1;
   }
   
-  static method escape_line_ending_v2 : int () {
+  static method escape_line_ending : int () {
     
     {
       my $mt = Mojo::Template->new;
@@ -324,7 +324,7 @@ a\
 b
 EOS
       
-      my $output = $mt->render_v2($code);
+      my $output = $mt->render($code);
       
       unless (Re->m($output, "\s*ab\s*")) {
         return 0;
@@ -339,7 +339,7 @@ a\\
 b
 EOS
       
-      my $output = $mt->render_v2($code);
+      my $output = $mt->render($code);
       
       unless (Re->m($output, "\s*a\\\\\s+b\s*")) {
         return 0;
@@ -349,7 +349,7 @@ EOS
     return 1;
   }
   
-  static method replace_mark_v2 : int () {
+  static method replace_mark : int () {
     
     {
       my $mt = Mojo::Template->new;
@@ -358,7 +358,7 @@ EOS
 %%
 EOS
       
-      my $output = $mt->render_v2($code);
+      my $output = $mt->render($code);
       
       unless (Re->m($output, "^\s*%\s*$")) {
         return 0;
@@ -372,7 +372,7 @@ EOS
 <%%
 EOS
       
-      my $output = $mt->render_v2($code);
+      my $output = $mt->render($code);
       
       unless (Re->m($output, "^\s*<%\s*$")) {
         return 0;
@@ -382,7 +382,7 @@ EOS
     return 1;
   }
   
-  static method trim_mark_v2 : int () {
+  static method trim_mark : int () {
     
     {
       my $mt = Mojo::Template->new;
@@ -393,7 +393,7 @@ EOS
 % }
 EOS
       
-      my $output = $mt->render_v2($code);
+      my $output = $mt->render($code);
       
       unless (Re->m($output, "aaa")) {
         return 0;

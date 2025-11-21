@@ -16,22 +16,12 @@ my $api = SPVM::api();
 
 my $start_memory_blocks_count = $api->get_memory_blocks_count;
 
-ok(SPVM::TestCase::Mojo::Template->basic_v2);
-ok(SPVM::TestCase::Mojo::Template->xml_escape_v2);
-ok(SPVM::TestCase::Mojo::Template->comment_v2);
-ok(SPVM::TestCase::Mojo::Template->escape_line_ending_v2);
-ok(SPVM::TestCase::Mojo::Template->replace_mark_v2);
-ok(SPVM::TestCase::Mojo::Template->trim_mark_v2);
-
-=pod
-
 ok(SPVM::TestCase::Mojo::Template->basic);
 ok(SPVM::TestCase::Mojo::Template->xml_escape);
 ok(SPVM::TestCase::Mojo::Template->comment);
 ok(SPVM::TestCase::Mojo::Template->escape_line_ending);
 ok(SPVM::TestCase::Mojo::Template->replace_mark);
-
-=cut
+ok(SPVM::TestCase::Mojo::Template->trim_mark);
 
 SPVM::Fn->destroy_runtime_permanent_vars;
 
