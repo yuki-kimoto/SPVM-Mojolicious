@@ -260,10 +260,7 @@ class Mojo::Template {
               last;
             }
             
-            if ($op_later eq "line_end") {
-              $token_later->[1] = "ignore";
-            }
-            elsif ($op_later eq "text") {
+            if ($op_later eq "text") {
               if (my $m = Re->m($token_later->[1], "^\s+(.*)")) {
                 $token_later->[1] = $m->cap1;
               }
