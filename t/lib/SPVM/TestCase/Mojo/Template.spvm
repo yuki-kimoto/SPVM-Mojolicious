@@ -534,4 +534,69 @@ EOS
     return 1;
   }
   
+  static method xml_escape_v2 : int () {
+    
+    {
+      my $mt = Mojo::Template->new;
+      $mt->set_auto_escape(1);
+      
+      my $code = <<'EOS';
+<%= "&<>\"'" %>
+EOS
+      
+      my $output = $mt->render_v2($code);
+      
+      unless (Re->m($output, "^\s*&amp;&lt;&gt;&quot;&#39;\s*$")) {
+        return 0;
+      }
+    }
+    
+    {
+      my $mt = Mojo::Template->new;
+      $mt->set_auto_escape(1);
+      
+      my $code = <<'EOS';
+<%== "&<>" %>
+EOS
+      
+      my $output = $mt->render_v2($code);
+      
+      unless (Re->m($output, "^\s*&<>\s*$")) {
+        return 0;
+      }
+    }
+    
+    {
+      my $mt = Mojo::Template->new;
+      $mt->set_auto_escape(1);
+      
+      my $code = <<'EOS';
+<%= Mojo::ByteStream->new("&<>") %>
+EOS
+      
+      my $output = $mt->render_v2($code);
+      
+      unless (Re->m($output, "^\s*&<>\s*$")) {
+        return 0;
+      }
+    }
+    
+    {
+      my $mt = Mojo::Template->new;
+      $mt->set_auto_escape(1);
+      
+      my $code = <<'EOS';
+%== "&<>"
+EOS
+      
+      my $output = $mt->render_v2($code);
+      
+      unless (Re->m($output, "^\s*&<>\s*$")) {
+        return 0;
+      }
+    }
+    
+    return 1;
+  }
+  
 }
