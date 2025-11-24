@@ -118,7 +118,7 @@ class Mojo::Template {
     
     my $code_re = "(\Q$tag_start\E(?:\Q$replace_mark\E|\Q$comment_mark\E)|\Q$tag_start$expression_mark\E(?:\Q$escape_mark\E)?(?:\s*\Q$capture_end\E\b)?|\Q$tag_start\E(?:\s*\Q$capture_end\E\b)?|(?:\b\Q$capture_start\E\s*(?:\([^\)]*\))?\s*)?(?:\Q$trim_mark\E)?\Q$tag_end\E)";
     
-    my $tag_end_re  = "^(?:(\Q$capture_start\E)\s*(?:\([^\)]*\))?\s*)?(\Q$trim_mark\E)?\Q$tag_end\E$";
+    my $tag_end_re  = "^(?:(\Q$capture_start\E)\s*(\([^\)]*\))?\s*)?(\Q$trim_mark\E)?\Q$tag_end\E$";
     my $capture_end_re = "^\Q$tag_start\E(?:\Q$expression_mark\E)?(?:\Q$escape_mark\E)?\s*\Q$capture_end\E(.*)$";
     
     # Split lines
@@ -175,7 +175,7 @@ class Mojo::Template {
           }
           
           my $trim = (string)undef;
-          if (length $m->cap2) {
+          if (length $m->cap3) {
             $trim = "trim";
           }
           $tree->push(["tag_end", $trim, $line_index + 1]);
