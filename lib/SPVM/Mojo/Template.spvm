@@ -400,17 +400,17 @@ class Mojo::Template {
     my $tree = (List of string[])List->new($self->tree);
     my $escape = $self->auto_escape;
     
-    my $blocks = StringList->new;
-    
     my $name = $self->name;
     
-    $blocks->push("#file \"$name\"");
-    $blocks->push("class {\n");
-    $blocks->push("  use Mojo::Util;\n");
-    $blocks->push("  use Mojo::ByteStream;\n");
-    $blocks->push("  use Mojolicious::Controller;\n");
-    $blocks->push("static method code : string (\$options : Hash = undef, \$c : Mojolicious::Controller = undef) {\n");
-    $blocks->push("my \$_O = \"\";\n");
+    my $code = StringBuffer->new;
+    
+    $code->push("#file \"$name\"\n");
+    $code->push("class {\n");
+    $code->push("  use Mojo::Util;\n");
+    $code->push("  use Mojo::ByteStream;\n");
+    $code->push("  use Mojolicious::Controller;\n");
+    $code->push("static method code : string (\$options : Hash = undef, \$c : Mojolicious::Controller = undef) {\n");
+    $code->push("my \$_O = \"\";\n");
     
     my $i = 0;
     my $capture = (string)undef;
@@ -422,59 +422,59 @@ class Mojo::Template {
       
       # Text
       if ($op eq "line_start") {
-        $blocks->push("#line $value\n");
+        $code->push("#line $value\n");
       }
       elsif ($op eq "text") {
         my $lines = Fn->split("\n", $value, -1);
         
-        $blocks->[-1] .= "\$_O .= <<'END_OF_STRING';\n";
+        $code->push("\$_O .= <<'END_OF_STRING';\n");
         
         for my $line (@$lines) {
-          $blocks->[-1] .= "$line\n" ;
+          $code->push("$line\n");
         }
         
-        $blocks->[-1] .= "END_OF_STRING\n";
+        $code->push("END_OF_STRING\n");
         
-        $blocks->[-1] .= "Fn->chomp((mutable string)\$_O);\n" ;
+        $code->push("Fn->chomp((mutable string)\$_O);\n");
       }
       
       # Code
       elsif ($op eq "code") {
-        $blocks->[-1] .= $value;
+        $code->push("$value\n");
       }
       # Expression or escapaced expr
       elsif ($op eq "expression" || $op eq "excaped_expression") {
         
         # Escaped
         if ($op eq "excaped_expression" && !$escape || $op eq "expression" && $escape) {
-          $blocks->[-1] .= "my \$_ = (object)$value;\n";
-          $blocks->[-1] .= "\$_O .= \$_ isa Mojo::ByteStream ? \$_->(Mojo::ByteStream)->to_string : Mojo::Util->xml_escape((string)\$_);\n";
+          $code->push("my \$_ = (object)$value;\n");
+          $code->push("\$_O .= \$_ isa Mojo::ByteStream ? \$_->(Mojo::ByteStream)->to_string : Mojo::Util->xml_escape((string)\$_);\n");
         }
         
         # Raw
         else {
-          $blocks->[-1] .= "\$_O .= $value";
+          $code->push("\$_O .= $value");
         }
         
-        $blocks->[-1] .= ";\n";
+        $code->push(";\n");
       }
       elsif ($op eq "capture_start") {
-        $blocks->push("[\$c : Mojolicious::Controller] method : string (\$args : object...) {\n");
-        $blocks->push("my \$_O = \"\";\n");
+        $code->push("[\$c : Mojolicious::Controller] method : string (\$args : object...) {\n");
+        $code->push("my \$_O = \"\";\n");
       }
       elsif ($op eq "capture_end") {
-        $blocks->push("return \$_O;\n");
-        $blocks->push("};\n");
+        $code->push("return \$_O;\n");
+        $code->push("};\n");
       }
     }
     
-    $blocks->push("return \$_O;\n");
-    $blocks->push("} # End of method\n");
-    $blocks->push("} # End of class\n");
+    $code->push("return \$_O;\n");
+    $code->push("} # End of method\n");
+    $code->push("} # End of class\n");
     
-    my $code = Fn->join("\n", $blocks->to_array);
+    warn $code->get_string;
     
-    $self->set_code($code);
+    $self->set_code($code->get_string);
   }
   
   method render : string ($template : string, $args : object[] = undef) {
