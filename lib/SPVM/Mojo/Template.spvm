@@ -130,7 +130,7 @@ class Mojo::Template {
       
       my $line = $lines->[$line_index];
       
-      $tree->push(["line_start", $line_index + 1]);
+      $tree->push(["line_start", undef, $line_index + 1]);
       
       if (is_read_only $line) {
         $line = copy $line;
@@ -171,14 +171,14 @@ class Mojo::Template {
           
           # Capture start
           if (length $m->cap1) {
-            $tree->push(["capture_start", undef]);
+            $tree->push(["capture_start", undef, $line_index + 1]);
           }
           
           my $trim = (string)undef;
           if (length $m->cap2) {
             $trim = "trim";
           }
-          $tree->push(["tag_end", $trim]);
+          $tree->push(["tag_end", $trim, $line_index + 1]);
           
           $op = "text";
         }
@@ -186,32 +186,32 @@ class Mojo::Template {
         # Tag start - Comment
         elsif ($token eq "$tag_start$comment_mark") {
           $op = "cmnt";
-          $tree->push(["tag_start", $op]);
+          $tree->push(["tag_start", $op, $line_index + 1]);
         }
         
         # Tag start - Expression that needs to be escaped
         elsif ($token eq "$tag_start$expression_mark$escape_mark") {
           $op = "excaped_expression";
-          $tree->push(["tag_start", $op]);
+          $tree->push(["tag_start", $op, $line_index + 1]);
         }
         
         # Tag start - Expression
         elsif ($token eq "$tag_start$expression_mark") {
           $op = "expression";
-          $tree->push(["tag_start", $op]);
+          $tree->push(["tag_start", $op, $line_index + 1]);
         }
         
         # Tag start
         elsif ($token eq $tag_start) {
           $op = "code";
-          $tree->push(["tag_start", $op]);
+          $tree->push(["tag_start", $op, $line_index + 1]);
         }
         
         # Text
         else {
           # Token (with optional capture end)
           if ($is_capture_end) {
-            $tree->push(["capture_end", undef]);
+            $tree->push(["capture_end", undef, $line_index + 1]);
           }
           else {
             # Replace
@@ -219,15 +219,15 @@ class Mojo::Template {
               $token = $tag_start ;
             }
             
-            $tree->push([$op, $token]);
+            $tree->push([$op, $token, $line_index + 1]);
           }
           $is_capture_end = 0;
         }
       }
       
       unless ($escape_line_ending) {
-        $tree->push([$op, "\n"]);
-        $tree->push(["line_end", undef]);
+        $tree->push([$op, "\n", $line_index + 1]);
+        $tree->push(["line_end", undef, $line_index + 1]);
       }
     }
     
@@ -419,10 +419,11 @@ class Mojo::Template {
       my $token = $tree->[$i];
       my $op = $token->[0];
       my $value = $token->[1];
+      my $line = $token->[2];
       
       # Text
       if ($op eq "line_start") {
-        $code->push("#line $value\n");
+        $code->push("#line $line\n");
       }
       elsif ($op eq "text") {
         my $lines = Fn->split("\n", $value, -1);
