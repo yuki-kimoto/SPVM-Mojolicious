@@ -414,6 +414,7 @@ class Mojo::Template {
     
     my $i = 0;
     my $capture = (string)undef;
+    
     for (my $i = 0; $i < @$tree; $i++) {
       
       my $token = $tree->[$i];
@@ -422,10 +423,7 @@ class Mojo::Template {
       my $line = $token->[2];
       
       # Text
-      if ($op eq "line_start") {
-        $code->push("#line $line\n");
-      }
-      elsif ($op eq "text") {
+      if ($op eq "text") {
         my $lines = Fn->split("\n", $value, -1);
         
         $code->push("\$_O .= <<'END_OF_STRING';\n");
@@ -441,23 +439,23 @@ class Mojo::Template {
       
       # Code
       elsif ($op eq "code") {
+        $code->push("#line $line\n");
         $code->push("$value\n");
       }
       # Expression or escapaced expr
       elsif ($op eq "expression" || $op eq "excaped_expression") {
         
+        $code->push("#line $line\n");
+        
         # Escaped
         if ($op eq "excaped_expression" && !$escape || $op eq "expression" && $escape) {
-          $code->push("my \$_ = (object)$value;\n");
-          $code->push("\$_O .= \$_ isa Mojo::ByteStream ? \$_->(Mojo::ByteStream)->to_string : Mojo::Util->xml_escape((string)\$_);\n");
+          $code->push("my \$_ = (object)$value;\$_O .= \$_ isa Mojo::ByteStream ? \$_->(Mojo::ByteStream)->to_string : Mojo::Util->xml_escape((string)\$_);\n");
         }
         
         # Raw
         else {
-          $code->push("\$_O .= $value");
+          $code->push("\$_O .= $value;\n");
         }
-        
-        $code->push(";\n");
       }
       elsif ($op eq "capture_start") {
         $code->push("[\$c : Mojolicious::Controller] method : string (\$args : object...) {\n");
@@ -472,8 +470,6 @@ class Mojo::Template {
     $code->push("return \$_O;\n");
     $code->push("} # End of method\n");
     $code->push("} # End of class\n");
-    
-    # warn $code->get_string;
     
     $self->set_code($code->get_string);
   }
