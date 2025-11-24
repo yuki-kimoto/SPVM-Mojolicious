@@ -171,7 +171,7 @@ class Mojo::Template {
           
           # Capture start
           if (length $m->cap1) {
-            $tree->push(["capture_start", undef, $line_index + 1]);
+            $tree->push(["capture_start", $m->cap2, $line_index + 1]);
           }
           
           my $trim = (string)undef;
@@ -458,7 +458,11 @@ class Mojo::Template {
         }
       }
       elsif ($op eq "capture_start") {
-        $code->push("[\$c : Mojolicious::Controller] method : string (\$args : object...) {\n");
+        my $capture_args = $value;
+        unless (length $capture_args) {
+          $capture_args = "()";
+        }
+        $code->push("[\$c : Mojolicious::Controller] method : string $capture_args {\n");
         $code->push("my \$_O = \"\";\n");
       }
       elsif ($op eq "capture_end") {
