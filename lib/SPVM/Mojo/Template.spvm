@@ -171,7 +171,7 @@ class Mojo::Template {
           
           # Capture start
           if (length $m->cap1) {
-            $tree->push(["capture_start"]);
+            $tree->push(["capture_start", undef]);
           }
           
           my $trim = (string)undef;
@@ -211,7 +211,7 @@ class Mojo::Template {
         else {
           # Token (with optional capture end)
           if ($is_capture_end) {
-            $tree->push(["capture_end"]);
+            $tree->push(["capture_end", undef]);
           }
           else {
             # Replace
@@ -405,6 +405,7 @@ class Mojo::Template {
     $blocks->push("class {");
     $blocks->push("  use Mojo::Util;");
     $blocks->push("  use Mojo::ByteStream;");
+    $blocks->push("  use Mojolicious::Controller;");
     $blocks->push("static method code : string (\$options : Hash = undef, \$c : Mojolicious::Controller = undef) {");
     $blocks->push("my \$_O = \"\";");
     
@@ -451,13 +452,23 @@ class Mojo::Template {
         
         $blocks->[-1] .= ";\n";
       }
+      elsif ($op eq "capture_start") {
+        $blocks->push("[\$c : Mojolicious::Controller] method : string (\$args : object...) {");
+        $blocks->push("my \$_O = \"\";");
+      }
+      elsif ($op eq "capture_end") {
+        $blocks->push("return \$_O;");
+        $blocks->push("};");
+      }
     }
     
     $blocks->push("return \$_O;");
     $blocks->push("} # End of method");
     $blocks->push("} # End of class");
     
-    $self->set_code(Fn->join("\n", $blocks->to_array));
+    my $code = Fn->join("\n", $blocks->to_array);
+    
+    $self->set_code($code);
   }
   
   method render : string ($template : string, $args : object[] = undef) {
