@@ -402,6 +402,9 @@ class Mojo::Template {
     
     my $blocks = StringList->new;
     
+    my $name = $self->name;
+    
+    $blocks->push("#file \"$name\"");
     $blocks->push("class {");
     $blocks->push("  use Mojo::Util;");
     $blocks->push("  use Mojo::ByteStream;");
