@@ -381,10 +381,10 @@ class Mojo::Template {
       
       my $code = $self->code;
       
-      unless ($compiled = Native->use_anon_class($code)) {
-        # TODO 
-        # return Mojo::Exception->new($@)->inspect($self->unparsed, $code)->trace->verbose(1)
-        die $self->unparsed;
+      eval { $compiled = Native->use_anon_class($code); }
+      if ($@) {
+        my $name = $self->name;
+        die "$@\n[Template:$name]\n" . $self->unparsed;
       }
       
       $self->set_compiled($compiled);
@@ -472,7 +472,7 @@ class Mojo::Template {
     $code->push("} # End of method\n");
     $code->push("} # End of class\n");
     
-    warn $code->get_string;
+    # warn $code->get_string;
     
     $self->set_code($code->get_string);
   }
