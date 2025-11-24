@@ -443,6 +443,25 @@ EOS
       }
     }
     
+    {
+      my $mt = Mojo::Template->new;
+      
+    my $code = <<'EOS';
+% my $block = begin ($num : int)
+  % my $num = 123;
+  a<%= $num %><%= $args->[0]->(string) %>b
+% end
+
+%= $block->("d");
+EOS
+      
+      my $output = $mt->render($code);
+      
+      unless (Re->m($output, "a123db")) {
+        return 0;
+      }
+    }
+    
     return 1;
   }
   

@@ -116,9 +116,9 @@ class Mojo::Template {
     
     my $line_code_re  = "^(\s*)\Q$line_start\E(?:(\Q$replace_mark\E)|(\Q$comment_mark\E)|(\Q$expression_mark\E))?(.*)$";
     
-    my $code_re = "(\Q$tag_start\E(?:\Q$replace_mark\E|\Q$comment_mark\E)|\Q$tag_start$expression_mark\E(?:\Q$escape_mark\E)?(?:\s*\Q$capture_end\E\b)?|\Q$tag_start\E(?:\s*\Q$capture_end\E\b)?|(?:\b\Q$capture_start\E\s*(?:\(\))?\s*)?(?:\Q$trim_mark\E)?\Q$tag_end\E)";
+    my $code_re = "(\Q$tag_start\E(?:\Q$replace_mark\E|\Q$comment_mark\E)|\Q$tag_start$expression_mark\E(?:\Q$escape_mark\E)?(?:\s*\Q$capture_end\E\b)?|\Q$tag_start\E(?:\s*\Q$capture_end\E\b)?|(?:\b\Q$capture_start\E\s*(?:\([^\)]*\))?\s*)?(?:\Q$trim_mark\E)?\Q$tag_end\E)";
     
-    my $tag_end_re  = "^(?:(\Q$capture_start\E)\s*(?:\(\))?\s*)?(\Q$trim_mark\E)?\Q$tag_end\E$";
+    my $tag_end_re  = "^(?:(\Q$capture_start\E)\s*(?:\([^\)]*\))?\s*)?(\Q$trim_mark\E)?\Q$tag_end\E$";
     my $capture_end_re = "^\Q$tag_start\E(?:\Q$expression_mark\E)?(?:\Q$escape_mark\E)?\s*\Q$capture_end\E(.*)$";
     
     # Split lines
