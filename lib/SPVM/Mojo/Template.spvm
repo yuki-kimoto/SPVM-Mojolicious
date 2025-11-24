@@ -405,12 +405,12 @@ class Mojo::Template {
     my $name = $self->name;
     
     $blocks->push("#file \"$name\"");
-    $blocks->push("class {");
-    $blocks->push("  use Mojo::Util;");
-    $blocks->push("  use Mojo::ByteStream;");
-    $blocks->push("  use Mojolicious::Controller;");
-    $blocks->push("static method code : string (\$options : Hash = undef, \$c : Mojolicious::Controller = undef) {");
-    $blocks->push("my \$_O = \"\";");
+    $blocks->push("class {\n");
+    $blocks->push("  use Mojo::Util;\n");
+    $blocks->push("  use Mojo::ByteStream;\n");
+    $blocks->push("  use Mojolicious::Controller;\n");
+    $blocks->push("static method code : string (\$options : Hash = undef, \$c : Mojolicious::Controller = undef) {\n");
+    $blocks->push("my \$_O = \"\";\n");
     
     my $i = 0;
     my $capture = (string)undef;
@@ -435,7 +435,7 @@ class Mojo::Template {
         
         $blocks->[-1] .= "END_OF_STRING\n";
         
-        $blocks->[-1] .= "Fn->chomp((mutable string)\$_O);" ;
+        $blocks->[-1] .= "Fn->chomp((mutable string)\$_O);\n" ;
       }
       
       # Code
@@ -447,8 +447,8 @@ class Mojo::Template {
         
         # Escaped
         if ($op eq "excaped_expression" && !$escape || $op eq "expression" && $escape) {
-          $blocks->[-1] .= "my \$_ = (object)$value;";
-          $blocks->[-1] .= "\$_O .= \$_ isa Mojo::ByteStream ? \$_->(Mojo::ByteStream)->to_string : Mojo::Util->xml_escape((string)\$_);";
+          $blocks->[-1] .= "my \$_ = (object)$value;\n";
+          $blocks->[-1] .= "\$_O .= \$_ isa Mojo::ByteStream ? \$_->(Mojo::ByteStream)->to_string : Mojo::Util->xml_escape((string)\$_);\n";
         }
         
         # Raw
@@ -459,22 +459,20 @@ class Mojo::Template {
         $blocks->[-1] .= ";\n";
       }
       elsif ($op eq "capture_start") {
-        $blocks->push("[\$c : Mojolicious::Controller] method : string (\$args : object...) {");
-        $blocks->push("my \$_O = \"\";");
+        $blocks->push("[\$c : Mojolicious::Controller] method : string (\$args : object...) {\n");
+        $blocks->push("my \$_O = \"\";\n");
       }
       elsif ($op eq "capture_end") {
-        $blocks->push("return \$_O;");
-        $blocks->push("};");
+        $blocks->push("return \$_O;\n");
+        $blocks->push("};\n");
       }
     }
     
-    $blocks->push("return \$_O;");
-    $blocks->push("} # End of method");
-    $blocks->push("} # End of class");
+    $blocks->push("return \$_O;\n");
+    $blocks->push("} # End of method\n");
+    $blocks->push("} # End of class\n");
     
     my $code = Fn->join("\n", $blocks->to_array);
-    
-    warn $code;
     
     $self->set_code($code);
   }
