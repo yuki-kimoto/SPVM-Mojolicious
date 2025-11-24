@@ -421,7 +421,10 @@ class Mojo::Template {
       my $value = $token->[1];
       
       # Text
-      if ($op eq "text") {
+      if ($op eq "line_start") {
+        $blocks->push("#line $value\n");
+      }
+      elsif ($op eq "text") {
         my $lines = Fn->split("\n", $value, -1);
         
         $blocks->[-1] .= "\$_O .= <<'END_OF_STRING';\n";
@@ -470,6 +473,8 @@ class Mojo::Template {
     $blocks->push("} # End of class");
     
     my $code = Fn->join("\n", $blocks->to_array);
+    
+    warn $code;
     
     $self->set_code($code);
   }
