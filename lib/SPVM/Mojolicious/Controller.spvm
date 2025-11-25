@@ -249,24 +249,52 @@ class Mojolicious::Controller {
     return $results->get_array;
   }
 
-=pod
-
-  method finish {
-    my $self = shift;
-
+  method finish : void ($code : int = 0, $reason : string = undef) {
+    
+    my $tx = $self->tx;
+    unless ($tx) {
+      die "Transaction already destroyed";
+    }
+    
     # WebSocket
-    my $tx = $self->tx || Carp::croak "Transaction already destroyed";
-    $tx->finish(@_) and return $tx->established ? $self : $self->rendered(101) if $tx->is_websocket;
-
+    if ($tx->is_websocket) {
+      $tx->(Mojo::Transaction::WebSocket)->finish($code, $reason);
+      unless ($tx->(Mojo::Transaction::WebSocket)->established) {
+        $self->rendered(101);
+      }
+    }
+    else {
+      die "finish method is only for WebSocket. Use finish_stream method for long polling stream.";
+    }
+  }
+  
+  method finish_stream : void ($chunk : string = undef) {
+    
+    my $tx = $self->tx;
+    unless ($tx) {
+      die "Transaction already destroyed.";
+    }
+    
     # Chunked stream
-    return @_ ? $self->write_chunk(@_)->write_chunk("") : $self->write_chunk("") if $tx->res->content->is_chunked;
-
+    if ($tx->res->content->is_chunked) {
+      if ($chunk) {
+        $self->write_chunk($chunk);
+      }
+      $self->write_chunk("");
+    }
     # Normal stream
-    return @_ ? $self->write(@_)->write("") : $self->write("");
+    else {
+      if ($chunk) {
+        $self->write($chunk);
+      }
+      $self->write("");
+    }
   }
 
-  method helpers { $_[0]->app->renderer->get_helper("")->($_[0]) }
+=pod
 
+  method helpers { $_[0]->app->renderer->get_helper("")->($_[0]) }
+  
   method on {
     my ($self, $name, $cb) = @_;
     my $tx = $self->tx || Carp::croak "Transaction already destroyed";
