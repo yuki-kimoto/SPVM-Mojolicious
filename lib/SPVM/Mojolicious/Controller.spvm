@@ -274,7 +274,13 @@ class Mojolicious::Controller {
     return $self;
   }
 
-  method render_later { shift->stash("mojo.rendered" => 1) }
+=cut
+
+  method render_later : void () {
+    $self->set_mojo_rendered(1);
+  }
+
+=pod
 
   method render_to_string { shift->render(@_, "mojo.string" => 1) }
 
