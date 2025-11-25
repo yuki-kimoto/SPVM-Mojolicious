@@ -411,13 +411,21 @@ class Mojolicious::Controller {
     $self->rendered;
   }
 
-=pod
-
-  method write_chunk {
-    my ($self, $chunk, $cb) = @_;
-    $self->res->content->write_chunk($chunk, $cb ? method { shift; $self->$cb(@_) } : ());
-    return $self->rendered;
+  method write_chunk : void ($chunk : string, $cb : Mojo::Callback = undef) {
+    
+    my $write_cb = (Mojo::Callback)undef;
+    if ($cb) {
+      $write_cb = [$self : Mojolicious::Controller, $cb : Mojo::Callback] method : void ($that : object, $arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
+        $cb->($self, $arg1, $arg2, $arg3);
+      };
+    }
+    
+    $self->res->content->write_chunk($chunk, $write_cb);
+    
+    $self->rendered;
   }
+
+=pod
 
   method write_sse {
     my ($self, $event, $cb) = @_;
