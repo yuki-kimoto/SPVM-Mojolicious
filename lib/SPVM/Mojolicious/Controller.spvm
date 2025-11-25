@@ -68,11 +68,11 @@ class Mojolicious::Controller {
   
   has mojo_captures : rw Hash;
   
-  has mojo_rendered : rw byte;
-  
   static method new : Mojolicious::Controller () {
     
     my $self = new Mojolicious::Controller;
+    
+    $self->{stash} = Hash->new;
     
     return $self;
   }
