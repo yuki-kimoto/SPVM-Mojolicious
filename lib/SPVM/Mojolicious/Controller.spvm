@@ -275,7 +275,11 @@ class Mojolicious::Controller {
   }
 
 =cut
-
+ 
+  method render_later : void () {
+    $self->stash->{"mojo.rendered"} = 1;
+  }
+  
   method render_to_string : string ($template : string, $options : object[] = undef) {
     
     my $string = $self->render($template, Fn->merge_options($options, {"mojo.string" => 1}));
@@ -283,40 +287,34 @@ class Mojolicious::Controller {
     return $string;
   }
 
-=pod
-
-  method rendered {
-    my ($self, $status) = @_;
-
+  method rendered : void ($status : int) {
+    
     # Make sure we have a status
-    $self->res->code($status) if $status;
-
+    if ($status) {
+      $self->res->set_code($status);
+    }
+    
     # Finish transaction
     my $stash = $self->stash;
-    if (!$stash->{"mojo.finished"} && ++$stash->{"mojo.finished"}) {
+    if (!$stash->{"mojo.finished"}->(int)) {
+      $stash->{"mojo.finished"} = 1;
+      
       my $res = $self->res;
-      $res->code(200) if !$status && !$res->code;
-
+      if (!$status && !$res->code) {
+        $res->set_code(200) ;
+      }
+      
       # Disable auto rendering and stop timer
-      my $app = $self->render_later->app;
-      $self->log->trace(method {
-        my $timing  = $self->helpers->timing;
-        my $elapsed = $timing->elapsed("mojo.timer") // 0;
-        my $rps     = $timing->rps($elapsed)         // "??";
-        my $code    = $res->code;
-        my $msg     = $res->message || $res->default_message($code);
-        return "$code $msg (${elapsed}s, $rps/s)";
-      }) unless $stash->{"mojo.static"};
-
+      $self->render_later;
+      
+      my $app = $self->app;
       $app->plugins->emit_hook_reverse(after_dispatch => $self);
       $app->sessions->store($self);
     }
-    $self->tx->resume;
-    return $self;
+    $self->tx->(Mojo::Transaction::HTTP)->resume;
   }
 
-  method req { (shift->tx || Carp::croak "Transaction already destroyed")->req }
-  method res { (shift->tx || Carp::croak "Transaction already destroyed")->res }
+=pod
 
   method send {
     my ($self, $msg, $cb) = @_;
