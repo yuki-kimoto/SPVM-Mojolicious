@@ -424,17 +424,20 @@ class Mojolicious::Controller {
     
     $self->rendered;
   }
-
-=pod
-
-  method write_sse {
-    my ($self, $event, $cb) = @_;
-    $self->res->content->write_sse($event, $cb ? method { shift; $self->$cb(@_) } : ());
-    return $self->rendered;
+  
+  method write_sse : void ($event : Mojo::SSE::Event, $cb : Mojo::Callback = undef) {
+    
+    my $write_cb = (Mojo::Callback)undef;
+    if ($cb) {
+      $write_cb = [$self : Mojolicious::Controller, $cb : Mojo::Callback] method : void ($that : object, $arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
+        $cb->($self, $arg1, $arg2, $arg3);
+      };
+    }
+    
+    $self->res->content->write_sse($event, $write_cb);
+   
+   $self->rendered;
   }
-
-
-=cut
 
 =pod TODO
 
