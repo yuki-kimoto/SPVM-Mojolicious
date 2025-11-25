@@ -310,17 +310,31 @@ class Mojolicious::Controller {
     $tx->on($name => $cb_with_instance);
   }
 
-=pod
-
-  method param {
-    my ($self, $name) = (shift, shift);
-    return $self->every_param($name)->[-1] unless @_;
-    $self->stash->{"mojo.captures"}{$name} = @_ > 1 ? [@_] : $_[0];
-    return $self;
+  method param : string ($name : string) {
+    
+    my $value = $self->every_param($name)->[-1];
+    
+    return $value;
   }
-
-=cut
- 
+  
+  method set_param : void ($name : string, $value : string|string[]) {
+    
+    my $value_ = (string|string[])undef;
+    if ($value) {
+      if ($value isa string) {
+        $value_ = (string)$value;
+      }
+      elsif ($value isa string[]) {
+        $value_ = (string[])$value;
+      }
+      else {
+        die "The type of the value \$value must be string or string[]";
+      }
+    }
+    
+    $self->stash->{"mojo.captures"}->(Hash)->{$name} = $value_;
+  }
+  
   method render_later : void () {
     $self->stash->{"mojo.rendered"} = 1;
   }
