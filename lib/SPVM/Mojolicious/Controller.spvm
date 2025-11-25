@@ -67,7 +67,9 @@ class Mojolicious::Controller {
   
   has captures : rw Hash;
   
-  has rendered : rw byte;
+  has mojo_rendered : rw byte;
+  
+  has respond : rw byte;
   
   static method new : Mojolicious::Controller () {
     

@@ -95,7 +95,7 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
       my $output = $c->render($template, $r->pattern->defaults->to_options);
       
       if ($output) {
-        $c->set_rendered(1);
+        $c->set_mojo_rendered(1);
       }
       
       $continue = 0;
@@ -112,7 +112,7 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
       return $self->continue($c);
     }
     else {
-      unless ($c->rendered) {
+      unless ($c->mojo_rendered) {
         die "Not rendered.";
       }
     }
