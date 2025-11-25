@@ -434,5 +434,19 @@ class Mojo::Util {
     
     return $compressed;
   }
+  
+  static method secure_compare : int ($one : string, $two : string) {
+    my $r = length $one != length $two;
+    
+    if ($r) {
+      $two = $one;
+    }
+    
+    for (my $i = 0; $i < length $one; $i++) {
+      $r |= Fn->ord(Fn->substr($one, $i)) ^ Fn->ord(Fn->substr($two, $i));
+    }
+    
+    return $r == 0;
+  }
 
 }
