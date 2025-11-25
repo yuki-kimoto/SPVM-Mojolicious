@@ -291,14 +291,28 @@ class Mojolicious::Controller {
     }
   }
 
-=pod
-
-  method on {
-    my ($self, $name, $cb) = @_;
-    my $tx = $self->tx || Carp::croak "Transaction already destroyed";
-    $self->rendered(101) if $tx->is_websocket && !$tx->established;
-    return $tx->on($name => method { shift; $self->$cb(@_) });
+  method on : void ($name : string, $cb : Mojo::Callback) {
+  
+    my $tx = $self->tx;
+    unless ($tx) {
+      die "Transaction already destroyed.";
+    }
+    
+    if ($tx->is_websocket && !$tx->(Mojo::Transaction::WebSocket)->established) {
+      $self->rendered(101);
+    }
+    
+    my $cb_with_instance = (Mojo::Callback)undef;
+    if ($cb) {
+      $cb_with_instance = [$self : Mojolicious::Controller, $cb : Mojo::Callback] method : void ($that : object, $arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
+        $cb->($self, $arg1, $arg2, $arg3);
+      };
+    }
+    
+    $tx->on($name => $cb_with_instance);
   }
+
+=pod
 
   method param {
     my ($self, $name) = (shift, shift);
@@ -431,42 +445,42 @@ class Mojolicious::Controller {
 
   method write : void ($chunk : string, $cb : Mojo::Callback = undef) {
     
-    my $write_cb = (Mojo::Callback)undef;
+    my $cb_with_instance = (Mojo::Callback)undef;
     if ($cb) {
-      $write_cb = [$self : Mojolicious::Controller, $cb : Mojo::Callback] method : void ($that : object, $arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
+      $cb_with_instance = [$self : Mojolicious::Controller, $cb : Mojo::Callback] method : void ($that : object, $arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
         $cb->($self, $arg1, $arg2, $arg3);
       };
     }
     
-    $self->res->content->write($chunk, $write_cb);
+    $self->res->content->write($chunk, $cb_with_instance);
     
     $self->rendered;
   }
 
   method write_chunk : void ($chunk : string, $cb : Mojo::Callback = undef) {
     
-    my $write_cb = (Mojo::Callback)undef;
+    my $cb_with_instance = (Mojo::Callback)undef;
     if ($cb) {
-      $write_cb = [$self : Mojolicious::Controller, $cb : Mojo::Callback] method : void ($that : object, $arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
+      $cb_with_instance = [$self : Mojolicious::Controller, $cb : Mojo::Callback] method : void ($that : object, $arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
         $cb->($self, $arg1, $arg2, $arg3);
       };
     }
     
-    $self->res->content->write_chunk($chunk, $write_cb);
+    $self->res->content->write_chunk($chunk, $cb_with_instance);
     
     $self->rendered;
   }
   
   method write_sse : void ($event : Mojo::SSE::Event, $cb : Mojo::Callback = undef) {
     
-    my $write_cb = (Mojo::Callback)undef;
+    my $cb_with_instance = (Mojo::Callback)undef;
     if ($cb) {
-      $write_cb = [$self : Mojolicious::Controller, $cb : Mojo::Callback] method : void ($that : object, $arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
+      $cb_with_instance = [$self : Mojolicious::Controller, $cb : Mojo::Callback] method : void ($that : object, $arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
         $cb->($self, $arg1, $arg2, $arg3);
       };
     }
     
-    $self->res->content->write_sse($event, $write_cb);
+    $self->res->content->write_sse($event, $cb_with_instance);
    
    $self->rendered;
   }
