@@ -276,13 +276,14 @@ class Mojolicious::Controller {
 
 =cut
 
-  method render_later : void () {
-    $self->set_mojo_rendered(1);
+  method render_to_string : string ($template : string, $options : object[] = undef) {
+    
+    my $string = $self->render($template, Fn->merge_options($options, {"mojo.string" => 1}));
+    
+    return $string;
   }
 
 =pod
-
-  method render_to_string { shift->render(@_, "mojo.string" => 1) }
 
   method rendered {
     my ($self, $status) = @_;
