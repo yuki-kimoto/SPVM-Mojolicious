@@ -65,7 +65,7 @@ class Mojolicious::Controller {
     }
   ;
   
-  has captures : rw Hash;
+  has mojo_captures : rw Hash;
   
   has mojo_rendered : rw byte;
   
@@ -143,7 +143,7 @@ class Mojolicious::Controller {
   method every_param : string[] ($name : string) {
     
     # Captured unreserved values
-    my $captures = $self->{captures} //= Hash->new;
+    my $captures = $self->{mojo_captures} //= Hash->new;
     
     if ($captures->exists($name) && !$self->app->routes->is_reserved($name)) {
       my $value = $captures->get("$name");
