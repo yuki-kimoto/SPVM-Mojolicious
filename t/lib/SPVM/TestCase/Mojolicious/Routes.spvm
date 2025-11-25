@@ -79,7 +79,7 @@ class TestCase::Mojolicious::Routes {
           
           $results->{"path"} = $c->req->url->path->to_string;
           
-          $results->{"captures"} = $c->mojo_captures;
+          $results->{"captures"} = $c->stash->{"mojo.captures"};
           
           $c->stash->{"mojo.rendered"} = 1;
         });
@@ -144,7 +144,7 @@ class TestCase::Mojolicious::Routes {
           
           $results->{"path"} = $c->req->url->path->to_string;
           
-          $results->{"captures"} = $c->mojo_captures;
+          $results->{"captures"} = $c->stash->{"mojo.captures"};
           
           $c->stash->{"mojo.rendered"} = 1;
         });
