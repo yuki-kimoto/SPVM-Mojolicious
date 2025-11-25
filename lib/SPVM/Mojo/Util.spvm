@@ -12,6 +12,7 @@ class Mojo::Util {
   use Format;
   use Getopt::Long;
   use Mojo::ByteStream;
+  use Compress::Raw::Zlib;
   
   our $QUOTED_VALUE_RE : string;
   INIT {
@@ -426,4 +427,12 @@ class Mojo::Util {
     
   }
   
+  static method gzip : string ($uncompressed : string) {
+    
+    Compress::Raw::Zlib->gzip($uncompressed, my $_ = [(string)undef]);
+    my $compressed = $_->[0];
+    
+    return $compressed;
+  }
+
 }
