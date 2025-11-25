@@ -166,18 +166,17 @@ class Mojolicious::Controller {
   }
 
   method signed_cookie : string ($name : string) {
-
-=pod
-
+    
     # Request cookie
-    return $self->every_signed_cookie($name)->[-1] unless defined $value;
-
+    return $self->every_signed_cookie($name)->[-1] ;
+  }
+  
+  method set_signed_cookie : string ($name : string, $value : string = undef, $options : object[] = undef) {
+    
     # Response cookie
-    my $sum = Digest::SHA::hmac_sha256_hex("$name=$value", $self->app->secrets->[0]);
-    return $self->cookie($name, "$value--$sum", $options);
-
-=cut
-
+    my $sum = Digest::SHA->hmac_sha256_hex("$name=$value", $self->app->secrets->[0]);
+    
+    $self->set_cookie($name, "$value--$sum", $options);
   }
   
   method render : string ($template : string, $options : object[] = undef) {
