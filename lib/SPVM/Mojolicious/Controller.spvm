@@ -49,23 +49,7 @@ class Mojolicious::Controller {
     }
   ;
   
-  has stash : Hash;
-  
-  method stash_h : Hash () {
-    return $self->{stash};
-  }
-  
-  method set_stash_h : void ($stash : Hash) {
-    $self->{stash} = $stash;
-  }
-  
-  method stash : object ($name : string) {
-    return $self->{stash}{$name};
-  }
-  
-  method set_stash : void ($name : string, $value : string) {
-    $self->{stash}{$name} = $value;
-  }
+  has stash_h : rw Hash;
   
   has active_session : rw int;
   
@@ -86,7 +70,7 @@ class Mojolicious::Controller {
     
     my $self = new Mojolicious::Controller;
     
-    $self->{stash} = Hash->new;
+    $self->{stash_h} = Hash->new;
     
     return $self;
   }
@@ -419,7 +403,17 @@ class Mojolicious::Controller {
     return $self;
   }
 
-  method stash { Mojo::Util::_stash(stash => @_) }
+=cut
+
+  method stash : object ($name : string) {
+    return $self->{stash_h}{$name};
+  }
+  
+  method set_stash : void ($name : string, $value : string) {
+    $self->{stash_h}{$name} = $value;
+  }
+
+=pod
 
   method url_for {
     my ($self, $target) = (shift, shift // "");
