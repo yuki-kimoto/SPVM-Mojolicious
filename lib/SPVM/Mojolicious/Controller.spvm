@@ -49,7 +49,23 @@ class Mojolicious::Controller {
     }
   ;
   
-  has stash : rw Hash;
+  has stash : Hash;
+  
+  method stash_h : Hash () {
+    return $self->{stash};
+  }
+  
+  method set_stash_h : void ($stash : Hash) {
+    $self->{stash} = $stash;
+  }
+  
+  method stash : object ($name : string) {
+    return $self->{stash}{$name};
+  }
+  
+  method set_stash : void ($name : string, $value : string) {
+    $self->{stash}{$name} = $value;
+  }
   
   has active_session : rw int;
   
@@ -140,9 +156,9 @@ class Mojolicious::Controller {
   method every_param : string[] ($name : string) {
     
     # Captured unreserved values
-    $self->stash->{"mojo.captures"} //= Hash->new;
+    $self->stash_h->{"mojo.captures"} //= Hash->new;
     
-    my $captures = $self->stash->{"mojo.captures"}->(Hash);
+    my $captures = $self->stash_h->{"mojo.captures"}->(Hash);
     
     if ($captures->exists($name) && !$self->app->routes->is_reserved($name)) {
       my $value = $captures->get("$name");
@@ -332,11 +348,11 @@ class Mojolicious::Controller {
       }
     }
     
-    $self->stash->{"mojo.captures"}->(Hash)->{$name} = $value_;
+    $self->stash_h->{"mojo.captures"}->(Hash)->{$name} = $value_;
   }
   
   method render_later : void () {
-    $self->stash->{"mojo.rendered"} = 1;
+    $self->stash_h->{"mojo.rendered"} = 1;
   }
   
   method render_to_string : string ($template : string, $options : object[] = undef) {
@@ -354,7 +370,7 @@ class Mojolicious::Controller {
     }
     
     # Finish transaction
-    my $stash = $self->stash;
+    my $stash = $self->stash_h;
     if (!$stash->{"mojo.finished"}->(int)) {
       $stash->{"mojo.finished"} = 1;
       

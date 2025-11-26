@@ -118,7 +118,7 @@ class Mojolicious::Renderer {
   
   method render : string[] ($c : Mojolicious::Controller) {
     
-    my $stash   = $c->stash;
+    my $stash   = $c->stash_h;
     my $options_h = Hash->new({
       handler  => $stash->{"handler"}->(string),
       template => (string)$stash->delete("template"),

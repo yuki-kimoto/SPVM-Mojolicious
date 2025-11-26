@@ -133,14 +133,14 @@ class Mojolicious {
     my $c = Mojolicious::Controller->new;
     $c->set_app($self);
     $c->set_tx($tx);
-    $c->set_stash($stash);
+    $c->set_stash_h($stash);
     
     return $c;
   }
   
   method dispatch : void ($c : Mojolicious::Controller) {
     
-    my $stash = $c->stash;
+    my $stash = $c->stash_h;
     if ($stash->{"mojo.rendered"}->(int)) {
       return;
     }
