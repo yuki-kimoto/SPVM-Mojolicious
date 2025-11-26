@@ -372,16 +372,33 @@ class Mojolicious::Controller {
     }
     $self->tx->(Mojo::Transaction::HTTP)->resume;
   }
+  
+  method send : void ($msg : string|object[]|Mojo::WebSocket::Frame, $cb : Mojo::Callback = undef) {
+    my $tx = $self->tx;
+    
+    unless ($tx) {
+      die "Transaction already destroyed.";
+    }
+    
+    unless ($tx->is_websocket) {
+      die "No WebSocket connection to send message to.";
+    }
+    
+    my $cb_with_instance = (Mojo::Callback)undef;
+    if ($cb) {
+      $cb_with_instance = [$self : Mojolicious::Controller, $cb : Mojo::Callback] method : void ($that : object, $arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
+        $cb->($self, $arg1, $arg2, $arg3);
+      };
+    }
+    
+    $tx->(Mojo::Transaction::WebSocket)->send($msg, $cb_with_instance);
+    
+    unless ($tx->(Mojo::Transaction::WebSocket)->established) {
+      $self->rendered(101);
+    }
+  }
 
 =pod
-
-  method send {
-    my ($self, $msg, $cb) = @_;
-    my $tx = $self->tx || Carp::croak "Transaction already destroyed";
-    Carp::croak "No WebSocket connection to send message to" unless $tx->is_websocket;
-    $tx->send($msg, $cb ? method { shift; $self->$cb(@_) } : ());
-    return $tx->established ? $self : $self->rendered(101);
-  }
 
   method session {
     my $self = shift;
