@@ -51,9 +51,20 @@ class Mojolicious::Controller {
   
   has stash_h : rw Hash;
   
-  has active_session : rw int;
-  
-  has session : rw Hash;
+  has session_h : virtual ro Hash
+    get {
+      my $stash = $self->stash_h;
+      unless ($stash->{"mojo.active_session"}->(int)) {
+        $self->app->sessions->load($self);
+      }
+      
+      unless ($self->stash_h->exists("mojo.session")) {
+        $self->stash_h->{"mojo.session"} = Hash->new;
+      }
+      
+      return $self->stash_h->{"mojo.session"}->(Hash);
+    }
+  ;
   
   # Fields that is originally stash mojo.xxx
   has log : rw Mojo::Log
@@ -397,31 +408,17 @@ class Mojolicious::Controller {
       $self->rendered(101);
     }
   }
-
-=pod
-
-  method session {
-    my $self = shift;
-
-    my $stash = $self->stash;
-    $self->app->sessions->load($self) unless exists $stash->{"mojo.active_session"};
-
-    # Hash
-    my $session = $stash->{"mojo.session"} //= {};
-    return $session unless @_;
-
-    # Get
-    return $session->{$_[0]} unless @_ > 1 || ref $_[0];
-
-    # Set
-    my $values = ref $_[0] ? $_[0] : {@_};
-    @$session{keys %$values} = values %$values;
-
-    return $self;
+  
+  method session : object ($name : string) {
+    
+    return $self->session_h->{$name};
   }
-
-=cut
-
+  
+  method set_session : void ($name : string, $value : string) {
+    
+    $self->session_h->{$name} = $value;
+  }
+  
   method stash : object ($name : string) {
     return $self->{stash_h}{$name};
   }
