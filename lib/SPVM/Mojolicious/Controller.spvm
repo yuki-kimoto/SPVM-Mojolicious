@@ -426,46 +426,48 @@ class Mojolicious::Controller {
   method set_stash : void ($name : string, $value : string) {
     $self->{stash_h}{$name} = $value;
   }
-
-=pod
-
-  method url_for {
-    my ($self, $target) = (shift, shift // "");
-
+  
+  method url_for : Mojo::URL ($target : string|Mojo::URL)  {
+    
     # Absolute URL
-    return $target                 if Scalar::Util::blessed $target && $target->isa("Mojo::URL");
-    return Mojo::URL->new($target) if $target =~ $ABSOLUTE;
-
+    if ($target isa Mojo::URL) {
+      return $target->(Mojo::URL);
+    }
+    
+    my $target = (string)$target;
+    
+    if (Re->m($target, $ABSOLUTE)) {
+      return Mojo::URL->new($target);
+    }
+    
     # Base
     my $url  = Mojo::URL->new;
     my $req  = $self->req;
-    my $base = $url->base($req->url->base->clone)->base->userinfo(undef);
-
+    $url->set_base($req->url->base->clone);
+    my $base = $url->base;
+    $base->set_userinfo(undef);
+    
     # Relative URL
     my $path = $url->path;
-    if ($target =~ m!^/!) {
-      if (defined(my $prefix = $self->stash->{path})) {
+    if (Re->m($target, "^/")) {
+      if (my $prefix = $self->stash_h->{"path"}->(string)) {
         my $real = $req->url->path->to_route;
-        $real =~ s!/?\Q$prefix\E$!$target!;
+        Re->s((mutable string)$real, "/?\Q$prefix\E$", "$target");
         $target = $real;
       }
       $url->parse($target);
     }
-
-    # Route
-    else {
-      my $generated = $self->match->path_for($target, @_);
-      $path->parse($generated->{path})                         if $generated->{path};
-      $base->scheme($base->protocol eq "https" ? "wss" : "ws") if $generated->{websocket};
-    }
-
+    
     # Make path absolute
     my $base_path = $base->path;
-    unshift @{$path->parts}, @{$base_path->parts};
-    $base_path->parts([])->trailing_slash(0);
-
+    StringList->new_ref($path->parts)->unshift_($base_path->parts);
+    $base_path->set_parts(new string[0]);
+    $base_path->set_trailing_slash(0);
+    
     return $url;
   }
+
+=pod
 
   method url_for_asset {
     my ($self, $asset) = @_;
