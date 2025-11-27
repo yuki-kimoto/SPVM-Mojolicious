@@ -312,9 +312,22 @@ class Mojolicious::Controller {
     $self->stash_h->{"mojo.captures"}->(Hash)->{$name} = $value_;
   }
   
-  method render : Mojo::ByteStream ($options : Hash|object[] = undef) {
+  method render : Mojo::ByteStream ($template : string|Hash|object[] = undef, $options : Hash|object[] = undef) {
+    
+    my $template_ = (string)undef;
+    if ($template isa string) {
+      $template_ = $template->(string);
+    }
+    else {
+      $options = $template;
+      $template = undef;
+    }
     
     my $options = Fn->to_hash($options);
+    
+    if ($template_) {
+      $options->{"template"} = $template_;
+    }
     
     my $app = $self->app;
     my $plugins = $app->plugins;
@@ -353,15 +366,6 @@ class Mojolicious::Controller {
     }
     
     $renderer->respond($self, $output, $format, $stash->{"status"});
-  }
-  
-  method render_template : Mojo::ByteStream ($template : string, $options : Hash|object[] = undef) {
-    
-    my $options = Fn->to_hash($options);
-    
-    $options->{"template"} = $template;
-    
-    return $self->render($options);
   }
   
   method render_to_string : Mojo::ByteStream ($options : Hash|object[] = undef) {
