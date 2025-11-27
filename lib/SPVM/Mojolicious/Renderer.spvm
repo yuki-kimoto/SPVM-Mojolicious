@@ -119,30 +119,30 @@ class Mojolicious::Renderer {
   method render : string[] ($c : Mojolicious::Controller) {
     
     my $stash   = $c->stash_h;
-    my $options_h = Hash->new({
+    my $options = Hash->new({
       handler  => $stash->{"handler"}->(string),
       template => (string)$stash->delete("template"),
     });
     
     my $inline = (string)$stash->delete("inline");
-    $options_h->set(inline => $inline);
+    $options->set(inline => $inline);
     
     if ($inline) {
-      if ($options_h->get("handler")) {
-        $options_h->set("handler", $self->default_handler);
+      if ($options->get("handler")) {
+        $options->set("handler", $self->default_handler);
       }
     }
     
-    $options_h->set(format => $stash->{"format"}->(string) // $self->default_format);
+    $options->set(format => $stash->{"format"}->(string) // $self->default_format);
     
     # Data
     if ($stash->get("data")) {
-      return [(string)$stash->delete("data"), $options_h->{"format"}->(string)];
+      return [(string)$stash->delete("data"), $options->{"format"}->(string)];
     }
     
     # Text
     if ($stash->get("text")) {
-      return [(string)$stash->delete("text"), $options_h->{"format"}->(string)];
+      return [(string)$stash->delete("text"), $options->{"format"}->(string)];
     }
     
     # JSON
@@ -151,34 +151,70 @@ class Mojolicious::Renderer {
     }
     
     my $output = (string)undef;
-    my $success = $self->_render_template($c, my $_ = [$output], $options_h);
+    my $success = $self->_render_template($c, my $_ = [$output], $options);
     unless ($success) {
       return undef;
     }
     $output = $_->[0];
     
-=pod TODO
-
     # Inheritance
-    my $content = $stash->{'mojo.content'} //= {};
-    local $content->{content} = $output =~ /\S/ ? $output : undef if $stash->{extends} || $stash->{layout};
-    while ((my $next = _next($stash)) && !defined $inline) {
-      @$options_h{qw(handler template)} = ($stash->{handler}, $next);
-      $options_h->{format} = $stash->{format} || $self->default_format;
-      if ($self->_render_template($c, \my $tmp, $options_h)) { $output = $tmp }
-      $content->{content} //= $output if $output =~ /\S/;
+    unless ($stash->{"mojo.content"}) {
+      $stash->{"mojo.content"} = Hash->new;
     }
-
-=cut
+    my $content = $stash->{"mojo.content"}->(Hash);
+    
+    my $content_save = $content->{"content"}->(string);
+    my $restore = $stash->{"extends"}->(int) || $stash->{"layout"}->(int);
+    Fn->defer([$content : Hash, $content_save : string, $restore : int] method : void () {
+      if ($restore) {
+        $content->{"content"} = $content_save;
+      }
+    });
+    
+    if ($restore) {
+      $content->{"content"} = Re->m($output, "\S") ? $output : undef;
+    }
+    
+    while ((my $next = &_next($stash)) && !$inline) {
+      
+      $options->{"handler"} = $stash->{"handler"};
+      
+      $options->{"template"} = $next;
+      
+      $options->{"format"} = $stash->{"format"} // $self->default_format;
+      
+      if ($self->_render_template($c, my $_ = [(string)undef], $options)) {
+        $output = $_->[0];
+      }
+      
+      if (Re->m($output, "\S")) {
+        $content->{"content"} //= $output;
+      }
+    }
     
     if ($stash->{"mojo.string"}->(int)) {
       return [$output, undef];
     }
     
-    return [$output, $options_h->{"format"}->(string)];
+    return [$output, $options->{"format"}->(string)];
     
   }
-
+  
+  private static method _next : string ($stash : Hash) {
+    
+    if ($stash->{"extends"}) {
+      return $stash->delete("extends")->(string);
+    }
+    
+    my $layout = $stash->delete("layout")->(string);
+    
+    unless ($layout) {
+      return undef;
+    }
+    
+    return Fn->join("/", ["layouts", $layout]);
+  }
+  
   private method _render_template : int ($c : Mojolicious::Controller, $output_ref : string[], $options_h : Hash) {
     
     my $handler = $self->template_handler($options_h);
@@ -267,12 +303,5 @@ sub template_path {
   my @parts = split /\//, $name;
   -r and return $_ for map { path($_, @parts)->to_string } @{$self->paths}, $TEMPLATES;
   return undef;
-}
-
-sub _next {
-  my $stash = shift;
-  return delete $stash->{extends} if $stash->{extends};
-  return undef unless my $layout = delete $stash->{layout};
-  return join '/', 'layouts', $layout;
 }
 
