@@ -92,7 +92,7 @@ class Mojolicious::Routes extends Mojolicious::Routes::Route {
       
       # $c->log->trace("Routing to the template $template.$format.$handler");
       
-      my $output = $c->render($template, $r->pattern->defaults->to_options);
+      my $output = $c->render_template($template, $r->pattern->defaults->to_options);
       
       if ($output) {
         $c->stash_h->{"mojo.rendered"} = 1;

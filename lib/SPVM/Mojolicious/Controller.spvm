@@ -190,42 +190,6 @@ class Mojolicious::Controller {
     $self->set_cookie($name, "$value--$sum", $options);
   }
   
-  method render : string ($template : string, $options : object[] = undef) {
-
-=pod
-
-    # Template may be first argument
-    my ($template, $args) = (@_ % 2 ? shift : undef, {@_});
-    $args->{template} = $template if $template;
-    my $app     = $self->app;
-    my $plugins = $app->plugins->emit_hook(before_render => $self, $args);
-
-    # Localize "extends" and "layout" to allow argument overrides
-    my ($maybe, $ts) = @{$args}{"mojo.maybe", "mojo.string"};
-    my $stash = $self->stash;
-    local $stash->{layout}  = $stash->{layout}  if exists $stash->{layout};
-    local $stash->{extends} = $stash->{extends} if exists $stash->{extends};
-
-    # Rendering to string
-    local @{$stash}{keys %$args}         if $ts || $maybe;
-    delete @{$stash}{qw(layout extends)} if $ts;
-
-    # All other arguments just become part of the stash
-    @$stash{keys %$args} = values %$args;
-    my $renderer = $app->renderer;
-    my ($output, $format) = $renderer->render($self);
-
-    # Maybe no 404
-    return defined $output ? Mojo::ByteStream->new($output) : undef if $ts;
-    return $maybe          ? undef : Carp::croak("Could not render a response") unless defined $output;
-
-    $plugins->emit_hook(after_render => $self, \$output, $format);
-    return $renderer->respond($self, $output, $format, $stash->{status});
-
-=cut
-
-  }
-
   method every_signed_cookie : string[] ($name : string) {
 
     my $secrets = $self->app->secrets;
@@ -348,17 +312,71 @@ class Mojolicious::Controller {
     $self->stash_h->{"mojo.captures"}->(Hash)->{$name} = $value_;
   }
   
+  method render : Mojo::ByteStream ($options : Hash|object[] = undef) {
+    
+    my $options = Fn->to_hash($options);
+    
+    my $app = $self->app;
+    my $plugins = $app->plugins;
+    my $render_to_string = $options->{"mojo.string"}->(int);
+    
+    unless ($render_to_string) {
+      $plugins->emit_hook(before_render => $self, $options);
+    }
+    
+    # Localize stash
+    my $stash = $self->stash_h;
+    my $stash_save = $stash->clone;
+    Fn->defer([$self : Mojolicious::Controller, $stash_save : Hash] method : void () {
+      $self->{stash_h} = $stash_save;
+    });
+    
+    # All other arguments just become part of the stash
+    for my $name (@{$options->keys}) {
+      $stash->{$name} = $options->{$name};
+    }
+    
+    my $renderer = $app->renderer;
+    my $_ = $renderer->render($self);
+    my $output = $_->[0];
+    my $format = $_->[1];
+    
+    if ($render_to_string) {
+      return $output ? Mojo::ByteStream->new($output) : undef;
+    }
+    
+    $plugins->emit_hook(after_render => $self, my $_ = [$output], $format);
+    $output = $_->[0];
+    
+    unless ($output) {
+      return undef;
+    }
+    
+    $renderer->respond($self, $output, $format, $stash->{"status"});
+  }
+  
+  method render_template : Mojo::ByteStream ($template : string, $options : Hash|object[] = undef) {
+    
+    my $options = Fn->to_hash($options);
+    
+    $options->{"template"} = $template;
+    
+    return $self->render($options);
+  }
+  
+  method render_to_string : Mojo::ByteStream ($options : Hash|object[] = undef) {
+    
+    my $options = Fn->to_hash($options);
+    $options->merge_options({"mojo.string" => 1});
+    my $string = $self->render($options);
+    
+    return $string;
+  }
+  
   method render_later : void () {
     $self->stash_h->{"mojo.rendered"} = 1;
   }
   
-  method render_to_string : string ($template : string, $options : object[] = undef) {
-    
-    my $string = $self->render($template, Fn->merge_options($options, {"mojo.string" => 1}));
-    
-    return $string;
-  }
-
   method rendered : void ($status : int = 0) {
     
     # Make sure we have a status
@@ -547,4 +565,3 @@ class Mojolicious::Controller {
   
 }
 
-=pod
