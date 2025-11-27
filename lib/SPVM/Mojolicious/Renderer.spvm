@@ -9,6 +9,7 @@ class Mojolicious::Renderer {
   use Mojo::Util;
   use Mojo::Loader;
   use Mojo::Template;
+  use Sys;
   
   # Fields
   has compress : rw byte;
@@ -246,7 +247,7 @@ class Mojolicious::Renderer {
     }
   }
   
-  method template_handler : string ($options : Hash|object[] = undef) {
+  method template_handler : string ($options : Hash|object[]) {
     
     my $options_h = Fn->to_hash($options);
     
@@ -257,7 +258,7 @@ class Mojolicious::Renderer {
     
     my $templates = $self->{templates};
     
-    my $handlers = $templates->get($file);
+    my $handlers = $templates->{$file};
     
     unless ($handlers) {
       return $self->default_handler;
@@ -293,15 +294,32 @@ class Mojolicious::Renderer {
   
   }
   
+  method template_path : string ($options : Hash|object[] = undef) {
+    
+    my $options = Fn->to_hash($options);
+    
+    my $name = $self->template_name($options);
+    
+    unless ($name) {
+      return undef;
+    }
+    
+    my $parts = Fn->split("/", $name);
+    
+    for my $path (@{$self->paths}) {
+      
+      my $abs_path = Mojo::File->path(Array->merge_string([$path], $parts));
+      
+      if (Sys->r($abs_path->to_string)) {
+        return $path;
+      }
+      
+    }
+    
+    return undef;
+  }
+
 }
 
 __END__
-
-sub template_path {
-  my ($self, $options) = @_;
-  return undef unless my $name = $self->template_name($options);
-  my @parts = split /\//, $name;
-  -r and return $_ for map { path($_, @parts)->to_string } @{$self->paths}, $TEMPLATES;
-  return undef;
-}
 
