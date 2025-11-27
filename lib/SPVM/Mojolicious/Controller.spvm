@@ -476,14 +476,14 @@ class Mojolicious::Controller {
     return $self->url_for($target);
   }
 
-=pod
-
-  method url_for_file {
-    my ($self, $file) = @_;
-    return $self->url_for($file =~ $ABSOLUTE ? $file : $self->app->static->file_path($file));
+  method url_for_file : Mojo::URL ($target : string) {
+    
+    unless (Re->m($target, $ABSOLUTE)) {
+      $target = $self->app->static->file_path($target);
+    }
+    
+    return $self->url_for($target);
   }
-
-=cut
 
   method write : void ($chunk : string, $cb : Mojo::Callback = undef) {
     
