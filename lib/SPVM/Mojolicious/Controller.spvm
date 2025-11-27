@@ -466,13 +466,17 @@ class Mojolicious::Controller {
     
     return $url;
   }
+  
+  method url_for_asset : Mojo::URL ($target : string) {
+    
+    unless (Re->m($target, $ABSOLUTE)) {
+      $target = $self->app->static->asset_path($target);
+    }
+    
+    return $self->url_for($target);
+  }
 
 =pod
-
-  method url_for_asset {
-    my ($self, $asset) = @_;
-    return $self->url_for($asset =~ $ABSOLUTE ? $asset : $self->app->static->asset_path($asset));
-  }
 
   method url_for_file {
     my ($self, $file) = @_;
