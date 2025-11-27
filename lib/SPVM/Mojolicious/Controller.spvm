@@ -51,6 +51,8 @@ class Mojolicious::Controller {
   
   has stash_h : rw Hash;
   
+  has global_stash_h : rw Hash;
+  
   has session_h : virtual ro Hash
     get {
       my $stash = $self->stash_h;
@@ -425,6 +427,14 @@ class Mojolicious::Controller {
   
   method set_stash : void ($name : string, $value : string) {
     $self->{stash_h}{$name} = $value;
+  }
+  
+  method global_stash : object ($name : string) {
+    return $self->{global_stash_h}{$name};
+  }
+  
+  method set_global_stash : void ($name : string, $value : string) {
+    $self->{global_stash_h}{$name} = $value;
   }
   
   method url_for : Mojo::URL ($target : string|Mojo::URL)  {
