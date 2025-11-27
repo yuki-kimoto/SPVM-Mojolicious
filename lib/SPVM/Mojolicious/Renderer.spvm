@@ -267,31 +267,29 @@ class Mojolicious::Renderer {
     return $handlers->[0];
   }
   
-  method respond : void ($c : Mojolicious::Controller, $output : string, $format : string, $statsu : int) {
+  method respond : void ($c : Mojolicious::Controller, $output : string, $format : string, $status : int) {
     
-=pod
-
-    croak 'A response has already been rendered' if $c->stash->{'mojo.respond'}++;
+    if ($c->stash_h->{"mojo.respond"}->(int)) {
+      die "A response has already been rendered.";
+    }
+    $c->stash_h->{"mojo.respond"} = 1;
     
     # Gzip compression
     my $res = $c->res;
     if ($self->compress && length($output) >= $self->min_compress_size) {
       my $headers = $res->headers;
-      $headers->append(Vary => 'Accept-Encoding');
-      my $gzip = ($c->req->headers->accept_encoding // '') =~ /gzip/i;
-      if ($gzip && !$headers->content_encoding) {
-        $headers->content_encoding('gzip');
-        $output = gzip $output;
+      $headers->append(Vary => "Accept-Encoding");
+      my $gzip = Re->m($c->req->headers->accept_encoding // "", ["gzip". "i"]);
+      if ($gzip && !length $headers->content_encoding) {
+        $headers->set_content_encoding("gzip");
+        $output = Mojo::Util->gzip($output);
       }
     }
     
-    $res->body($output);
+    $res->set_body($output);
     $c->app->types->content_type($c, {ext => $format});
-    return !!$c->rendered($status);
-  }
-
-=cut
-  
+    
+    $c->rendered($status);
   }
   
   method template_path : string ($options : Hash|object[] = undef) {
@@ -320,6 +318,3 @@ class Mojolicious::Renderer {
   }
 
 }
-
-__END__
-
