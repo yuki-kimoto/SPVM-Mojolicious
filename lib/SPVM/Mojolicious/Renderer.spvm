@@ -193,11 +193,9 @@ class Mojolicious::Renderer {
       }
     }
     
-    if ($stash->{"mojo.string"}->(int)) {
-      return [$output, undef];
-    }
+    my $format = $stash->{"mojo.string"}->(int) ? (string)undef : $options->{"format"}->(string);
     
-    return [$output, $options->{"format"}->(string)];
+    return [$output, $format];
     
   }
   
