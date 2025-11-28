@@ -10,6 +10,7 @@ class Mojolicious::Renderer {
   use Mojo::Loader;
   use Mojo::Template;
   use Sys;
+  use Mojolicious::Renderer::Callback;
   
   # Fields
   has compress : rw byte;
@@ -18,7 +19,7 @@ class Mojolicious::Renderer {
   
   has default_handler : rw string;
   
-  has handlers : rw Hash of Mojo::Callback;
+  has handlers : rw Hash of Mojolicious::Renderer::Callback;
   
   has min_compress_size : rw int;
   
