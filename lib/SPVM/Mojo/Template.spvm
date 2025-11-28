@@ -41,6 +41,8 @@ class Mojo::Template {
   
   has auto_escape : rw byte;
   
+  has prepend : rw string;
+  
   # Undocumented Fields
   has tree : rw string[][];
 
@@ -76,6 +78,8 @@ class Mojo::Template {
     $self->{name} = "template";
     
     $self->{tree} = new string[][0];
+    
+    $self->{prepend} = "";
     
     return $self;
   }
@@ -406,10 +410,10 @@ class Mojo::Template {
     $code->push("class {\n");
     $code->push("  use Mojo::Util;\n");
     $code->push("  use Mojo::ByteStream;\n");
-    $code->push("  use Mojolicious::Controller;\n");
     $code->push("static method code : string (\$args : object[] = undef) {\n");
-    $code->push("my \$c = \$args && @\$args ? \$args->[0]->(Mojolicious::Controller) : undef;\n");
-    $code->push("my \$_O = \"\";\n");
+    $code->push("  use Mojolicious::Controller;\n");
+    $code->push("  my \$c = \$args && @\$args ? \$args->[0]->(Mojolicious::Controller) : undef;\n");
+    $code->push("  my \$_O = \"\";\n");
     
     my $i = 0;
     my $capture = (string)undef;
