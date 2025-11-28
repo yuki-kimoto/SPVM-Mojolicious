@@ -97,14 +97,14 @@ class Mojolicious::Renderer {
   
   method template_name : string ($options : Hash|object[]) {
     
-    my $options_h = Fn->to_hash($options);
+    my $options = Fn->to_hash($options);
     
-    my $template = $options_h->{"template"}->(string);
+    my $template = $options->{"template"}->(string);
     unless ($template) {
       return undef;
     }
     
-    my $format = $options_h->{"format"}->(string);
+    my $format = $options->{"format"}->(string);
     unless ($format) {
       return undef;
     }
@@ -112,7 +112,7 @@ class Mojolicious::Renderer {
     $template .= ".$format";
     
     # Variants
-    my $handler = $options_h->{"handler"}->(string);
+    my $handler = $options->{"handler"}->(string);
     
     return $handler ? "$template.$handler" : $template;
   }
@@ -216,12 +216,12 @@ class Mojolicious::Renderer {
     return Fn->join("/", ["layouts", $layout]);
   }
   
-  private method _render_template : int ($c : Mojolicious::Controller, $output_ref : string[], $options_h : Hash) {
+  private method _render_template : int ($c : Mojolicious::Controller, $output_ref : string[], $options : Hash) {
     
-    my $handler = $self->template_handler($options_h);
+    my $handler = $self->template_handler($options);
     
-    unless ($options_h->get("handler")) {
-      $options_h->set("handler", $handler);
+    unless ($options->get("handler")) {
+      $options->set("handler", $handler);
     }
     
     unless ($handler) {
@@ -236,7 +236,7 @@ class Mojolicious::Renderer {
     }
     
     my $output = (string)undef;
-    $renderer->($self, $c, my $_ = [$output], $options_h);
+    $renderer->($self, $c, my $_ = [$output], $options);
     $output = $_->[0];
     
     if ($output) {
@@ -249,9 +249,9 @@ class Mojolicious::Renderer {
   
   method template_handler : string ($options : Hash|object[]) {
     
-    my $options_h = Fn->to_hash($options);
+    my $options = Fn->to_hash($options);
     
-    my $file = $self->template_name($options_h);
+    my $file = $self->template_name($options);
     unless ($file) {
       return undef;
     }
