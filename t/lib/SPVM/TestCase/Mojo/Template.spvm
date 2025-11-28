@@ -263,10 +263,10 @@ EOS
       my $mt = Mojo::Template->new;
       
     my $code = <<'EOS';
-<%= compile_type_name $c %>
+<%= type_name $c %>
 EOS
       
-      my $output = $mt->render($code);
+      my $output = $mt->render($code, [(object)Mojolicious::Controller->new]);
       
       unless (Re->m($output, "Mojolicious::Controller")) {
         return 0;

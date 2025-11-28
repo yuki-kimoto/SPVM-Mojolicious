@@ -369,9 +369,7 @@ class Mojo::Template {
     return $new_tree->to_array;
   }
   
-  method process : string ($options : Hash|object[] = undef, $c : Mojolicious::Controller = undef) {
-    
-    my $options = Fn->to_hash($options);
+  method process : string ($args : object[] = undef) {
     
     # Use a local stack trace for compile exceptions
     my $compiled = $self->compiled;
@@ -390,7 +388,7 @@ class Mojo::Template {
       $self->set_compiled($compiled);
     }
     
-    my $output = (string)Native::MethodCall->call_class_method($compiled, "code", [(object)$options, $c]);
+    my $output = (string)Native::MethodCall->call_class_method($compiled, "code", [(object)$args]);
     
     return $output;
   }
@@ -409,7 +407,8 @@ class Mojo::Template {
     $code->push("  use Mojo::Util;\n");
     $code->push("  use Mojo::ByteStream;\n");
     $code->push("  use Mojolicious::Controller;\n");
-    $code->push("static method code : string (\$options : Hash = undef, \$c : Mojolicious::Controller = undef) {\n");
+    $code->push("static method code : string (\$args : object[] = undef) {\n");
+    $code->push("my \$c = \$args && @\$args ? \$args->[0]->(Mojolicious::Controller) : undef;\n");
     $code->push("my \$_O = \"\";\n");
     
     my $i = 0;
