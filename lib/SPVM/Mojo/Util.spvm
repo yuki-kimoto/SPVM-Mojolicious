@@ -8,6 +8,7 @@ class Mojo::Util {
   use Hash;
   use MIME::Base64;
   use StringList;
+  use Digest::MD5;
   use Digest::SHA;
   use Format;
   use Getopt::Long;
@@ -410,5 +411,30 @@ class Mojo::Util {
     
     return $r == 0;
   }
-
+  
+  static method md5_bytes : string ($data : string) {
+    
+    return Digest::MD5->md5($data);
+  }
+  
+  static method md5_sum : string ($data : string) {
+    
+    return Digest::MD5->md5_hex($data);
+  }
+  
+  static method hmac_sha1_sum : string ($data : string, $key : string) {
+    
+    return Digest::SHA->hmac_sha1_hex($data, $key);
+  }
+  
+  static method sha1_bytes : string ($data : string) {
+    
+    return Digest::SHA->sha1($data);
+  }
+  
+  static method sha1_sum : string ($data : string) {
+    
+    return Digest::SHA->sha1_hex($data);
+  }
+  
 }
