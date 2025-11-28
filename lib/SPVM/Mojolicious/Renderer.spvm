@@ -47,6 +47,11 @@ class Mojolicious::Renderer {
     
     $self->{templates} = Hash->new;
     
+    $self->add_handler("ep" => method : void ($renderer : Mojolicious::Renderer, $c : Mojolicious::Controller, $output_ref : string[]) {
+      
+      $renderer->_render_ep($c, $output_ref);
+    });
+    
     return $self;
   }
   
@@ -85,7 +90,7 @@ class Mojolicious::Renderer {
     $self->{handlers}->set($name, $cb);
   }
   
-  private static method _render_ep : void ($c : Mojolicious::Controller, $output_ref : string[]) {
+  private method _render_ep : void ($c : Mojolicious::Controller, $output_ref : string[]) {
     
     my $inline = $c->stash("inline")->(string);
     
@@ -95,9 +100,7 @@ class Mojolicious::Renderer {
       handler => $c->stash("handler")->(string),
     };
     
-    my $renderer = $c->app->renderer;
-    
-    my $name = $inline ? Mojo::Util->md5_sum($inline) : $renderer->template_name($options);
+    my $name = $inline ? Mojo::Util->md5_sum($inline) : $self->template_name($options);
     
     unless ($name) {
       die "Template name is not resolved.";
@@ -117,14 +120,14 @@ class Mojolicious::Renderer {
     # File
     else {
       # Try template
-      if (my $path = $renderer->template_path($options)) {
+      if (my $path = $self->template_path($options)) {
         $c->log->trace("Rendering template \"$name\"");
         $mt->set_name("template \"$name\"");
         $output = $mt->render_file($path);
       }
       
       # Try DATA section
-      elsif (my $d = $renderer->get_data_template($options)) {
+      elsif (my $d = $self->get_data_template($options)) {
         $c->log->trace("Rendering template \"$name\" from DATA section");
         $mt->set_name("template \"$name\" from DATA section");
         $output = $mt->render($d);
