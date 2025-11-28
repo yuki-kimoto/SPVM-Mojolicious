@@ -119,130 +119,73 @@ class Mojolicious::Renderer {
   
   method render : string[] ($c : Mojolicious::Controller) {
     
-    my $stash   = $c->stash_h;
-    my $options = Hash->new({
-      handler  => $stash->{"handler"}->(string),
-      template => (string)$stash->delete("template"),
-    });
+    my $stash = $c->stash_h;
     
-    my $inline = (string)$stash->delete("inline");
-    $options->set(inline => $inline);
-    
-    if ($inline) {
-      if ($options->get("handler")) {
-        $options->set("handler", $self->default_handler);
-      }
-    }
-    
-    $options->set(format => $stash->{"format"}->(string) // $self->default_format);
+    my $format = $stash->{"format"}->(string) // $self->default_format;
     
     # Data
-    if ($stash->get("data")) {
-      return [(string)$stash->delete("data"), $options->{"format"}->(string)];
+    if ($stash->{"data"}) {
+      return [$stash->{"data"}->(string), $format];
     }
     
     # Text
-    if ($stash->get("text")) {
-      return [(string)$stash->delete("text"), $options->{"format"}->(string)];
+    elsif ($stash->{"text"}) {
+      return [$stash->{"text"}->(string), $format];
     }
     
     # JSON
-    if ($stash->get("json")) {
-      return [JSON->new->encode($stash->get("json")), "json"];
+    elsif ($stash->{"json"}) {
+      return [JSON->new->encode($stash->{"json"}), "json"];
     }
     
-    my $output = (string)undef;
-    my $success = $self->_render_template($c, my $_ = [$output], $options);
-    unless ($success) {
-      return undef;
-    }
-    $output = $_->[0];
-    
-    # Inheritance
-    unless ($stash->{"mojo.content"}) {
-      $stash->{"mojo.content"} = Hash->new;
-    }
-    my $content = $stash->{"mojo.content"}->(Hash);
-    
-    my $content_save = $content->{"content"}->(string);
-    my $restore = $stash->{"extends"}->(int) || $stash->{"layout"}->(int);
-    Fn->defer([$content : Hash, $content_save : string, $restore : int] method : void () {
-      if ($restore) {
-        $content->{"content"} = $content_save;
-      }
-    });
-    
-    if ($restore) {
-      $content->{"content"} = Re->m($output, "\S") ? $output : undef;
-    }
-    
-    while ((my $next = &_next($stash)) && !$inline) {
-      
-      $options->{"handler"} = $stash->{"handler"};
-      
-      $options->{"template"} = $next;
-      
-      $options->{"format"} = $stash->{"format"} // $self->default_format;
-      
-      if ($self->_render_template($c, my $_ = [(string)undef], $options)) {
-        $output = $_->[0];
-      }
-      
-      if (Re->m($output, "\S")) {
-        $content->{"content"} //= $output;
-      }
-    }
-    
-    my $format = $stash->{"mojo.string"}->(int) ? (string)undef : $options->{"format"}->(string);
-    
-    return [$output, $format];
-    
-  }
-  
-  private static method _next : string ($stash : Hash) {
-    
-    if ($stash->{"extends"}) {
-      return $stash->delete("extends")->(string);
-    }
-    
-    my $layout = $stash->delete("layout")->(string);
-    
-    unless ($layout) {
-      return undef;
-    }
-    
-    return Fn->join("/", ["layouts", $layout]);
-  }
-  
-  private method _render_template : int ($c : Mojolicious::Controller, $output_ref : string[], $options : Hash) {
-    
-    my $handler = $self->template_handler($options);
-    
-    unless ($options->get("handler")) {
-      $options->set("handler", $handler);
-    }
-    
-    unless ($handler) {
-      return 0;
-    }
+    # Template
+    my $template = $stash->{"template"}->(string);
+    my $handler = $stash->{"handler"}->(string) // $self->default_handler;
     
     my $renderer = $self->handlers->get($handler);
     
     unless ($renderer) {
-      $c->log->error("No handler for '$handler' found.");
-      return 0;
+      die "No handler for '$handler' found.";
     }
     
-    my $output = (string)undef;
-    $renderer->($self, $c, my $_ = [$output], $options);
-    $output = $_->[0];
+    $renderer->($self, $c, my $_ = [(string)undef]);
+    my $output = $_->[0];
     
-    if ($output) {
-      return 1;
+    unless ($output) {
+      return [$output, undef];
     }
-    else {
-      return 0;
+    
+    # Layout
+    my $layout = $stash->{"layout"}->(string);
+    if ($layout) {
+      # Localize stash
+      my $stash_save = $stash->clone;
+      Fn->defer([$c : Mojolicious::Controller, $stash_save : Hash] method : void () {
+        $c->set_stash_h($stash_save);
+      });
+      
+      my $layout_template = "layouts/$layout";
+      my $layout_stash = $stash->{"mojo.layout"}->(Hash) // Hash->new;
+      my $layout_handler = $layout_stash->{"handler"}->(string) // $self->default_handler;
+      my $layout_format = $layout_stash->{"format"}->(string) // $self->default_format;
+      
+      $stash->{"handler"} = $layout_handler;
+      $stash->{"format"} = $layout_format;
+      $stash->{"template"} = $layout_template;
+      $stash->{"mojo.content"} // Hash->new;
+      $stash->{"mojo.content"}->(Hash)->{"content"} = $output;
+      
+      my $layout_renderer = $self->handlers->get($layout_handler);
+      
+      unless ($layout_renderer) {
+        die "No handler for '$handler' found.";
+      }
+      
+      $renderer->($self, $c, my $_ = [(string)undef]);
+      $output = $_->[0];
     }
+    
+    return [$output, $format];
   }
   
   method template_handler : string ($options : Hash|object[]) {
