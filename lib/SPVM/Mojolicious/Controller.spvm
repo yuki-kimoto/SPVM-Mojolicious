@@ -562,5 +562,17 @@ class Mojolicious::Controller {
     return $self->render_to_string($options);
   }
   
+  method content : Mojo::ByteStream ($name : string = undef) {
+    
+    unless ($name) {
+      $name = "content";
+    }
+    
+    my $hash = $self->stash_h->{"mojo.content"}->(Hash) // Hash->new;
+    
+    my $content = $hash->{$name}->(string);
+    
+    return Mojo::ByteStream->new($content // "");
+  }
+  
 }
-
