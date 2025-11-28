@@ -263,7 +263,7 @@ class Mojolicious::Controller {
       $self->write("");
     }
   }
-
+  
   method on : void ($name : string, $cb : Mojo::Callback) {
   
     my $tx = $self->tx;
@@ -555,6 +555,11 @@ class Mojolicious::Controller {
     $reply->set_controller($self);
     
     return $reply;
+  }
+  
+  method include : Mojo::ByteStream ($options : Hash|object[] = undef) {
+    
+    return $self->render_to_string($options);
   }
   
 }
