@@ -5,25 +5,25 @@ class Mojolicious::Renderer {
   version_from Mojolicious;
   
   use Mojo::File;
-  use JSON;
   use Mojo::Util;
-  use Mojo::Loader;
   use Mojo::Template;
-  use Sys;
   use Mojolicious::Renderer::Callback;
   
+  use Sys;
+  use JSON;
+  
   # Fields
-  has compress : rw byte;
-  
-  has default_format : rw string;
-  
-  has default_handler : rw string;
+  has paths : rw string[];
   
   has handlers : rw Hash of Mojolicious::Renderer::Callback;
   
-  has min_compress_size : rw int;
+  has default_handler : rw string;
   
-  has paths : rw string[];
+  has default_format : rw string;
+  
+  has compress : rw byte;
+  
+  has min_compress_size : rw int;
   
   # Class Methods
   static method new : Mojolicious::Renderer () {
