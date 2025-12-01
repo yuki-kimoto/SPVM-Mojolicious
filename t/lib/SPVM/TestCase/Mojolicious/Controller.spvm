@@ -1,0 +1,10 @@
+class TestCase::Mojolicious::Controller {
+  
+  use Mojolicious::Controller;
+  
+  static method basic : int () {
+    
+    return 1;
+  }
+  
+}
