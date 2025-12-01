@@ -1,1 +1,1 @@
-abc<% $c->stash("x") %>
+abc<%= $c->stash("x") %>

@@ -8,7 +8,7 @@ class TestCase::Mojolicious::Controller {
   
   static method render_to_string : int () {
     
-    my $template_path = FindBin->Bin . "templates";
+    my $template_path = FindBin->Bin . "/templates";
     {
       my $app = Mojolicious::Lite->new;
       my $tx = Mojo::Transaction::HTTP->new;
@@ -52,6 +52,24 @@ class TestCase::Mojolicious::Controller {
       $c->set_stash(x => 123);
       
       my $bs = $c->render_to_string({inline => q'abc<%= $c->stash("x") %>'});
+      
+      unless (Re->m($bs->to_string, "abc123")) {
+        return 0;
+      }
+      
+    }
+    
+    {
+      my $app = Mojolicious::Lite->new;
+      my $tx = Mojo::Transaction::HTTP->new;
+      
+      my $c = Mojolicious::Controller->new;
+      $c->set_app($app);
+      $c->set_tx($tx);
+      $c->set_stash(x => 123);
+      
+      $app->renderer->set_paths(["$template_path"]);
+      my $bs = $c->render_to_string({template => "minimal"});
       
       unless (Re->m($bs->to_string, "abc123")) {
         return 0;

@@ -122,8 +122,9 @@ class Mojolicious::Renderer {
       # Try template
       if (my $path = $self->template_path($options)) {
         $c->log->trace("Rendering template \"$name\"");
-        $mt->set_name("template $name");
-        $output = $mt->render_file($path, undef, $c);
+        my $file = "$path/$name";
+        $mt->set_name($name);
+        $output = $mt->render_file($file, undef, $c);
       }
       
       # Try DATA section
