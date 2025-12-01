@@ -384,7 +384,7 @@ class Mojo::Template {
       eval { $compiled = Native->use_anon_class($code); }
       if ($@) {
         my $name = $self->name;
-        die "$@\n[Template:$name]\n" . $self->unparsed;
+        die "$@\n[Template:$name]\n" . $self->unparsed . "\n[Code]\n$code";
       }
       
       $self->set_compiled($compiled);

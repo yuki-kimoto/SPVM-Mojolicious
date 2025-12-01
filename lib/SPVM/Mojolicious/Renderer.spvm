@@ -113,7 +113,7 @@ class Mojolicious::Renderer {
     my $output = (string)undef;
     if ($inline) {
       $c->log->trace("Rendering inline template \"$name\"");
-      $mt->set_name("inline template \"$name\"");
+      $mt->set_name("inline template $name");
       $output = $mt->render($inline);
     }
     
@@ -122,14 +122,14 @@ class Mojolicious::Renderer {
       # Try template
       if (my $path = $self->template_path($options)) {
         $c->log->trace("Rendering template \"$name\"");
-        $mt->set_name("template \"$name\"");
+        $mt->set_name("template $name");
         $output = $mt->render_file($path);
       }
       
       # Try DATA section
       elsif (my $d = $self->get_data_template($options)) {
         $c->log->trace("Rendering template \"$name\" from DATA section");
-        $mt->set_name("template \"$name\" from DATA section");
+        $mt->set_name("template $name from DATA section");
         $output = $mt->render($d);
       }
       

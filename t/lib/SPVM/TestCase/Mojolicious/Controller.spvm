@@ -1,8 +1,27 @@
 class TestCase::Mojolicious::Controller {
   
   use Mojolicious::Controller;
+  use Mojolicious::Lite;
+  use Mojo::Transaction::HTTP;
+  use Re;
   
-  static method basic : int () {
+  static method render_to_string : int () {
+    
+    {
+      my $app = Mojolicious::Lite->new;
+      my $tx = Mojo::Transaction::HTTP->new;
+      
+      my $c = Mojolicious::Controller->new;
+      $c->set_app($app);
+      $c->set_tx($tx);
+      
+      my $bs = $c->render_to_string({inline => "abc"});
+      
+      unless (Re->m($bs->to_string, "abc")) {
+        return 0;
+      }
+      
+    }
     
     return 1;
   }
