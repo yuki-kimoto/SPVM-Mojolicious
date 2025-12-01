@@ -192,5 +192,6 @@ t/Mojo-Template.t
 t/Mojolicious-Controller.t
 t/Mojolicious-Routes.t
 t/online.t
+t/templates/minimal.html.ep
 t/webapp/basic.pl
 TODO.txt
