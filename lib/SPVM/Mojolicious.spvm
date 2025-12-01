@@ -65,7 +65,14 @@ class Mojolicious {
   
   has defaults : rw Hash;
   
-  has inline_templates : rw string;
+  has data_templates : virtual rw string
+    get {
+      return $self->renderer->data_templates;
+    }
+    set {
+      $self->renderer->set_data_templates($_);
+    }
+  ;
   
   # Class Methods
   static method new : Mojolicious () {
