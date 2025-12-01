@@ -25,9 +25,6 @@ class Mojolicious::Renderer {
   
   has paths : rw string[];
   
-  # Undocumented Fields
-  has templates : Hash of string[];
-  
   # Class Methods
   static method new : Mojolicious::Renderer () {
     
@@ -44,8 +41,6 @@ class Mojolicious::Renderer {
     $self->{min_compress_size} = 860;
     
     $self->{paths} = new string[0];
-    
-    $self->{templates} = Hash->new;
     
     $self->add_handler("ep" => method : void ($renderer : Mojolicious::Renderer, $c : Mojolicious::Controller, $output_ref : string[]) {
       
@@ -252,26 +247,6 @@ class Mojolicious::Renderer {
     }
     
     return [$output, $format];
-  }
-  
-  method template_handler : string ($options : Hash|object[]) {
-    
-    my $options = Fn->to_hash($options);
-    
-    my $file = $self->template_name($options);
-    unless ($file) {
-      return undef;
-    }
-    
-    my $templates = $self->{templates};
-    
-    my $handlers = $templates->{$file};
-    
-    unless ($handlers) {
-      return $self->default_handler;
-    }
-    
-    return $handlers->[0];
   }
   
   method respond : void ($c : Mojolicious::Controller, $output : string, $format : string, $status : int) {
