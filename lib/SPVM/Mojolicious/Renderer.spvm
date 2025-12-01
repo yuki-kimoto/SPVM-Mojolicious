@@ -85,59 +85,6 @@ class Mojolicious::Renderer {
     $self->{handlers}->set($name, $cb);
   }
   
-  private method _render_ep : void ($c : Mojolicious::Controller, $output_ref : string[]) {
-    
-    my $inline = $c->stash("inline")->(string);
-    
-    my $options = {
-      template => $c->stash("template")->(string),
-      format => $c->stash("format")->(string),
-      handler => $c->stash("handler")->(string),
-    };
-    
-    my $name = $inline ? Mojo::Util->md5_sum($inline) : $self->template_name($options);
-    
-    unless ($name) {
-      die "Template name is not resolved.";
-    }
-    
-    my $mt = Mojo::Template->new;
-    $mt->set_auto_escape(1);
-    
-    # Inline
-    my $output = (string)undef;
-    if ($inline) {
-      $c->log->trace("Rendering inline template \"$name\"");
-      $mt->set_name("inline template $name");
-      $output = $mt->render($inline, undef, $c);
-    }
-    
-    # File
-    else {
-      # Try template
-      if (my $path = $self->template_path($options)) {
-        $c->log->trace("Rendering template \"$name\"");
-        my $file = "$path/$name";
-        $mt->set_name($name);
-        $output = $mt->render_file($file, undef, $c);
-      }
-      
-      # Try DATA section
-      elsif (my $d = $self->get_data_template($options)) {
-        $c->log->trace("Rendering template \"$name\" from DATA section");
-        $mt->set_name("template $name from DATA section");
-        $output = $mt->render($d, undef, $c);
-      }
-      
-      # No template
-      else {
-        $c->log->trace("Template \"$name\" not found");
-      }
-    }
-    
-    $output_ref->[0] = $output;
-  }
-  
   method get_data_template : string ($options : object[], $data : string = undef) {
     
     my $template = $self->template_name($options);
@@ -298,5 +245,58 @@ class Mojolicious::Renderer {
     
     return undef;
   }
-
+  
+  private method _render_ep : void ($c : Mojolicious::Controller, $output_ref : string[]) {
+    
+    my $inline = $c->stash("inline")->(string);
+    
+    my $options = {
+      template => $c->stash("template")->(string),
+      format => $c->stash("format")->(string),
+      handler => $c->stash("handler")->(string),
+    };
+    
+    my $name = $inline ? Mojo::Util->md5_sum($inline) : $self->template_name($options);
+    
+    unless ($name) {
+      die "Template name is not resolved.";
+    }
+    
+    my $mt = Mojo::Template->new;
+    $mt->set_auto_escape(1);
+    
+    # Inline
+    my $output = (string)undef;
+    if ($inline) {
+      $c->log->trace("Rendering inline template \"$name\"");
+      $mt->set_name("inline template $name");
+      $output = $mt->render($inline, undef, $c);
+    }
+    
+    # File
+    else {
+      # Try template
+      if (my $path = $self->template_path($options)) {
+        $c->log->trace("Rendering template \"$name\"");
+        my $file = "$path/$name";
+        $mt->set_name($name);
+        $output = $mt->render_file($file, undef, $c);
+      }
+      
+      # Try DATA section
+      elsif (my $d = $self->get_data_template($options)) {
+        $c->log->trace("Rendering template \"$name\" from DATA section");
+        $mt->set_name("template $name from DATA section");
+        $output = $mt->render($d, undef, $c);
+      }
+      
+      # No template
+      else {
+        $c->log->trace("Template \"$name\" not found");
+      }
+    }
+    
+    $output_ref->[0] = $output;
+  }
+  
 }
