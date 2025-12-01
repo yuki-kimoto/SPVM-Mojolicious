@@ -174,11 +174,24 @@ class Mojolicious::Renderer {
     return $handler ? "$template.$handler" : $template;
   }
   
-  method render : string[] ($c : Mojolicious::Controller) {
+  method render : string[] ($c : Mojolicious::Controller, $options : Hash|object[] = undef) {
     
+    my $options = Fn->to_hash($options);
+    
+    # Localize stash
     my $stash = $c->stash_h;
+    my $stash_save = $stash->clone;
+    Fn->defer([$c : Mojolicious::Controller, $stash_save : Hash] method : void () {
+      $c->set_stash_h($stash_save);
+    });
+    
+    # All other arguments just become part of the stash
+    for my $name (@{$options->keys}) {
+      $stash->{$name} = $options->{$name};
+    }
     
     my $format = $stash->{"format"}->(string) // $self->default_format;
+    $stash->{"format"} = $format;
     
     # Data
     if ($stash->{"data"}) {
@@ -198,6 +211,7 @@ class Mojolicious::Renderer {
     # Template
     my $template = $stash->{"template"}->(string);
     my $handler = $stash->{"handler"}->(string) // $self->default_handler;
+    $stash->{"handler"} = $handler;
     
     my $renderer = $self->handlers->get($handler);
     
@@ -215,12 +229,6 @@ class Mojolicious::Renderer {
     # Layout
     my $layout = $stash->{"layout"}->(string);
     if ($layout) {
-      # Localize stash
-      my $stash_save = $stash->clone;
-      Fn->defer([$c : Mojolicious::Controller, $stash_save : Hash] method : void () {
-        $c->set_stash_h($stash_save);
-      });
-      
       my $layout_template = "layouts/$layout";
       my $layout_stash = $stash->{"mojo.layout"}->(Hash) // Hash->new;
       my $layout_handler = $layout_stash->{"handler"}->(string) // $self->default_handler;

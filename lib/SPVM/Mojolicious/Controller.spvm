@@ -335,20 +335,8 @@ class Mojolicious::Controller {
       $plugins->emit_hook(before_render => $self, $options);
     }
     
-    # Localize stash
-    my $stash = $self->stash_h;
-    my $stash_save = $stash->clone;
-    Fn->defer([$self : Mojolicious::Controller, $stash_save : Hash] method : void () {
-      $self->{stash_h} = $stash_save;
-    });
-    
-    # All other arguments just become part of the stash
-    for my $name (@{$options->keys}) {
-      $stash->{$name} = $options->{$name};
-    }
-    
     my $renderer = $app->renderer;
-    my $_ = $renderer->render($self);
+    my $_ = $renderer->render($self, $options);
     my $output = $_->[0];
     my $format = $_->[1];
     
@@ -363,7 +351,7 @@ class Mojolicious::Controller {
       return undef;
     }
     
-    $renderer->respond($self, $output, $format, $stash->{"status"});
+    $renderer->respond($self, $output, $format, $options->{"status"});
   }
   
   method render_to_string : Mojo::ByteStream ($options : Hash|object[] = undef) {
