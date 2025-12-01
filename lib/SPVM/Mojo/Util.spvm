@@ -406,10 +406,6 @@ class Mojo::Util {
     Getopt::Long->GetOptionsFromArray($comand_args_ref, $values_h, $spec_strings);
   }
   
-  static method get_data_template : string ($data_section : string, $name : string) {
-    
-  }
-  
   static method gzip : string ($uncompressed : string) {
     
     Compress::Raw::Zlib->gzip($uncompressed, my $_ = [(string)undef]);

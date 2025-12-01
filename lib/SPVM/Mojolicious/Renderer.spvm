@@ -21,6 +21,8 @@ class Mojolicious::Renderer {
   
   has default_format : rw string;
   
+  has data_templates : rw string;
+  
   has compress : rw byte;
   
   has min_compress_size : rw int;
@@ -85,15 +87,43 @@ class Mojolicious::Renderer {
     $self->{handlers}->set($name, $cb);
   }
   
-  method get_data_template : string ($options : object[], $data : string = undef) {
+  private method get_data_template : string ($options : object[]) {
     
-    my $template = $self->template_name($options);
+    my $template_name = $self->template_name($options);
     
-    unless ($template) {
+    unless ($template_name) {
       return undef;
     }
     
-    return Mojo::Util->get_data_template($data, $template);
+    # Split files
+    my $files = StringList->new(Re->split(["^@@\s*(.+?)\s*\r?\n", "m"], $self->data_templates));
+    if (@$files) {
+      $files->shift;
+    }
+    
+    # Find data
+    my $template = (string)undef;
+    while (1) {
+      
+      unless (@$files) {
+        last;
+      }
+     
+      my $_ = $files->splice(0, 2);
+      my $name = $_->[0];
+      my $data = $_->[1];
+      
+      if (Re->s((mutable string)$name, "\s*\(\s*base64\s*\)$", "")) {
+        $data = Mojo::Util->b64_decode($data);
+      }
+      
+      if ($name eq $template_name) {
+        $template = $data;
+        last;
+      }
+    }
+    
+    return $template;
   }
   
   method template_name : string ($options : Hash|object[]) {
@@ -286,7 +316,7 @@ class Mojolicious::Renderer {
       # Try DATA section
       elsif (my $d = $self->get_data_template($options)) {
         $c->log->trace("Rendering template \"$name\" from DATA section");
-        $mt->set_name("template $name from DATA section");
+        $mt->set_name("template $name from data templates");
         $output = $mt->render($d, undef, $c);
       }
       
