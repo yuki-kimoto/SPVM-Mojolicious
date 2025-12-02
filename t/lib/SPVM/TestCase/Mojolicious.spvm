@@ -78,6 +78,37 @@ EOS
         return 0;
       }
       
+      unless ($c->res->headers->content_type eq "text/html;charset=UTF-8") {
+        return 0;
+      }
+      
+    }
+    
+    {
+      my $app = Mojolicious::Lite->new;
+      
+      $app->get("/" => {text => "abc"} => "index");
+      
+      my $path = "/";
+      
+      my $tx = Mojo::Transaction::HTTP->new;
+      $tx->req->url->path->parse($path);
+      $tx->req->set_method("GET");
+      
+      my $c = Mojolicious::Controller->new;
+      $c->set_tx($tx);
+      $c->set_app($app);
+      
+      $app->routes->dispatch($c);
+      
+      unless ($c->res->code == 200) {
+        return 0;
+      }
+      
+      unless (Re->m($c->res->body, "abc")) {
+        return 0;
+      }
+      
     }
     
     
