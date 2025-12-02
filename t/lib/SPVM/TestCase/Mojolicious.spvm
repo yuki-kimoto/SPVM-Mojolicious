@@ -111,6 +111,60 @@ EOS
       
     }
     
+    {
+      my $app = Mojolicious::Lite->new;
+      
+      $app->get("/" => {data => "abc"} => "index");
+      
+      my $path = "/";
+      
+      my $tx = Mojo::Transaction::HTTP->new;
+      $tx->req->url->path->parse($path);
+      $tx->req->set_method("GET");
+      
+      my $c = Mojolicious::Controller->new;
+      $c->set_tx($tx);
+      $c->set_app($app);
+      
+      $app->routes->dispatch($c);
+      
+      unless ($c->res->code == 200) {
+        return 0;
+      }
+      
+      unless (Re->m($c->res->body, "abc")) {
+        return 0;
+      }
+      
+    }
+    
+    {
+      my $app = Mojolicious::Lite->new;
+      
+      $app->get("/" => {json => Hash->new({x => 1})} => "index");
+      
+      my $path = "/";
+      
+      my $tx = Mojo::Transaction::HTTP->new;
+      $tx->req->url->path->parse($path);
+      $tx->req->set_method("GET");
+      
+      my $c = Mojolicious::Controller->new;
+      $c->set_tx($tx);
+      $c->set_app($app);
+      
+      $app->routes->dispatch($c);
+      
+      unless ($c->res->code == 200) {
+        return 0;
+      }
+      
+      unless ($c->res->body eq "{\"x\":1}") {
+        return 0;
+      }
+      
+    }
+    
     
     return 1;
   }
