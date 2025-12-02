@@ -107,6 +107,22 @@ EOS
       
     }
     
+    {
+      my $app = Mojolicious::Lite->new;
+      my $tx = Mojo::Transaction::HTTP->new;
+      
+      my $c = Mojolicious::Controller->new;
+      $c->set_app($app);
+      $c->set_tx($tx);
+      
+      my $bs = $c->render_to_string({json => Hash->new({"foo" => 1})});
+      
+      unless (Re->m($bs->to_string, "{\"foo\":1}")) {
+        return 0;
+      }
+      
+    }
+    
     return 1;
   }
   
