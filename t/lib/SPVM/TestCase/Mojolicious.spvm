@@ -118,7 +118,7 @@ EOS
     {
       my $app = Mojolicious::Lite->new;
       
-      $app->get("/" => {data => "abc"} => "index");
+      $app->get("/" => {data => "abc", status => 201} => "index");
       
       my $path = "/";
       
@@ -132,7 +132,7 @@ EOS
       
       $app->routes->dispatch($c);
       
-      unless ($c->res->code == 200) {
+      unless ($c->res->code == 201) {
         return 0;
       }
       
