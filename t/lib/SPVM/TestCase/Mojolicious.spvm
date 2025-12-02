@@ -163,6 +163,10 @@ EOS
         return 0;
       }
       
+      unless ($c->res->headers->content_type eq "application/json;charset=UTF-8") {
+        return 0;
+      }
+      
     }
     
     
