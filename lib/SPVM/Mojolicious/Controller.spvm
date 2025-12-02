@@ -348,7 +348,7 @@ class Mojolicious::Controller {
     $output = $_->[0];
     
     unless ($output) {
-      return undef;
+      die "Rendering output must be define.";
     }
     
     $renderer->respond($self, $output, $format, $options->{"status"});
