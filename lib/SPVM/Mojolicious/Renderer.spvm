@@ -248,6 +248,7 @@ class Mojolicious::Renderer {
     }
     
     $res->set_body($output);
+    
     $c->app->types->content_type($c, {ext => $format});
     
     $c->rendered($status);

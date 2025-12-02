@@ -15,7 +15,7 @@ class TestCase::Mojolicious {
   use Mojo::Message::Request;
   use Mojo::Template;
   
-  static method test : int () {
+  static method extra_test : int () {
     
     my $app = Mojolicious::Lite->new;
     
@@ -44,4 +44,43 @@ EOS
     return 1;
   }
   
+  static method dispatch : int () {
+    
+    {
+      my $app = Mojolicious::Lite->new;
+      
+      $app->get("/" => {x => 123} => "index");
+      
+      my $data_templates = <<'EOS';
+@@ index.html.ep
+abc<%= $c->stash("x") %>
+EOS
+      
+      $app->set_data_templates($data_templates);
+      
+      my $path = "/";
+      
+      my $tx = Mojo::Transaction::HTTP->new;
+      $tx->req->url->path->parse($path);
+      $tx->req->set_method("GET");
+      
+      my $c = Mojolicious::Controller->new;
+      $c->set_tx($tx);
+      $c->set_app($app);
+      
+      $app->routes->dispatch($c);
+      
+      unless ($c->res->code == 200) {
+        return 0;
+      }
+      
+      unless (Re->m($c->res->body, "abc123")) {
+        return 0;
+      }
+      
+    }
+    
+    
+    return 1;
+  }
 }
