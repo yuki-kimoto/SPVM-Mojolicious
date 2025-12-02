@@ -109,6 +109,10 @@ EOS
         return 0;
       }
       
+      unless ($c->res->headers->content_type eq "text/plain;charset=UTF-8") {
+        return 0;
+      }
+      
     }
     
     {
@@ -133,6 +137,10 @@ EOS
       }
       
       unless (Re->m($c->res->body, "abc")) {
+        return 0;
+      }
+      
+      unless ($c->res->headers->content_type eq "application/octet-stream") {
         return 0;
       }
       
