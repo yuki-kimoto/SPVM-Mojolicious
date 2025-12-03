@@ -13,8 +13,6 @@ class Mojo::Transaction::HTTP extends Mojo::Transaction {
   has previous : rw Mojo::Transaction::HTTP;
   
   # Undocumented Fields
-  has writing : byte;
-  
   has offset : int;
   
   has write : int;
@@ -190,16 +188,9 @@ class Mojo::Transaction::HTTP extends Mojo::Transaction {
       $self->{offset} += length $buffer;
     }
     
-    unless ($buffer) {
-      $self->{writing} = 0 ;
-    }
-    
     if ($is_server) {
       if ($buffer && !length $buffer) {
         $self->completed;
-      }
-      else {
-        $self->{writing} = 0;
       }
     }
     
@@ -211,15 +202,6 @@ class Mojo::Transaction::HTTP extends Mojo::Transaction {
   }
   
   private method _write : string ($is_server : int) {
-    
-    unless ($is_server) {
-      unless (exists $self->{writing}) {
-        $self->{writing} = 1;
-      }
-    }
-    unless ($self->{writing}) {
-      return "";
-    }
     
     my $msg = (Mojo::Message)undef;
     if ($is_server) {
