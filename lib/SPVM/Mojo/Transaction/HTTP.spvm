@@ -70,7 +70,7 @@ class Mojo::Transaction::HTTP extends Mojo::Transaction {
     $self->client_read($leftovers);
   }
   
-  method client_write : string ($server : int) {
+  method client_write : string ($is_server : int) {
     
     $self->_write(0);
   }
@@ -164,7 +164,7 @@ class Mojo::Transaction::HTTP extends Mojo::Transaction {
     return $buffer;
   }
   
-  private method _headers : string ($msg : Mojo::Message, $head : int) {
+  private method _headers : string ($msg : Mojo::Message, $is_server : int) {
     
     my $buffer  = $msg->get_header_chunk($self->{offset});
     
@@ -180,7 +180,7 @@ class Mojo::Transaction::HTTP extends Mojo::Transaction {
       $self->{http_state} = "body";
       $self->{offset} = 0;
       
-      if ($head && $self->is_empty) {
+      if ($is_server && $self->is_empty) {
         $self->completed;
         $self->{http_state} = "empty";
       }
@@ -189,7 +189,7 @@ class Mojo::Transaction::HTTP extends Mojo::Transaction {
     return $buffer;
   }
   
-  private method _body : string ($msg : Mojo::Message, $finish : int) {
+  private method _body : string ($msg : Mojo::Message, $is_server : int) {
     
     # Prepare body chunk
     my $buffer = $msg->get_body_chunk($self->{offset});
@@ -202,7 +202,7 @@ class Mojo::Transaction::HTTP extends Mojo::Transaction {
       $self->{writing} = 0 ;
     }
     
-    if ($finish) {
+    if ($is_server) {
       if ($buffer && !length $buffer) {
         $self->completed;
       }
@@ -218,9 +218,9 @@ class Mojo::Transaction::HTTP extends Mojo::Transaction {
     return $buffer;
   }
   
-  private method _write : string ($server : int) {
+  private method _write : string ($is_server : int) {
     
-    unless ($server) {
+    unless ($is_server) {
       unless (exists $self->{writing}) {
         $self->{writing} = 1;
       }
@@ -230,7 +230,7 @@ class Mojo::Transaction::HTTP extends Mojo::Transaction {
     }
     
     my $msg = (Mojo::Message)undef;
-    if ($server) {
+    if ($is_server) {
       $msg = $self->res;
     }
     else {
@@ -250,12 +250,12 @@ class Mojo::Transaction::HTTP extends Mojo::Transaction {
     
     # Headers
     if ($self->{http_state} eq "headers") {
-      $chunk .= $self->_headers($msg, $server);
+      $chunk .= $self->_headers($msg, $is_server);
     }
     
     # Body
     if ($self->{http_state} eq "body") {
-      $chunk .= $self->_body($msg, $server);
+      $chunk .= $self->_body($msg, $is_server);
     }
     
     return $chunk;
