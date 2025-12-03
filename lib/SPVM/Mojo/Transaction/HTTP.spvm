@@ -123,14 +123,6 @@ class Mojo::Transaction::HTTP extends Mojo::Transaction {
     return (Mojo::Transaction::HTTP[])$redirects_list->to_array;
   }
   
-  method resume : void () {
-    
-    $self->{writing} = 1;
-    
-    $self->emit("resume");
-    
-  }
-  
   method server_read : void ($chunk : string) {
     
     my $req = $self->req;

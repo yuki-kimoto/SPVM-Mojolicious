@@ -386,7 +386,6 @@ class Mojolicious::Controller {
       # TODO:session
       # $app->sessions->store($self);
     }
-    $self->tx->(Mojo::Transaction::HTTP)->resume;
   }
   
   method send : void ($msg : string|object[]|Mojo::WebSocket::Frame, $cb : Mojo::Callback = undef) {
