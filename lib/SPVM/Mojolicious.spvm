@@ -203,8 +203,7 @@ class Mojolicious {
       $tx->req->set_max_message_size($max);
     }
     
-    # TODO
-    # $self->plugins->emit_hook(after_build_tx => $tx, $self);
+    $self->plugins->emit_hook(after_build_tx => $tx, $self);
     
     return $tx;
   }
