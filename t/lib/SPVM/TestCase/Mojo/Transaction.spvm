@@ -1,0 +1,9 @@
+class TestCase::Mojo::Transaction {
+  use Mojo::Transaction;
+  
+  static method basic : int () {
+    
+    return 1;
+  }
+  
+}
