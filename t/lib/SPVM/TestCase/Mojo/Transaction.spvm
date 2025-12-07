@@ -1,14 +1,37 @@
 class TestCase::Mojo::Transaction {
-  use Mojo::Transaction;
+  use Mojo::Transaction::HTTP;
+  use Re;
   
   static method basic : int () {
     
     return 1;
   }
   
-  static method request : int () {
+  static method server : int () {
+    
+    {
+      my $input = <<'EOS';
+GET / HTTP/1.1
+Host: example.com
+
+EOS
+      
+      $input = &to_crlf($input);
+      
+      my $tx = Mojo::Transaction::HTTP->new;
+      
+    }
     
     return 1;
+  }
+  
+  static method to_crlf : string ($input : string) {
+    
+    my $output = copy $input;
+    
+    Re->s((mutable string)$output, ["\xA", "g"], "\xD\xA");
+    
+    return $output;
   }
   
 }
