@@ -6,4 +6,9 @@ class TestCase::Mojo::Transaction {
     return 1;
   }
   
+  static method request : int () {
+    
+    return 1;
+  }
+  
 }

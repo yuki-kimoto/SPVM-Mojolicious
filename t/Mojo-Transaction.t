@@ -18,6 +18,8 @@ my $start_memory_blocks_count = $api->get_memory_blocks_count;
 
 ok(SPVM::TestCase::Mojo::Transaction->basic);
 
+ok(SPVM::TestCase::Mojo::Transaction->request);
+
 SPVM::Fn->destroy_runtime_permanent_vars;
 
 my $end_memory_blocks_count = $api->get_memory_blocks_count;
