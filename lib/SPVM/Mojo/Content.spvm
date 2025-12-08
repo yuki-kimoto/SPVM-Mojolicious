@@ -39,8 +39,6 @@ class Mojo::Content extends Mojo::EventEmitter {
   
   has dynamic : byte;
   
-  has limit : byte;
-  
   has buffer : StringBuffer;
   
   has header_buffer : StringBuffer;
@@ -232,11 +230,6 @@ class Mojo::Content extends Mojo::EventEmitter {
     my $state = $self->{state} // "";
     
     return $state eq "finished";
-  }
-  
-  method is_limit_exceeded : int () {
-    
-    return !!$self->{limit};
   }
   
   method is_multipart : int () { return 0; }
@@ -470,7 +463,7 @@ class Mojo::Content extends Mojo::EventEmitter {
     # Check buffer size
     if ($self->{post_buffer}->length > $self->max_buffer_size) {
       $self->{state} = "finished";
-      $self->{limit} = 1;
+      die "Maximum buffer size exceeded";
     }
   }
   
@@ -558,7 +551,7 @@ class Mojo::Content extends Mojo::EventEmitter {
     # Check buffer size
     if (($self->{pre_buffer} ? $self->{pre_buffer}->length : 0) > $self->max_buffer_size) {
       $self->{state} = "finished";
-      $self->{limit} = 1;
+      die "Maximum buffer size exceeded";
     }
   }
   

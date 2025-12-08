@@ -216,8 +216,6 @@ class Mojo::Message extends Mojo::EventEmitter {
     return ($self->{state} // "") eq "finished";
   }
   
-  method is_limit_exceeded : int () { return $self->{limit}; }
-  
   method json : object () {
     
     if ($self->content->is_multipart) {
@@ -245,7 +243,7 @@ class Mojo::Message extends Mojo::EventEmitter {
       }
       
       if ($len > $self->max_line_size) {
-        $self->_limit("Maximum start-line size exceeded");
+        die "Maximum start-line size exceeded";
         return;
       }
       if ($self->extract_start_line((mutable string)$self->{buffer}->get_string)) {
@@ -267,19 +265,7 @@ class Mojo::Message extends Mojo::EventEmitter {
     # Check message size
     my $max = $self->max_message_size;
     if ($max != 0 && $max < $self->{raw_size}) {
-      $self->_limit("Maximum message size exceeded");
-      return;
-    }
-    
-    # Check header size
-    if ($self->headers->is_limit_exceeded) {
-      $self->_limit("Maximum header size exceeded");
-      return;
-    }
-    
-    # Check buffer size
-    if ($self->content->is_limit_exceeded) {
-      $self->_limit("Maximum buffer size exceeded");
+      die "Maximum message size exceeded";
       return;
     }
     
@@ -288,11 +274,6 @@ class Mojo::Message extends Mojo::EventEmitter {
     if ($self->content->is_finished) {
       $self->finish;
     }
-  }
-  
-  private method _limit : void ($message : string) {
-    ++$self->{limit};
-    die $message;
   }
   
   method save_to : void ($path : string) {

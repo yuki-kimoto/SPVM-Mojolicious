@@ -324,7 +324,7 @@ class Mojo::Content::MultiPart extends Mojo::Content {
     # Check buffer size
     if (length($self->{multipart} // "") > $self->max_buffer_size) {
       $self->{state} = "finished";
-      $self->{limit} = 1;
+      die "Maximum buffer size exceeded";
     }
   }
   
