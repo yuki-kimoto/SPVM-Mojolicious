@@ -20,6 +20,29 @@ EOS
       
       my $tx = Mojo::Transaction::HTTP->new;
       
+      while (1) {
+        if ($tx->req->is_finished) {
+          last;
+        }
+        
+        my $chunk = Fn->substr($input, 0, 10, "");
+        
+        $tx->server_read($chunk);
+      }
+      
+      unless ($tx->req->method eq "GET") {
+        return 0;
+      }
+      
+      # warn dump $tx->req->url;
+      
+      unless ($tx->req->url->path->to_string eq "/") {
+        return 0;
+      }
+      
+      unless ($tx->req->headers->host eq "example.com") {
+        return 0;
+      }
     }
     
     return 1;
