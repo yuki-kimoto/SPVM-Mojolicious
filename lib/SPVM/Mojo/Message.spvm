@@ -259,7 +259,8 @@ class Mojo::Message extends Mojo::EventEmitter {
       my $buffer = $self->{buffer};
       $self->{buffer} = StringBuffer->new;
       my $content = $self->content;
-      $content->parse($buffer->get_string);
+      $content = $content->parse($buffer->get_string);
+      
       $self->{content} = $content;
     }
     

@@ -48,9 +48,11 @@ class Mojo::Content::MultiPart extends Mojo::Content {
   }
   
   # Instance Methods
-  protected method init : void ($options : object[] = undef) {
+  protected method init : void ($options : object[] = undef, $no_call_super : int = 0) {
     
-    $self->SUPER::init;
+    unless ($no_call_super) {
+      $self->SUPER::init;
+    }
     
     $self->on(read => method : void ($that : Mojo::Content::MultiPart, $chunk : string) {
       $that->_read($chunk);
@@ -93,6 +95,8 @@ class Mojo::Content::MultiPart extends Mojo::Content {
   }
 
   method build_boundary : string () {
+    
+    warn;
     
     # Check for existing boundary
     my $boundary = $self->boundary;
@@ -145,6 +149,8 @@ class Mojo::Content::MultiPart extends Mojo::Content {
   }
   
   method get_body_chunk : string ($offset : int) {
+    
+    warn;
     
     # Body generator
     if ($self->is_dynamic) {
@@ -207,6 +213,8 @@ class Mojo::Content::MultiPart extends Mojo::Content {
   }
   
   private method _parse_multipart_body : int ($boundary : string) {
+    
+    warn;
     
     # Whole part in buffer
     my $pos = Fn->index($self->{multipart}, "\x0d\x0a--$boundary");
@@ -279,6 +287,8 @@ class Mojo::Content::MultiPart extends Mojo::Content {
   }
   
   private method _read : void ($chunk : string) {
+    
+    $self->{multipart} //= "";
     
     $self->{multipart} .= $chunk;
     
