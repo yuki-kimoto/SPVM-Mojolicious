@@ -7,7 +7,7 @@ class TestCase::Mojo::Transaction {
     return 1;
   }
   
-  static method server : int () {
+  static method server_read : int () {
 
 =pod
 

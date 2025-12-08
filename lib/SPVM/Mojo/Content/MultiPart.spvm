@@ -57,6 +57,8 @@ class Mojo::Content::MultiPart extends Mojo::Content {
     $self->on(read => method : void ($that : Mojo::Content::MultiPart, $chunk : string) {
       $that->_read($chunk);
     });
+    
+    $self->{parts} = new Mojo::Content[0];
   }
   
   method body_contains : int ($chunk : string) {

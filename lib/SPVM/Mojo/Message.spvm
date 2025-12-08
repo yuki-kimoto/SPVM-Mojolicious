@@ -330,7 +330,13 @@ class Mojo::Message extends Mojo::EventEmitter {
     my $parts = (List of Mojo::Content)List->new(new Mojo::Content[0]);
     $parts->push($content);
     
-    while (my $part = (Mojo::Content)$parts->shift) {
+    while (1) {
+      
+      unless ($parts->length) {
+        last;
+      }
+      
+      my $part = (Mojo::Content)$parts->shift;
       
       if ($part->is_multipart) {
         $parts->unshift_($part->(Mojo::Content::MultiPart)->parts);
