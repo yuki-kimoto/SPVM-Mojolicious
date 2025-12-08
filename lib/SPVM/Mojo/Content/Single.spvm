@@ -113,14 +113,16 @@ class Mojo::Content::Single extends Mojo::Content {
   
   private static method new_from_single : Mojo::Content::MultiPart ($single : Mojo::Content::Single) {
     
-    my $self = new Mojo::Content::MultiPart;
+    my $multi = new Mojo::Content::MultiPart;
     
-    copy_fields $self, $single, Mojo::Content;
+    copy_fields $multi, $single, Mojo::Content;
+    
+    # warn dump $multi;
     
     my $no_call_super = 1;
-    $self->init(undef, $no_call_super);
+    $multi->init(undef, $no_call_super);
     
-    return $self;
+    return $multi;
   }
   
 }

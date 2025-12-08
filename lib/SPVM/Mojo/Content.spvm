@@ -11,6 +11,8 @@ class Mojo::Content extends Mojo::EventEmitter {
   use Mojo::SSE::Event;
   use Format;
   
+  allow Mojo::Message;
+  
   # Class Variables
   our $BOUNDARY_RE : Regex;
   INIT {
@@ -257,7 +259,6 @@ class Mojo::Content extends Mojo::EventEmitter {
     if ($self->{state} eq "headers") {
       return $self;
     }
-    
     if ($self->is_chunked && $self->{state} ne "headers") {
       $self->_parse_chunked;
       
@@ -277,7 +278,6 @@ class Mojo::Content extends Mojo::EventEmitter {
         $self->{pre_buffer} = StringBuffer->new;
       }
     }
-    
     # No content
     if ($self->skip_body) {
       $self->{state} = "finished";

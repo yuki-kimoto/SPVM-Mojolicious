@@ -8,7 +8,9 @@ class TestCase::Mojo::Transaction {
   }
   
   static method server : int () {
-    
+
+=pod
+
     {
       my $input = <<'EOS';
 GET / HTTP/1.1
@@ -153,6 +155,82 @@ EOS
         return 0;
       }
       
+    }
+
+=cut
+
+    {
+      my $input = <<'EOS';
+POST /upload HTTP/1.1
+Host: example.com
+Content-Type: multipart/form-data; boundary=AaBbCcDdEeFfGgHhIiJj
+Content-Length: 233
+
+--AaBbCcDdEeFfGgHhIiJj
+Content-Disposition: form-data; name="username"
+
+john_doe
+--AaBbCcDdEeFfGgHhIiJj
+Content-Disposition: form-data; name="upload"; filename="profile.txt"
+Content-Type: text/plain
+
+hello
+--AaBbCcDdEeFfGgHhIiJj--
+EOS
+      
+      $input = &to_crlf($input);
+      
+      my $tx = Mojo::Transaction::HTTP->new;
+      
+      while (1) {
+        if ($tx->req->is_finished) {
+          last;
+        }
+        
+        my $chunk = Fn->substr($input, 0, 10, "");
+        
+        $tx->server_read($chunk);
+      }
+      
+      unless ($tx->req->method eq "POST") {
+        diag;
+        return 0;
+      }
+      
+      unless ($tx->req->version eq "1.1") {
+        diag;
+        return 0;
+      }
+      
+      unless ($tx->req->url->path->to_string eq "/upload") {
+        diag;
+        return 0;
+      }
+      
+      unless ($tx->req->headers->host eq "example.com") {
+        diag $tx->req->headers->host;
+        return 0;
+      }
+      
+      unless ($tx->req->headers->content_type eq "multipart/form-data; boundary=AaBbCcDdEeFfGgHhIiJj") {
+        diag $tx->req->headers->content_type;
+        return 0;
+      }
+      
+      unless ($tx->req->headers->content_length eq "233") {
+        diag;
+        return 0;
+      }
+
+=pod
+
+      unless ($tx->req->body_params->param("username") eq "john_doe") {
+        diag;
+        return 0;
+      }
+
+=cut
+
     }
     
     return 1;
