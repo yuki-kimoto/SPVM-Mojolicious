@@ -1,6 +1,6 @@
 0.036 2025-12-08
   [Requirement Changes]
-    * Require SPVM 0.990108.
+    * Require SPVM 0.990109.
   
   [Changes]
     * Use object... in arguments of methods of Mojo::UserAgent.
