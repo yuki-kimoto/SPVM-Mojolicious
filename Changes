@@ -4,6 +4,9 @@
   
   [Changes]
     * Use object... in arguments of methods of Mojo::UserAgent.
+  
+  [Bug Fix]
+    * Fix Mojo::Parameters.
     
 0.035 2025-12-02
   [Changes]
