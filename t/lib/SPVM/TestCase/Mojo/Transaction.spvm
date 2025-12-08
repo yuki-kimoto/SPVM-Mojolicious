@@ -34,6 +34,10 @@ EOS
         return 0;
       }
       
+      unless ($tx->req->version eq "1.1") {
+        return 0;
+      }
+      
       # warn dump $tx->req->url;
       
       unless ($tx->req->url->path->to_string eq "/") {
