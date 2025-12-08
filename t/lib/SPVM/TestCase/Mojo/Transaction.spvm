@@ -105,6 +105,8 @@ Content-Length: 34
 name=Taro&email=taro%40example.com
 EOS
       
+      $input = Fn->chompr($input);
+      
       $input = &to_crlf($input);
       
       my $tx = Mojo::Transaction::HTTP->new;
