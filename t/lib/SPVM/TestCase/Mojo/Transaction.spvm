@@ -240,14 +240,10 @@ EOS
         return 0;
       }
       
-      # warn $tx->req->upload("upload");
-      
-      # warn dump $tx->req->uploads;
-=pod      
-      unless ($tx->req->upload("upload")) {
+      unless (@{$tx->req->uploads} == 1) {
         return 0;
       }
-=cut      
+      
     }
     
     return 1;
