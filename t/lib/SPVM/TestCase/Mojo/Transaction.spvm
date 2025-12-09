@@ -32,6 +32,26 @@ class TestCase::Mojo::Transaction {
       }
     }
     
+    # is_websocket
+    {
+      {
+        my $tx = Mojo::Transaction::HTTP->new;
+        
+        if ($tx->is_websocket) {
+          return 0;
+        }
+      }
+      
+      {
+        my $tx = Mojo::Transaction::WebSocket->new;
+        
+        unless ($tx->is_websocket) {
+          return 0;
+        }
+      }
+      
+    }
+    
     return 1;
   }
   
