@@ -4,6 +4,34 @@ class TestCase::Mojo::Transaction {
   
   static method basic : int () {
     
+    # is_empty
+    {
+      {
+        my $tx = Mojo::Transaction::HTTP->new;
+        $tx->req->set_method("HEAD");
+        
+        unless ($tx->is_empty) {
+          return 0;
+        }
+      }
+      
+      {
+        my $tx = Mojo::Transaction::HTTP->new;
+        $tx->res->set_code(200);
+        if ($tx->is_empty) {
+          return 0;
+        }
+      }
+      
+      {
+        my $tx = Mojo::Transaction::HTTP->new;
+        $tx->res->set_code(100);
+        unless ($tx->is_empty) {
+          return 0;
+        }
+      }
+    }
+    
     return 1;
   }
   
