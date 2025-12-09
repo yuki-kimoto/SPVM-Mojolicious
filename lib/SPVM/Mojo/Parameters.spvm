@@ -92,7 +92,7 @@ class Mojo::Parameters {
       die "The length of \$pairs must be an even number if it is an array.";
     }
     
-    my $pairs = StringList->new_ref($self->{pairs});
+    my $pairs = StringList->new_ref($self->pairs);
     
     my $new = $pairs_array;
     

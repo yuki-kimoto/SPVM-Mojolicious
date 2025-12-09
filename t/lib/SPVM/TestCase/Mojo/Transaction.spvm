@@ -221,16 +221,11 @@ EOS
         diag;
         return 0;
       }
-
-=pod
-
+      
       unless ($tx->req->body_params->param("username") eq "john_doe") {
-        diag;
+        diag $tx->req->body_params->param("username");
         return 0;
       }
-
-=cut
-
     }
     
     return 1;

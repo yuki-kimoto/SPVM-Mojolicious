@@ -98,8 +98,6 @@ class Mojo::Content::MultiPart extends Mojo::Content {
 
   method build_boundary : string () {
     
-    warn;
-    
     # Check for existing boundary
     my $boundary = $self->boundary;
     if ($boundary) {
@@ -151,8 +149,6 @@ class Mojo::Content::MultiPart extends Mojo::Content {
   }
   
   method get_body_chunk : string ($offset : int) {
-    
-    warn;
     
     # Body generator
     if ($self->is_dynamic) {
@@ -215,9 +211,6 @@ class Mojo::Content::MultiPart extends Mojo::Content {
   }
   
   private method _parse_multipart_body : int ($boundary : string) {
-    
-    warn;
-    
     # Whole part in buffer
     my $pos = Fn->index($self->{multipart}, "\x0d\x0a--$boundary");
     if ($pos < 0) {
@@ -248,14 +241,19 @@ class Mojo::Content::MultiPart extends Mojo::Content {
   private method _parse_multipart_boundary : int ($boundary : string) {
     
     # Boundary begins
-    if (Fn->index($self->{multipart}, "\x0d\x0a--$boundary\x0d\x0a") == 0) {
+    my $found_index = Fn->index($self->{multipart}, "\x0d\x0a--$boundary\x0d\x0a");
+    
+    if ($found_index == 0) {
       Fn->substr($self->{multipart}, 0, length($boundary) + 6, "");
       
       # New part
       my $part = Mojo::Content::Single->new;
       $part->{relaxed} = 1;
       $self->emit(part => $part);
-      $self->{parts} = (Mojo::Content[])Array->merge_object($self->{parts}, [$part]);
+      
+      my $parts = (List of Mojo::Content)List->new_ref($self->{parts});
+      $parts->push($part);
+      $self->{parts} = $parts->get_array;
       $self->{multi_state} = "multipart_body";
       
       return 1;
@@ -325,9 +323,6 @@ class Mojo::Content::MultiPart extends Mojo::Content {
     
     # Check buffer size
     if (length($self->{multipart} // "") > $self->max_buffer_size) {
-      warn length($self->{multipart} // "");
-      warn $self->max_buffer_size;
-      
       $self->{state} = "finished";
       die "Maximum buffer size exceeded";
     }
