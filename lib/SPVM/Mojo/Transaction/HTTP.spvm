@@ -112,13 +112,13 @@ class Mojo::Transaction::HTTP extends Mojo::Transaction {
   method redirects : Mojo::Transaction::HTTP[] () {
     my $previous = $self;
     
-    my $redirects_list = List->new(new Mojo::Transaction::HTTP[0]);
+    my $redirects = (List of Mojo::Transaction::HTTP)List->new(new Mojo::Transaction::HTTP[0]);
     
     while ($previous = $previous->previous) {
-      $redirects_list->unshift($previous);
+      $redirects->unshift($previous);
     }
     
-    return (Mojo::Transaction::HTTP[])$redirects_list->to_array;
+    return $redirects->to_array;
   }
   
   method server_read : void ($chunk : string) {

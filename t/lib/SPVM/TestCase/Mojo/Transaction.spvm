@@ -52,6 +52,32 @@ class TestCase::Mojo::Transaction {
       
     }
     
+    # redirects
+    {
+      {
+        my $tx = Mojo::Transaction::HTTP->new;
+        
+        $tx->set_previous(my $tx_pre = Mojo::Transaction::HTTP->new);
+        
+        $tx->previous->set_previous(my $tx_pre_pre = Mojo::Transaction::HTTP->new);
+        
+        my $redirects = $tx->redirects;
+        
+        unless (@$redirects == 2) {
+          return 0;
+        }
+        
+        unless ($redirects->[0] == $tx_pre_pre) {
+          return 0;
+        }
+        
+        unless ($redirects->[1] == $tx_pre) {
+          return 0;
+        }
+        
+      }
+      
+    }
     return 1;
   }
   
