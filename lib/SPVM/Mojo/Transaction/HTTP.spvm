@@ -79,8 +79,8 @@ class Mojo::Transaction::HTTP extends Mojo::Transaction {
   
   method keep_alive : int () {
     
-    my $req      = $self->req;
-    my $res      = $self->res;
+    my $req = $self->req;
+    my $res = $self->res;
     
     my $req_conn = $req->headers->connection;
     unless ($req_conn) {

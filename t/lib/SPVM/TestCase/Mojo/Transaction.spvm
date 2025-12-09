@@ -7,6 +7,63 @@ class TestCase::Mojo::Transaction {
     return 1;
   }
   
+  static method keep_alive : int () {
+    
+    {
+      my $tx = Mojo::Transaction::HTTP->new;
+      
+      unless ($tx->keep_alive) {
+        return 0;
+      }
+    }
+    
+    {
+      my $tx = Mojo::Transaction::HTTP->new;
+      
+      $tx->req->headers->set_connection("close");
+      
+      if ($tx->keep_alive) {
+        return 0;
+      }
+    }
+    
+    {
+      my $tx = Mojo::Transaction::HTTP->new;
+      
+      $tx->res->headers->set_connection("close");
+      
+      if ($tx->keep_alive) {
+        return 0;
+      }
+    }
+    
+    {
+      my $tx = Mojo::Transaction::HTTP->new;
+      
+      $tx->req->set_version("1.0");
+      
+      $tx->req->headers->set_connection("keep-alive");
+      
+      unless ($tx->keep_alive) {
+        return 0;
+      }
+    }
+    
+    {
+      my $tx = Mojo::Transaction::HTTP->new;
+      
+      $tx->res->set_version("1.0");
+      
+      $tx->res->headers->set_connection("keep-alive");
+      
+      unless ($tx->keep_alive) {
+        return 0;
+      }
+    }
+    
+    return 1;
+  }
+  
   static method server_read : int () {
     
     {
