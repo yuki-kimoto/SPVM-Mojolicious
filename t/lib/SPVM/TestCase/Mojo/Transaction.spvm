@@ -38,8 +38,6 @@ EOS
         return 0;
       }
       
-      # warn dump $tx->req->url;
-      
       unless ($tx->req->url->path->to_string eq "/") {
         return 0;
       }
@@ -304,6 +302,124 @@ EOS
         return 0;
       }
       
+    }
+    
+    # leftovers
+    {
+      my $inputs = new string[2];
+      
+      $inputs->[0] = <<'EOS';
+POST / HTTP/1.1
+Host: example.com
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 9
+
+name=Taro
+EOS
+      
+      $inputs->[0] = Fn->chompr($inputs->[0]);
+      $inputs->[0] = &to_crlf($inputs->[0]);
+      
+      $inputs->[1] = <<'EOS';
+POST / HTTP/1.1
+Host: example.com
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 9
+
+name=Karo
+EOS
+      
+      $inputs->[1] = Fn->chompr($inputs->[1]);
+      $inputs->[1] = &to_crlf($inputs->[1]);
+      
+      my $input = $inputs->[0] . $inputs->[1];
+      
+      my $leftovers = (string)undef;
+      {
+        my $tx = Mojo::Transaction::HTTP->new;
+        
+        while (1) {
+          if ($tx->req->is_finished) {
+            last;
+          }
+          
+          my $chunk = Fn->substr($input, 0, 10, "");
+          
+          $tx->server_read($chunk);
+        }
+        
+        unless ($tx->req->method eq "POST") {
+          diag;
+          return 0;
+        }
+        
+        unless ($tx->req->version eq "1.1") {
+          diag;
+          return 0;
+        }
+        
+        unless ($tx->req->url->path->to_string eq "/") {
+          diag;
+          return 0;
+        }
+        
+        unless ($tx->req->body_params->param("name") eq "Taro") {
+          diag dump $tx->req->url->query;
+          return 0;
+        }
+        
+        unless ($tx->req->headers->host eq "example.com") {
+          diag;
+          return 0;
+        }
+        
+        $leftovers = $tx->req->content->leftovers;
+        
+        unless (length $leftovers) {
+          die "[Unexpected Error]";
+        }
+      }
+      
+      {
+        my $tx = Mojo::Transaction::HTTP->new;
+        
+        $tx->server_read($leftovers);
+        
+        while (1) {
+          if ($tx->req->is_finished) {
+            last;
+          }
+          
+          my $chunk = Fn->substr($input, 0, 10, "");
+          
+          $tx->server_read($chunk);
+        }
+        
+        unless ($tx->req->method eq "POST") {
+          diag;
+          return 0;
+        }
+        
+        unless ($tx->req->version eq "1.1") {
+          diag;
+          return 0;
+        }
+        
+        unless ($tx->req->url->path->to_string eq "/") {
+          diag;
+          return 0;
+        }
+        
+        unless ($tx->req->body_params->param("name") eq "Karo") {
+          diag;
+          return 0;
+        }
+        
+        unless ($tx->req->headers->host eq "example.com") {
+          diag;
+          return 0;
+        }
+      }
     }
     
     return 1;
