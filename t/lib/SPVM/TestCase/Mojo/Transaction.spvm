@@ -178,19 +178,6 @@ hello
 --AaBbCcDdEeFfGgHhIiJj--
 EOS
       
-      my $tmp = <<'EOS';
---AaBbCcDdEeFfGgHhIiJj
-Content-Disposition: form-data; name="username"
-
-john_doe
---AaBbCcDdEeFfGgHhIiJj
-Content-Disposition: form-data; name="upload"; filename="profile.txt"
-Content-Type: text/plain
-
-hello
---AaBbCcDdEeFfGgHhIiJj--
-EOS
-      
       $input = &to_crlf($input);
       
       my $tx = Mojo::Transaction::HTTP->new;
@@ -241,6 +228,27 @@ EOS
       }
       
       unless (@{$tx->req->uploads} == 1) {
+        return 0;
+      }
+      
+      my $upload = $tx->req->upload("upload");
+      unless ($upload) {
+        return 0;
+      }
+      
+      unless ($upload->filename eq "profile.txt") {
+        return 0;
+      }
+      
+      unless ($upload->headers->content_type eq "text/plain") {
+        return 0;
+      }
+      
+      unless ($upload->name eq "upload") {
+        return 0;
+      }
+      
+      unless ($upload->slurp eq "hello") {
         return 0;
       }
       
