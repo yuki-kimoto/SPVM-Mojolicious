@@ -250,6 +250,62 @@ EOS
       
     }
     
+    {
+      my $input = <<'EOS';
+POST / HTTP/1.1
+Host: example.com
+Transfer-Encoding: chunked
+
+5
+start
+a
+1234567890
+3
+end
+0
+
+EOS
+      
+      $input = &to_crlf($input);
+      
+      my $tx = Mojo::Transaction::HTTP->new;
+      
+      while (1) {
+        if ($tx->req->is_finished) {
+          last;
+        }
+        
+        my $chunk = Fn->substr($input, 0, 10, "");
+        
+        $tx->server_read($chunk);
+      }
+      
+      unless ($tx->req->method eq "POST") {
+        diag;
+        return 0;
+      }
+      
+      unless ($tx->req->version eq "1.1") {
+        diag;
+        return 0;
+      }
+      
+      unless ($tx->req->url->path->to_string eq "/") {
+        diag;
+        return 0;
+      }
+      
+      unless ($tx->req->headers->host eq "example.com") {
+        diag $tx->req->headers->host;
+        return 0;
+      }
+      
+      unless ($tx->req->content->(Mojo::Content::Single)->asset->slurp eq "start1234567890end") {
+        return 0;
+      }
+      
+    }
+    
     return 1;
   }
   
