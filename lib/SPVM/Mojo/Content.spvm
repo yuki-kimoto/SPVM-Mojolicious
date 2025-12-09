@@ -123,10 +123,10 @@ class Mojo::Content extends Mojo::EventEmitter {
     }
     
     my $boundary = (string)undef;
-    if (my $_ = $BOUNDARY_RE->match($content_type)) {
-      $boundary = $_->cap1;
-      unless ($boundary) {
-        $boundary = $_->cap2;
+    if (my $m = $BOUNDARY_RE->match($content_type)) {
+      $boundary = $m->cap1;
+      unless (length $boundary) {
+        $boundary = $m->cap2;
       }
     }
     
@@ -441,6 +441,7 @@ class Mojo::Content extends Mojo::EventEmitter {
     # No compression
     unless ($self->auto_decompress && $self->is_compressed) {
       $self->emit(read => $chunk);
+      
       return;
     }
     
