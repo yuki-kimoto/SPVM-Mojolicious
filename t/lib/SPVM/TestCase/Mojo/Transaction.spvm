@@ -51,7 +51,7 @@ EOS
     
     {
       my $input = <<'EOS';
-GET /foo?p1=1&p2=2 HTTP/1.1
+GET /foo/bar?p1=1&p2=2 HTTP/1.1
 Host: example.com
 
 EOS
@@ -78,7 +78,7 @@ EOS
         return 0;
       }
       
-      unless ($tx->req->url->path->to_string eq "/foo") {
+      unless ($tx->req->url->path->to_string eq "/foo/bar") {
         return 0;
       }
       
