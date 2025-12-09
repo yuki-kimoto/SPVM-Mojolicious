@@ -164,8 +164,21 @@ EOS
 POST /upload HTTP/1.1
 Host: example.com
 Content-Type: multipart/form-data; boundary=AaBbCcDdEeFfGgHhIiJj
-Content-Length: 233
+Content-Length: 241
 
+--AaBbCcDdEeFfGgHhIiJj
+Content-Disposition: form-data; name="username"
+
+john_doe
+--AaBbCcDdEeFfGgHhIiJj
+Content-Disposition: form-data; name="upload"; filename="profile.txt"
+Content-Type: text/plain
+
+hello
+--AaBbCcDdEeFfGgHhIiJj--
+EOS
+      
+      my $tmp = <<'EOS';
 --AaBbCcDdEeFfGgHhIiJj
 Content-Disposition: form-data; name="username"
 
@@ -217,7 +230,7 @@ EOS
         return 0;
       }
       
-      unless ($tx->req->headers->content_length eq "233") {
+      unless ($tx->req->headers->content_length eq "241") {
         diag;
         return 0;
       }
@@ -226,6 +239,15 @@ EOS
         diag $tx->req->body_params->param("username");
         return 0;
       }
+      
+      # warn $tx->req->upload("upload");
+      
+      # warn dump $tx->req->uploads;
+=pod      
+      unless ($tx->req->upload("upload")) {
+        return 0;
+      }
+=cut      
     }
     
     return 1;

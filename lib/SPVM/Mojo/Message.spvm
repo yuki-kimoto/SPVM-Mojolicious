@@ -354,7 +354,7 @@ class Mojo::Message extends Mojo::EventEmitter {
         $filename = $m->cap1;
       }
       
-      if ($upload && !$filename || !$upload && $filename) {
+      if ($upload && !length $filename || !$upload && length $filename) {
         next;
       }
       
@@ -363,16 +363,16 @@ class Mojo::Message extends Mojo::EventEmitter {
         $name = $m->cap1;
       }
       
-      if (!$name) {
+      if (!length $name) {
         next;
       }
       
-      my $part_string = (string)undef;
+      my $part_ = (object)$part;
       unless ($upload) {
-        $part_string = $part->(Mojo::Content::Single)->asset->slurp;
+        $part_ = $part->(Mojo::Content::Single)->asset->slurp;
       }
       
-      $formdata->push([(object)$name, $part_string, $filename]);
+      $formdata->push([(object)$name, $part_, $filename]);
     }
     
     return $formdata->to_array;
