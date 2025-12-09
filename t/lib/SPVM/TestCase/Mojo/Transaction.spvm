@@ -565,4 +565,41 @@ EOS
     return $output;
   }
   
+  static method server_write : int () {
+    
+    {
+      my $tx = Mojo::Transaction::HTTP->new;
+      
+      my $res = $tx->res;
+      
+      $res->set_code(200);
+      $res->headers->remove("date");
+      
+      my $output = "";
+      while (1) {
+        my $chunk = $tx->server_write;
+        
+        unless (length $chunk) {
+          last;
+        }
+        
+        $output .= $chunk;
+      }
+      
+      Re->s((mutable string)$output, "date:.+?\xD\xA", "");
+      
+      my $expected = <<'EOS';
+200 OK
+
+EOS
+      
+      unless ($output eq "HTTP/1.1 200 OK\x{0D}\x{0A}content-length: 0\x{0D}\x{0A}\x{0D}\x{0A}") {
+        diag dump $output;
+        return 0;
+      }
+      
+    }
+    
+    return 1;
+  }
 }

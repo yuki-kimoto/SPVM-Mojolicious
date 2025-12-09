@@ -453,18 +453,14 @@ class Mojo::Headers {
   method to_string : string () {
     
     my $names = $self->names;
-    
-    my $buffer = StringBuffer->new;
+    my $headers = StringList->new;
     for my $name (@$names) {
-      my $header_string = $self->header($name);
-      if ($header_string) {
-        $buffer->push("$name:");
-        $buffer->push($header_string);
-        $buffer->push("\r\n");
-      }
+      my $value = $self->header($name);
+      my $header = "$name: $value";
+      $headers->push($header);
     }
     
-    my $string = $buffer->to_string;
+    my $string = Fn->join("\x0d\x0a", $headers->get_array);
     
     return $string;
   }

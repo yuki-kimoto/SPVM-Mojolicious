@@ -135,12 +135,18 @@ class Mojo::Transaction::HTTP extends Mojo::Transaction {
     
   }
   
-  method server_write : string () { $self->_write(1); }
+  method server_write : string () {
+    
+    my $chunk = $self->_write(1);
+    
+    return $chunk;
+  }
   
   private method _start_line : string ($msg : Mojo::Message) {
     
-    my $buffer  = $msg->get_start_line_chunk($self->{offset});
-    my $written = length $buffer;
+    my $chunk = $msg->get_start_line_chunk($self->{offset});
+    
+    my $written = length $chunk;
     
     $self->{write}  -= $written;
     $self->{offset} += $written;
@@ -151,16 +157,16 @@ class Mojo::Transaction::HTTP extends Mojo::Transaction {
       $self->{offset} = 0;
     }
     
-    return $buffer;
+    return $chunk;
   }
   
   private method _headers : string ($msg : Mojo::Message, $is_server : int) {
     
-    my $buffer  = $msg->get_header_chunk($self->{offset});
+    my $chunk = $msg->get_header_chunk($self->{offset});
     
     my $written = 0;
-    if ($buffer) {
-      $written = length $buffer;
+    if ($chunk) {
+      $written = length $chunk;
     }
     
     $self->{write}  -= $written;
@@ -176,29 +182,29 @@ class Mojo::Transaction::HTTP extends Mojo::Transaction {
       }
     }
     
-    return $buffer;
+    return $chunk;
   }
   
   private method _body : string ($msg : Mojo::Message, $is_server : int) {
     
     # Prepare body chunk
-    my $buffer = $msg->get_body_chunk($self->{offset});
+    my $chunk = $msg->get_body_chunk($self->{offset});
     
-    if ($buffer) {
-      $self->{offset} += length $buffer;
+    if ($chunk) {
+      $self->{offset} += length $chunk;
     }
     
     if ($is_server) {
-      if ($buffer && !length $buffer) {
+      if ($chunk && !length $chunk) {
         $self->completed;
       }
     }
     
-    unless ($buffer) {
-      $buffer = "";
+    unless ($chunk) {
+      $chunk = "";
     }
     
-    return $buffer;
+    return $chunk;
   }
   
   private method _write : string ($is_server : int) {
@@ -217,22 +223,25 @@ class Mojo::Transaction::HTTP extends Mojo::Transaction {
     }
     
     # Start-line
-    my $chunk = "";
+    my $chunk = StringBuffer->new;
     if ($self->{http_state} eq "start_line") {
-      $chunk .= $self->_start_line($msg);
+      my $chunk_ = $self->_start_line($msg);
+      $chunk->push($chunk_);
     }
     
     # Headers
     if ($self->{http_state} eq "headers") {
-      $chunk .= $self->_headers($msg, $is_server);
+      my $chunk_ = $self->_headers($msg, $is_server);
+      $chunk->push($chunk_);
     }
     
     # Body
     if ($self->{http_state} eq "body") {
-      $chunk .= $self->_body($msg, $is_server);
+      my $chunk_ = $self->_body($msg, $is_server);
+      $chunk->push($chunk_);
     }
     
-    return $chunk;
+    return $chunk->get_string;
   }
   
 }

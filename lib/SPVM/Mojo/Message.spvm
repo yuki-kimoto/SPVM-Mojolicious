@@ -169,10 +169,19 @@ class Mojo::Message extends Mojo::EventEmitter {
     # Content-Length or Connection (unless chunked transfer encoding is used)
     my $content = $self->content;
     my $headers = $content->headers;
-    if    ($content->is_multipart)                           { $headers->remove("Content-Length"); }
-    elsif ($content->is_chunked || $headers->content_length) { return; }
-    if    ($content->is_dynamic)                             { $headers->set_connection("close"); }
-    else                                                     { $headers->set_content_length($self->body_size); }
+    if ($content->is_multipart) {
+      $headers->remove("Content-Length");
+    }
+    elsif ($content->is_chunked || $headers->content_length) {
+      return;
+    }
+    
+    if ($content->is_dynamic) {
+      $headers->set_connection("close");
+    }
+    else {
+      $headers->set_content_length($self->body_size);
+    }
   }
   
   method get_body_chunk : string ($offset : int) {
