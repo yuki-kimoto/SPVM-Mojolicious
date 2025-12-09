@@ -97,7 +97,7 @@ EOS
     
     {
       my $input = <<'EOS';
-POST /submit-form HTTP/1.1
+POST / HTTP/1.1
 Host: example.com
 Content-Type: application/x-www-form-urlencoded
 Content-Length: 34
@@ -129,7 +129,7 @@ EOS
         return 0;
       }
       
-      unless ($tx->req->url->path->to_string eq "/submit-form") {
+      unless ($tx->req->url->path->to_string eq "/") {
         return 0;
       }
       
@@ -157,7 +157,7 @@ EOS
     
     {
       my $input = <<'EOS';
-POST /upload HTTP/1.1
+POST / HTTP/1.1
 Host: example.com
 Content-Type: multipart/form-data; boundary=AaBbCcDdEeFfGgHhIiJj
 Content-Length: 241
@@ -198,7 +198,7 @@ EOS
         return 0;
       }
       
-      unless ($tx->req->url->path->to_string eq "/upload") {
+      unless ($tx->req->url->path->to_string eq "/") {
         diag;
         return 0;
       }
