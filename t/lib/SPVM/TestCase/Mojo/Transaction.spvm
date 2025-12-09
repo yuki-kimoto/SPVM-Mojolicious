@@ -8,9 +8,7 @@ class TestCase::Mojo::Transaction {
   }
   
   static method server_read : int () {
-
-=pod
-
+    
     {
       my $input = <<'EOS';
 GET / HTTP/1.1
@@ -156,9 +154,7 @@ EOS
       }
       
     }
-
-=cut
-
+    
     {
       my $input = <<'EOS';
 POST /upload HTTP/1.1
