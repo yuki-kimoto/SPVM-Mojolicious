@@ -37,7 +37,10 @@ class Mojo::Asset::File extends Mojo::Asset {
           my $tmpdir= $self->tmpdir;
           
           my $handle_ = File::Temp->new({DIR => $tmpdir, TEMPLATE => "mojo.tmp.XXXXXXXXXXXXXXXX", UNLINK => 0});
+          
+          # TODO: Fix IO::File#open for reopen
           $handle_->close;
+          
           $self->{path} = $handle_->filename;
           $handle_->open($self->{path}, "+>>");
           $handle = $handle_;
@@ -72,7 +75,9 @@ class Mojo::Asset::File extends Mojo::Asset {
     
     my $handle = $self->handle;
     
+    # TODO: add IO::Handle#syswrite
     $handle->write($chunk);
+    $handle->flush;
     
     return $self;
   }
@@ -212,8 +217,6 @@ class Mojo::Asset::File extends Mojo::Asset {
   method size : long () {
     
     my $handle = $self->handle;
-    
-    $handle->flush;
     
     my $fd = $handle->fileno;
     
