@@ -64,7 +64,7 @@ WriteMakefile(
     'SPVM::Digest::MD5' => '1.003',
     'SPVM::Digest::SHA' => '0.065',
     'SPVM::MIME::Base64' => '1.003',
-    'SPVM::JSON' => '1.002',
+    'SPVM::JSON' => '1.003',
     'SPVM::FindBin' => '0.035',
     'SPVM::Time::HiRes' => '0.005',
     'SPVM::Math' => '1.006',
