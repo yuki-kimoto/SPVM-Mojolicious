@@ -623,12 +623,12 @@ EOS
       
     }
     
+    # HEAD
     {
       my $tx = Mojo::Transaction::HTTP->new;
       
       $tx->req->set_method("HEAD");
       my $res = $tx->res;
-      
       $res->set_code(200);
       $res->headers->set_content_type("text/plain");
       $res->content->(Mojo::Content::Single)->asset->add_chunk("Hello");
@@ -647,6 +647,44 @@ EOS
       Re->s((mutable string)$output, "date:.+?\xD\xA", "");
       
       unless ($output eq "HTTP/1.1 200 OK\x{0D}\x{0A}content-length: 5\x{0D}\x{0A}content-type: text/plain\x{0D}\x{0A}\x{0D}\x{0A}") {
+        diag dump $output;
+        return 0;
+      }
+      
+    }
+    
+    # Mojo::Asset::File
+    {
+      my $tx = Mojo::Transaction::HTTP->new;
+      
+      my $res = $tx->res;
+      $res->set_code(200);
+      $res->headers->set_content_type("text/plain");
+      $res->content->(Mojo::Content::Single)->asset->(Mojo::Asset::Memory)->set_max_memory_size(1);
+      
+      my $asset = $res->content->(Mojo::Content::Single)->asset;
+      $asset = $asset->add_chunk("Hello");
+      
+      unless ($asset is_type Mojo::Asset::File) {
+        return 0;
+      }
+      
+      $res->content->(Mojo::Content::Single)->set_asset($asset);
+      
+      my $output = "";
+      while (1) {
+        my $chunk = $tx->server_write;
+        
+        unless (length $chunk) {
+          last;
+        }
+        
+        $output .= $chunk;
+      }
+      
+      Re->s((mutable string)$output, "date:.+?\xD\xA", "");
+      
+      unless ($output eq "HTTP/1.1 200 OK\x{0D}\x{0A}content-length: 5\x{0D}\x{0A}content-type: text/plain\x{0D}\x{0A}\x{0D}\x{0A}Hello") {
         diag dump $output;
         return 0;
       }
