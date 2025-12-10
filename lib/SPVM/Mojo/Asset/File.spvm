@@ -87,14 +87,7 @@ class Mojo::Asset::File extends Mojo::Asset {
     
     $handle->seek($start_range, IOC->SEEK_SET);
     
-    my $end = 0;
-    my $end_range = -1L;
-    if (exists $self->{end_range}) {
-      $end_range = $self->size;
-    }
-    else {
-      $end_range = $self->{end_range};
-    }
+    my $end_range = exists $self->{end_range} ? $self->{end_range} : $self->size;
     
     my $len  = length $string;
     my $size = 131072;
@@ -158,9 +151,9 @@ class Mojo::Asset::File extends Mojo::Asset {
     
     my $buffer = new_string_len $max;
     
-    my $end = $self->end_range;
-    
-    if ($end >= 0) {
+    if (exists $self->{end_range}) {
+      
+      my $end = $self->{end_range};
       
       my $chunk_size = (int)($end + 1 - $offset);
       
