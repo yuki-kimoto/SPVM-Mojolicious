@@ -115,7 +115,7 @@ EOS
       $c->set_app($app);
       $c->set_tx($tx);
       
-      my $bs = $c->render_to_string({json => Hash->new({"foo" => 1})});
+      my $bs = $c->render_to_string({json => {"foo" => 1}});
       
       unless ($bs->to_string eq "{\"foo\":1}") {
         return 0;
