@@ -493,13 +493,13 @@ EOS
     
     my $start_line = $req->build_start_line;
     
-    $handle->write($start_line);
+    $handle->syswrite($start_line);
     
     my $header_lines = $req->build_headers;
     
-    $handle->write($header_lines);
+    $handle->syswrite($header_lines);
     
-    $handle->write("\r\n");
+    $handle->syswrite("\r\n");
   }
   
   private method read_response : void ($tx : Mojo::Transaction::HTTP) {
@@ -510,7 +510,7 @@ EOS
     while (1) {
       my $chunk = (mutable string)new_string_len &READ_BUFFER_SIZE;
       
-      my $read_length = $handle->read($chunk);
+      my $read_length = $handle->sysread($chunk);
       
       if ($read_length == 0) {
         $res->finish;

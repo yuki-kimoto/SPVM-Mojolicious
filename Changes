@@ -1,6 +1,8 @@
-0.036 2025-12-08
+0.036 2025-12-10
   [Requirement Changes]
     * Require SPVM 0.990109.
+    * Require SPVM::IO 0.243.
+    * Require SPVM::IO::Socket::SSL 0.014.
   
   [Changes]
     * Use object... in arguments of methods of Mojo::UserAgent.
