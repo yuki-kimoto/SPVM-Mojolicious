@@ -85,7 +85,9 @@ class Mojo::Content::Single extends Mojo::Content {
       return $self->generate_body_chunk($offset) ;
     }
     
-    return $self->asset->get_chunk($offset);
+    my $chunk = $self->asset->get_chunk($offset);
+    
+    return $chunk;
   }
   
   method parse : Mojo::Content ($chunk : string) {
@@ -116,8 +118,6 @@ class Mojo::Content::Single extends Mojo::Content {
     my $multi = new Mojo::Content::MultiPart;
     
     copy_fields $multi, $single, Mojo::Content;
-    
-    # warn dump $multi;
     
     my $no_call_super = 1;
     $multi->init(undef, $no_call_super);

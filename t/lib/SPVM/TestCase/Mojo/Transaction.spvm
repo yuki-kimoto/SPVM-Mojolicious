@@ -573,7 +573,6 @@ EOS
       my $res = $tx->res;
       
       $res->set_code(200);
-      $res->headers->remove("date");
       
       my $output = "";
       while (1) {
@@ -594,6 +593,40 @@ EOS
 EOS
       
       unless ($output eq "HTTP/1.1 200 OK\x{0D}\x{0A}content-length: 0\x{0D}\x{0A}\x{0D}\x{0A}") {
+        diag dump $output;
+        return 0;
+      }
+      
+    }
+    
+    {
+      my $tx = Mojo::Transaction::HTTP->new;
+      
+      my $res = $tx->res;
+      
+      $res->set_code(200);
+      $res->headers->set_content_type("text/plain");
+      $res->content->(Mojo::Content::Single)->asset->add_chunk("Hello");
+      
+      my $output = "";
+      while (1) {
+        my $chunk = $tx->server_write;
+        
+        unless (length $chunk) {
+          last;
+        }
+        
+        $output .= $chunk;
+      }
+      
+      Re->s((mutable string)$output, "date:.+?\xD\xA", "");
+      
+      my $expected = <<'EOS';
+200 OK
+
+EOS
+      
+      unless ($output eq "HTTP/1.1 200 OK\x{0D}\x{0A}content-length: 5\x{0D}\x{0A}content-type: text/plain\x{0D}\x{0A}\x{0D}\x{0A}Hello") {
         diag dump $output;
         return 0;
       }

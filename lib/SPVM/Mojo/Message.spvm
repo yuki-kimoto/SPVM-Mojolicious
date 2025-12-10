@@ -188,6 +188,7 @@ class Mojo::Message extends Mojo::EventEmitter {
     
     $self->emit(progress => "body", $offset);
     my $chunk = $self->content->get_body_chunk($offset);
+    
     if (!$chunk || length $chunk) {
       return $chunk;
     }
