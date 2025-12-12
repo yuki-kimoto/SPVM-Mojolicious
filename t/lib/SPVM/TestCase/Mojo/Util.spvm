@@ -1,0 +1,34 @@
+class TestCase::Mojo::Util {
+  use Mojo::Util;
+  
+  static method split_header : int () {
+    
+    {
+      my $header_value = "session=id; Path=/app; HttpOnly; Secure";
+      
+      my $headers = Mojo::Util->split_header($header_value);
+      
+      my $expect = [
+        [
+          "session",
+          "id",
+          "Path",
+          "/app",
+          "HttpOnly",
+          undef,
+          "Secure",
+          undef,
+        ]
+      ];
+      
+      unless (Array->equals($headers->[0], $expect->[0])) {
+        diag dump $headers;
+        return 0;
+      }
+      
+    }
+    
+    return 1;
+  }
+  
+}
