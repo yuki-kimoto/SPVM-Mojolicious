@@ -418,7 +418,7 @@ class Mojolicious::Controller {
     return $self->session_h->{$name};
   }
   
-  method set_session : void ($name : string, $value : string) {
+  method set_session : void ($name : string, $value : object) {
     
     $self->session_h->{$name} = $value;
   }
@@ -427,7 +427,7 @@ class Mojolicious::Controller {
     return $self->{stash_h}{$name};
   }
   
-  method set_stash : void ($name : string, $value : string) {
+  method set_stash : void ($name : string, $value : object) {
     $self->{stash_h}{$name} = $value;
   }
   
