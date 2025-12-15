@@ -16,6 +16,10 @@ class TestCase::Mojolicious::Controller {
       unless ($c->app == $app) {
         return 0;
       }
+      
+      unless ($c->tx == $tx) {
+        return 0;
+      }
     }
     
     return 1;
