@@ -61,9 +61,9 @@ class Mojolicious {
   
   has types : rw Mojolicious::Types;
   
-  has config : rw Hash;
+  has config_h : rw Hash;
   
-  has defaults : rw Hash;
+  has defaults_h : rw Hash;
   
   has data_templates : virtual rw string
     get {
@@ -125,9 +125,9 @@ class Mojolicious {
     
     $self->set_moniker($moniker);
     
-    $self->{defaults} = Hash->new;
+    $self->{defaults_h} = Hash->new;
     
-    $self->{config} = Hash->new;
+    $self->{config_h} = Hash->new;
   }
   
   method build_controller : Mojolicious::Controller ($tx : Mojo::Transaction) {
@@ -137,7 +137,7 @@ class Mojolicious {
     }
     
     # Build default controller
-    my $defaults = $self->defaults;
+    my $defaults = $self->defaults_h;
     
     my $stash = $defaults->clone;
     
