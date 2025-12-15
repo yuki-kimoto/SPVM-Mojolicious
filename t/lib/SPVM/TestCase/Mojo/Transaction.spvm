@@ -377,6 +377,10 @@ EOS
         return 0;
       }
       
+      unless ($tx->req->every_upload("upload")->[0]->filename eq "profile.txt") {
+        return 0;
+      }
+      
     }
     
     {
