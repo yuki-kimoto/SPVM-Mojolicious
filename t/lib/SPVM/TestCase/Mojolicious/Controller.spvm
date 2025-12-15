@@ -29,6 +29,10 @@ class TestCase::Mojolicious::Controller {
         return 0;
       }
       
+      unless ($c->app->log isa Mojo::Log) {
+        return 0;
+      }
+      
     }
     
     return 1;
