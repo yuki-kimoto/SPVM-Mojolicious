@@ -6,6 +6,21 @@ class TestCase::Mojolicious::Controller {
   use Re;
   use FindBin;
   
+  static method basic : int () {
+    
+    {
+      my $app = Mojolicious::Lite->new;
+      my $tx = Mojo::Transaction::HTTP->new;
+      my $c = $app->build_controller($tx);
+      
+      unless ($c->app == $app) {
+        return 0;
+      }
+    }
+    
+    return 1;
+  }
+  
   static method render_to_string : int () {
     
     my $template_path = FindBin->Bin . "/templates";

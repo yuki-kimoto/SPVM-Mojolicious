@@ -124,6 +124,10 @@ class Mojolicious {
     Re->s((mutable string)$moniker, "\.(spvm|t)$", "");
     
     $self->set_moniker($moniker);
+    
+    $self->{defaults} = Hash->new;
+    
+    $self->{config} = Hash->new;
   }
   
   method build_controller : Mojolicious::Controller ($tx : Mojo::Transaction) {
