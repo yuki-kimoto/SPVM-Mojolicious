@@ -186,6 +186,38 @@ class TestCase::Mojolicious::Controller {
           return 0;
         }
       }
+      
+      {
+        my $app = Mojolicious::Lite->new;
+        my $tx = Mojo::Transaction::HTTP->new;
+        my $c = $app->build_controller($tx);
+        
+        $c->set_signed_cookie(c1 => 1);
+        
+        my $headers = Mojo::Util->split_cookie_header($c->res->headers->get_set_cookie);
+        
+        my $expected = [
+          "c1",
+          "1--00b174ad97a69d74cff223790583385cb5b1ed2bae017777bcd9d214087008b3",
+        ];
+        
+        unless (Array->equals($headers->[0], $expected)) {
+          diag dump $headers;
+          return 0;
+        }
+        
+        my $cookie1 = my $_ = Mojo::Cookie::Request->new;
+        $_->set_name($expected->[0]);
+        $_->set_value($expected->[1] . "unsecure");
+        
+        $c->req->set_cookies([$cookie1]);
+        
+        if ($c->signed_cookie("c1")) {
+          diag;
+          return 0;
+        }
+        
+      }
     }
     
     return 1;

@@ -177,7 +177,11 @@ class Mojolicious::Controller {
   method signed_cookie : string ($name : string) {
     
     # Request cookie
-    return $self->every_signed_cookie($name)->[-1] ;
+    my $every_signed_cookie = $self->every_signed_cookie($name);
+    
+    my $value = @$every_signed_cookie ? $every_signed_cookie->[-1] : undef;
+    
+    return $value;
   }
   
   method set_signed_cookie : string ($name : string, $value : string = undef, $options : object[] = undef) {
@@ -291,7 +295,9 @@ class Mojolicious::Controller {
 
   method param : string ($name : string) {
     
-    my $value = $self->every_param($name)->[-1];
+    my $every_param = $self->every_param($name);
+    
+    my $value = @$every_param ? $self->every_param($name)->[-1] : undef;
     
     return $value;
   }
