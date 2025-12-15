@@ -212,8 +212,20 @@ class Mojolicious {
     return $tx;
   }
 
+  method defaults : object ($name : string) {
+    return $self->{defaults_h}{$name};
+  }
+  
+  method set_defaults : void ($name : string, $value : string) {
+    $self->{defaults_h}{$name} = $value;
+  }
+  
+  method config : object ($name : string) {
+    return $self->{config_h}{$name};
+  }
+  
+  method set_config : void ($name : string, $value : string) {
+    $self->{config_h}{$name} = $value;
+  }
+  
 }
-
-
-__END__
-
