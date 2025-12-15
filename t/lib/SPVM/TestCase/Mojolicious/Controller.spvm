@@ -20,6 +20,15 @@ class TestCase::Mojolicious::Controller {
       unless ($c->tx == $tx) {
         return 0;
       }
+      
+      unless ($c->match isa Mojolicious::Routes::Match) {
+        return 0;
+      }
+      
+      unless ($c->app->sessions isa Mojolicious::Sessions) {
+        return 0;
+      }
+      
     }
     
     return 1;
