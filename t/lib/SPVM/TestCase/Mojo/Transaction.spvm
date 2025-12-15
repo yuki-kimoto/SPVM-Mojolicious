@@ -553,6 +553,71 @@ EOS
       }
     }
     
+    # Cookie
+    {
+      my $input = <<'EOS';
+GET / HTTP/1.1
+Host: example.com
+Cookie: c1=1; c2=2;c3=31;c3=32
+
+EOS
+      
+      $input = &to_crlf($input);
+      
+      my $tx = Mojo::Transaction::HTTP->new;
+      
+      while (1) {
+        if ($tx->req->is_finished) {
+          last;
+        }
+        
+        my $chunk = Fn->substr($input, 0, 10, "");
+        
+        $tx->server_read($chunk);
+      }
+      
+      unless (@{$tx->req->cookies} == 4) {
+        diag;
+        return 0;
+      }
+      
+      unless ($tx->req->cookie("c1")->name eq "c1") {
+        diag;
+        return 0;
+      }
+      
+      unless ($tx->req->cookie("c1")->value eq "1") {
+        diag;
+        return 0;
+      }
+      
+      unless ($tx->req->cookie("c2")->name eq "c2") {
+        diag;
+        return 0;
+      }
+      
+      unless ($tx->req->cookie("c2")->value eq "2") {
+        diag;
+        return 0;
+      }
+      
+      unless ($tx->req->cookie("c3")->value eq "32") {
+        diag;
+        return 0;
+      }
+      
+      unless ($tx->req->every_cookie("c3")->[0]->value eq "31") {
+        diag;
+        return 0;
+      }
+      
+      unless ($tx->req->every_cookie("c3")->[1]->value eq "32") {
+        diag;
+        return 0;
+      }
+      
+    }
+    
     return 1;
   }
   
