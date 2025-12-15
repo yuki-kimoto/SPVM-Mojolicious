@@ -216,7 +216,8 @@ class Mojolicious {
     return $self->{defaults_h}{$name};
   }
   
-  method set_defaults : void ($name : string, $value : string) {
+  method set_defaults : void ($name : string, $value : object) {
+    
     $self->{defaults_h}{$name} = $value;
   }
   
@@ -224,7 +225,7 @@ class Mojolicious {
     return $self->{config_h}{$name};
   }
   
-  method set_config : void ($name : string, $value : string) {
+  method set_config : void ($name : string, $value : object) {
     $self->{config_h}{$name} = $value;
   }
   

@@ -14,6 +14,28 @@ class TestCase::Mojolicious {
   use Mojolicious::Controller;
   use Mojo::Message::Request;
   use Mojo::Template;
+  use Mojolicious::Lite;
+  
+  static method basic : int () {
+    
+    # defaults
+    {
+      my $app = Mojolicious::Lite->new;
+      
+      unless ($app->defaults_h->keys_length == 0) {
+        return 0;
+      }
+      
+      $app->set_defaults(foo => 1);
+      
+      unless ($app->defaults("foo")->(int) == 1) {
+        return 0;
+      }
+      
+    }
+    
+    return 1;
+  }
   
   static method extra_test : int () {
     
