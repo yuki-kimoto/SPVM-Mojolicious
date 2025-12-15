@@ -28,6 +28,40 @@ class TestCase::Mojo::Util {
       
     }
     
+    {
+      my $header_value = "session=id; Path=\"/app\"; HttpOnly; Secure, foo=bar";
+      
+      my $headers = Mojo::Util->split_header($header_value);
+      
+      my $expect = [
+        [
+          "session",
+          "id",
+          "Path",
+          "/app",
+          "HttpOnly",
+          undef,
+          "Secure",
+          undef,
+        ],
+        [
+          "foo",
+          "bar",
+        ]
+      ];
+      
+      unless (Array->equals($headers->[0], $expect->[0])) {
+        diag dump $headers;
+        return 0;
+      }
+      
+      unless (Array->equals($headers->[1], $expect->[1])) {
+        diag dump $headers;
+        return 0;
+      }
+      
+    }
+    
     return 1;
   }
   
