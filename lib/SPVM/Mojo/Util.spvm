@@ -325,7 +325,6 @@ class Mojo::Util {
       # Special "expires" value
       my $match = Re->m($str, "\A=\s*$EXPIRES_RE", \$offset);
       if ($expires && $match) {
-        warn;
         $part->[-1] = $match->cap1;
       }
       
