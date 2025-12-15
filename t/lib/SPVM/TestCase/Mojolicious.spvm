@@ -34,6 +34,22 @@ class TestCase::Mojolicious {
       
     }
     
+    # config
+    {
+      my $app = Mojolicious::Lite->new;
+      
+      unless ($app->config_h->keys_length == 0) {
+        return 0;
+      }
+      
+      $app->set_config(foo => 1);
+      
+      unless ($app->config("foo")->(int) == 1) {
+        return 0;
+      }
+      
+    }
+    
     return 1;
   }
   
