@@ -52,7 +52,7 @@ WriteMakefile(
     %configure_and_runtime_requires,
     'SPVM::IO' => '0.243',
     'SPVM::IO::Socket::SSL' => '0.014',
-    'SPVM::Regex' => '0.254',
+    'SPVM::Regex' => '0.255',
     'SPVM::Mozilla::CA' => '0.001',
     'SPVM::Time::Piece' => '0.003',
     'SPVM::Time::Local' => '0.112',
