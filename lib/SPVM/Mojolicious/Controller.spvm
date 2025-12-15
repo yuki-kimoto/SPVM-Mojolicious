@@ -194,6 +194,10 @@ class Mojolicious::Controller {
     my $results = StringList->new;
     for my $value (@{$self->every_cookie($name)}) {
       
+      unless (is_read_only $value) {
+        $value = copy $value;
+      }
+      
       # Check signature with rotating secrets
       if (my $rep = Re->s((mutable string)$value, "--([^\-]+)$", "")) {
         my $signature = $rep->match->cap1;
