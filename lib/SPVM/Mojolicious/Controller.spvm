@@ -612,6 +612,14 @@ class Mojolicious::Controller {
     return Mojo::ByteStream->new($bytes);
   }
   
+  method layout : void ($layout : string) {
+    $self->set_stash(layout => $layout);
+  }
+  
+  method title : void ($title : string) {
+    $self->set_stash(title => $title);
+  }
+  
 }
 
 __END__
@@ -620,11 +628,6 @@ TODO: DefaultHelper
 
 sub register {
   my ($self, $app) = @_;
-  
-  # Stash key shortcuts (should not generate log messages)
-  for my $name (qw(layout title)) {
-    $app->helper($name => sub { shift->stash($name, @_) });
-  }
   
   $app->helper(accepts => sub { $_[0]->app->renderer->accepts(@_) });
   
