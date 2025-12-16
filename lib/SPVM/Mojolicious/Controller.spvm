@@ -640,8 +640,8 @@ sub register {
   $app->helper(accepts => sub { $_[0]->app->renderer->accepts(@_) });
   
   $app->helper($_ => $self->can("_$_"))
-    for qw(csrf_token current_route exception_format flash inactivity_timeout is_fresh),
-    qw(redirect_to respond_to url_with validation);
+    for qw(csrf_token current_route exception_format inactivity_timeout is_fresh),
+    qw(redirect_to respond_to url_with);
   
   $app->helper("reply.$_" => $self->can("_$_")) for qw(asset file static);
   
