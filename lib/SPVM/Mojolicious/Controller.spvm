@@ -162,7 +162,7 @@ class Mojolicious::Controller {
     }
     
     # Uploads or param values
-    my $req     = $self->req;
+    my $req = $self->req;
     
     return $req->every_param($name);
   }
@@ -173,7 +173,16 @@ class Mojolicious::Controller {
     
     return $uploads;
   }
-
+  
+  method upload : Mojo::Upload ($name : string) {
+    
+    my $every_upload = $self->every_upload($name);
+    
+    my $upload = @$every_upload ? $self->every_upload($name)->[-1] : undef;
+    
+    return $upload;
+  }
+  
   method signed_cookie : string ($name : string) {
     
     # Request cookie
