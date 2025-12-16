@@ -393,8 +393,7 @@ class Mojolicious::Controller {
       my $app = $self->app;
       $app->plugins->emit_hook_reverse(after_dispatch => $self);
       
-      # TODO:session
-      # $app->sessions->store($self);
+      $app->sessions->store($self);
     }
   }
   
