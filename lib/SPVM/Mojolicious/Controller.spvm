@@ -16,6 +16,8 @@ class Mojolicious::Controller {
   use Mojo::Log;
   use Mojo::Callback;
   use Mojo::UserAgent;
+  use Mojo::ByteStream;
+  use Mojo::Collection;
   
   our $ABSOLUTE : string;
   INIT {
@@ -606,6 +608,10 @@ class Mojolicious::Controller {
     return Mojo::Collection->new($array);
   }
   
+  method b : Mojo::ByteStream ($bytes : string) {
+    return Mojo::ByteStream->new($bytes);
+  }
+  
 }
 
 __END__
@@ -621,8 +627,6 @@ sub register {
   }
   
   $app->helper(accepts => sub { $_[0]->app->renderer->accepts(@_) });
-  $app->helper(b       => sub { shift; Mojo::ByteStream->new(@_) });
-  $app->helper(c       => sub { shift; Mojo::Collection->new(@_) });
   
   $app->helper($_ => $self->can("_$_"))
     for qw(csrf_token current_route exception_format flash inactivity_timeout is_fresh),
