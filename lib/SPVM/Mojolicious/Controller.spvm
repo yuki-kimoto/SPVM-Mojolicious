@@ -632,6 +632,15 @@ class Mojolicious::Controller {
     $self->app->renderer->accepts($self, $preferences);
   }
   
+  method csrf_token : string () {
+    
+    unless ($self->session_h->exists("csrf_token")) {
+      $self->session_h->{"csrf_token"} = Mojo::Util->hmac_sha1_sum(Sys->process_id . Mojo::Util->steady_time . Sys->rand, $self->app->secrets->[0]);
+    }
+    
+    return $self->session_h->{"csrf_token"}->(string);
+  }
+  
 }
 
 __END__

@@ -14,6 +14,8 @@ class Mojo::Util {
   use Getopt::Long;
   use Mojo::ByteStream;
   use Compress::Raw::Zlib;
+  use Time::HiRes;
+  use Sys::Time::Constant as TIME;
   
   our $QUOTED_VALUE_RE : string;
   INIT {
@@ -35,6 +37,14 @@ class Mojo::Util {
     $XML = Hash->new({
       "&" => "&amp;", "<" => "&lt;", ">" => "&gt;", "\"" => "&quot;", "'" => "&#39;"
     });
+  }
+  
+  our $MONOTONIC : byte;
+  INIT {
+    eval { Time::HiRes->clock_gettime(TIME->CLOCK_MONOTONIC); }
+    unless ($@) {
+      $MONOTONIC = 1;
+    }
   }
   
   static method b64_encode : string ($string : string, $eol : string = undef) {
@@ -433,6 +443,13 @@ class Mojo::Util {
     }
     
     return $r == 0;
+  }
+  
+  static method steady_time : double () {
+    
+    my $steady_time = $MONOTONIC ? Time::HiRes->clock_gettime(TIME->CLOCK_MONOTONIC) : Time::HiRes->time;
+    
+    return $steady_time;
   }
   
 }
