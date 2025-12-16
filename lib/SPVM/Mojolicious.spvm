@@ -22,6 +22,7 @@ class Mojolicious {
   use Mojolicious::Commands;
   use Mojo::File;
   use FindBin;
+  use Mojolicious::Plugin;
   
   # Fields
   has home : rw Mojo::Home;
@@ -174,8 +175,8 @@ class Mojolicious {
     $self->plugins->on($name, $cb);
   }
   
-  method plugin : void ($name : string, $options : object[] = undef) {
-    $self->plugins->register_plugin($name, $self, $options);
+  method plugin : void ($plugin : Mojolicious::Plugin, $options : object[] = undef) {
+    $self->plugins->register_plugin($plugin, $self, $options);
   }
   
   method handler : void ($tx : Mojo::Transaction) {
