@@ -601,41 +601,25 @@ TODO: DefaultHelper
 
 sub register {
   my ($self, $app) = @_;
-
-  # Controller alias helpers
-  for my $name (qw(app param stash session url_for url_for_asset url_for_file)) {
-    $app->helper($name => sub { shift->$name(@_) });
-  }
-
+  
   # Stash key shortcuts (should not generate log messages)
-  for my $name (qw(extends layout title)) {
+  for my $name (qw(layout title)) {
     $app->helper($name => sub { shift->stash($name, @_) });
   }
-
+  
   $app->helper(accepts => sub { $_[0]->app->renderer->accepts(@_) });
   $app->helper(b       => sub { shift; Mojo::ByteStream->new(@_) });
   $app->helper(c       => sub { shift; Mojo::Collection->new(@_) });
   $app->helper(config  => sub { shift->app->config(@_) });
-
-  $app->helper(content      => sub { _content(0, 0, @_) });
-  $app->helper(content_for  => sub { _content(1, 0, @_) });
-  $app->helper(content_with => sub { _content(0, 1, @_) });
-
+  
   $app->helper($_ => $self->can("_$_"))
     for qw(csrf_token current_route exception_format flash inactivity_timeout is_fresh),
     qw(redirect_to respond_to url_with validation);
-
-  $app->helper(dumper  => sub { shift; dumper @_ });
+  
   $app->helper(include => sub { shift->render_to_string(@_) });
-
-  $app->helper(log => \&_log);
-
-  $app->helper('proxy.get_p'   => sub { _proxy_method_p('GET',  @_) });
-  $app->helper('proxy.post_p'  => sub { _proxy_method_p('POST', @_) });
-  $app->helper('proxy.start_p' => \&_proxy_start_p);
-
+  
   $app->helper("reply.$_" => $self->can("_$_")) for qw(asset file static);
-
+  
   $app->helper('reply.exception',      => sub { shift->helpers->reply->http_exception(@_) });
   $app->helper('reply.not_found',      => sub { shift->helpers->reply->http_not_found() });
   $app->helper('reply.http_exception', => \&_http_exception);
