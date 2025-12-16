@@ -439,6 +439,13 @@ class TestCase::Mojolicious::Controller {
         unless ($c->param("var1") eq "2") {
           return 0;
         }
+        
+        $c->set_param(var1 => "5");
+        
+        unless ($c->param("var1") eq "5") {
+          return 0;
+        }
+        
       }
       
     }
