@@ -404,6 +404,15 @@ class TestCase::Mojolicious::Controller {
       }
     }
     
+    # upload
+    {
+      my $app = Mojolicious::Lite->new;
+      my $tx = Mojo::Transaction::HTTP->new;
+      my $c = $app->build_controller($tx);
+      
+      
+    }
+    
     return 1;
   }
   

@@ -381,6 +381,36 @@ EOS
         return 0;
       }
       
+      {
+        use Mojolicious::Lite;
+        my $app = Mojolicious::Lite->new;
+        my $c = $app->build_controller($tx);
+        
+        my $upload = $c->upload("upload");
+        unless ($upload) {
+          return 0;
+        }
+        
+        unless ($upload->filename eq "profile.txt") {
+          return 0;
+        }
+        
+        unless ($upload->headers->content_type eq "text/plain") {
+          return 0;
+        }
+        
+        unless ($upload->name eq "upload") {
+          return 0;
+        }
+        
+        unless ($upload->slurp eq "hello") {
+          return 0;
+        }
+        
+        unless ($c->every_upload("upload")->[0]->filename eq "profile.txt") {
+          return 0;
+        }
+      }
     }
     
     {
