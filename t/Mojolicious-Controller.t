@@ -18,6 +18,8 @@ my $start_memory_blocks_count = $api->get_memory_blocks_count;
 
 ok(SPVM::TestCase::Mojolicious::Controller->basic);
 
+ok(SPVM::TestCase::Mojolicious::Controller->sessions);
+
 ok(SPVM::TestCase::Mojolicious::Controller->render_to_string);
 
 SPVM::Fn->destroy_runtime_permanent_vars;
