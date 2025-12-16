@@ -597,6 +597,11 @@ class Mojolicious::Controller {
   method ua : Mojo::UserAgent () {
     return $self->app->ua;
   }
+  
+  method config : object ($name : string) {
+    return $self->app->config($name);
+  }
+  
 }
 
 __END__
@@ -619,8 +624,6 @@ sub register {
   $app->helper($_ => $self->can("_$_"))
     for qw(csrf_token current_route exception_format flash inactivity_timeout is_fresh),
     qw(redirect_to respond_to url_with validation);
-  
-  $app->helper(include => sub { shift->render_to_string(@_) });
   
   $app->helper("reply.$_" => $self->can("_$_")) for qw(asset file static);
   
