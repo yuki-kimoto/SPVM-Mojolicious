@@ -48,7 +48,6 @@ class Mojolicious::Sessions {
       return;
     }
     
-    
     $value = copy $value;
     Re->s((mutable string)$value, ["-", "g"], "=");
     
@@ -114,7 +113,8 @@ class Mojolicious::Sessions {
       $session->{"new_flash"} = $old;
     }
     
-    unless ($session->{"new_flash"}->(Hash)->keys_length) {
+    my $new_flash = $session->{"new_flash"}->(Hash);
+    unless ($new_flash && $new_flash->keys_length) {
       $session->delete("new_flash");
     }
     
