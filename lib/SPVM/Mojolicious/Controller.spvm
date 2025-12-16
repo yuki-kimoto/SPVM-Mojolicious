@@ -15,6 +15,7 @@ class Mojolicious::Controller {
   use Mojo::Message::Response;
   use Mojo::Log;
   use Mojo::Callback;
+  use Mojo::UserAgent;
   
   our $ABSOLUTE : string;
   INIT {
@@ -592,7 +593,10 @@ class Mojolicious::Controller {
     
     $session->{"new_flash"}->(Hash)->{$name} = $value;
   }
-
+  
+  method ua : Mojo::UserAgent () {
+    return $self->app->ua;
+  }
 }
 
 __END__
@@ -635,7 +639,5 @@ sub register {
   $app->helper('timing.elapsed'       => \&_timing_elapsed);
   $app->helper('timing.rps'           => \&_timing_rps);
   $app->helper('timing.server_timing' => \&_timing_server_timing);
-
-  $app->helper(ua => sub { shift->app->ua });
 }
 

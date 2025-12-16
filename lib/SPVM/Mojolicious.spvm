@@ -23,6 +23,7 @@ class Mojolicious {
   use Mojo::File;
   use FindBin;
   use Mojolicious::Plugin;
+  use Mojo::UserAgent;
   
   # Fields
   has home : rw Mojo::Home;
@@ -74,6 +75,8 @@ class Mojolicious {
       $self->renderer->set_data_templates($_);
     }
   ;
+  
+  has ua : rw Mojo::UserAgent;
   
   # Class Methods
   static method new : Mojolicious () {
@@ -129,6 +132,8 @@ class Mojolicious {
     $self->{defaults_h} = Hash->new;
     
     $self->{config_h} = Hash->new;
+    
+    $self->{ua} = Mojo::UserAgent->new;
   }
   
   method build_controller : Mojolicious::Controller ($tx : Mojo::Transaction) {
