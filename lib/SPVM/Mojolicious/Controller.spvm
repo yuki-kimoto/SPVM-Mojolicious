@@ -612,11 +612,19 @@ class Mojolicious::Controller {
     return Mojo::ByteStream->new($bytes);
   }
   
-  method layout : void ($layout : string) {
+  method layout : string () {
+    $self->stash("layout")->(string);
+  }
+  
+  method set_layout : void ($layout : string) {
     $self->set_stash(layout => $layout);
   }
   
-  method title : void ($title : string) {
+  method title : string () {
+    $self->stash("title")->(string);
+  }
+  
+  method set_title : void ($title : string) {
     $self->set_stash(title => $title);
   }
   
