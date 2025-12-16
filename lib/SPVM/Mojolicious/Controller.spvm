@@ -161,7 +161,6 @@ class Mojolicious::Controller {
       return $value isa string[] ? (string[])$value : [(string)$value];
     }
     
-    # Uploads or param values
     my $req = $self->req;
     
     return $req->every_param($name);

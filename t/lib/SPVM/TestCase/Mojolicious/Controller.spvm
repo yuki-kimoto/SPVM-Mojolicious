@@ -404,12 +404,42 @@ class TestCase::Mojolicious::Controller {
       }
     }
     
-    # upload
+    # param, every_param
     {
-      my $app = Mojolicious::Lite->new;
-      my $tx = Mojo::Transaction::HTTP->new;
-      my $c = $app->build_controller($tx);
+      {
+        my $app = Mojolicious::Lite->new;
+        my $tx = Mojo::Transaction::HTTP->new;
+        my $c = $app->build_controller($tx);
+        
+        $c->set_stash("mojo.captures", Hash->new({var1 => "1"}));
+        
+        $c->req->url->query->set_param(var1 => "2");
+        
+        $c->req->body_params->set_param(var1 => "3");
+        
+        unless (Array->equals($c->every_param("var1"), ["1"])) {
+          return 0;
+        }
+      }
       
+      {
+        my $app = Mojolicious::Lite->new;
+        my $tx = Mojo::Transaction::HTTP->new;
+        my $c = $app->build_controller($tx);
+        
+        $c->req->url->query->set_param(var1 => "2");
+        
+        $c->req->body_params->set_param(var1 => "3");
+        
+        unless (Array->equals($c->every_param("var1"), ["3", "2"])) {
+          diag dump $c->every_param("var1");
+          return 0;
+        }
+        
+        unless ($c->param("var1") eq "2") {
+          return 0;
+        }
+      }
       
     }
     
