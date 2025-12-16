@@ -628,6 +628,10 @@ class Mojolicious::Controller {
     $self->set_stash(title => $title);
   }
   
+  method accepts : string[] ($preferences : string[] = undef) {
+    $self->app->renderer->accepts($self, $preferences);
+  }
+  
 }
 
 __END__
@@ -636,8 +640,6 @@ TODO: DefaultHelper
 
 sub register {
   my ($self, $app) = @_;
-  
-  $app->helper(accepts => sub { $_[0]->app->renderer->accepts(@_) });
   
   $app->helper($_ => $self->can("_$_"))
     for qw(csrf_token current_route exception_format inactivity_timeout is_fresh),
