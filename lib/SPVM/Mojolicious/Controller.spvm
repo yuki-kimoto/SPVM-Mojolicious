@@ -700,7 +700,46 @@ class Mojolicious::Controller {
     
     $self->rendered($res->is_redirect ? 0 : 302);
   }
- 
+  
+  method respond_to : void ($options : Hash|object[] = undef) {
+    
+    my $options = Fn->to_hash($options);
+    
+    # Find target
+    my $target = (object)undef;
+    my $renderer = $self->app->renderer;
+    my $formats  = Array->copy_string($renderer->accepts($self));
+    unless (@$formats) {
+      $formats = [$renderer->default_format];
+    }
+    for my $format (@$formats) {
+      $target = $options->{$format};
+      unless ($target) {
+        next;
+      }
+      $self->stash_h->{"format"} = $format;
+      last;
+    }
+    
+    # Fallback
+    unless ($target) {
+      $target = $options->{"any"};
+      unless ($target) {
+        $self->rendered(204);
+        return;
+      }
+      $self->stash_h->delete("format");
+    }
+    
+    # Dispatch
+    if ($target isa Mojolicious::Callback) {
+      $target->(Mojolicious::Callback)->($self);
+    }
+    else {
+      $self->render($target->(object[]));
+    }
+  }
+
 }
 
 __END__
@@ -711,7 +750,7 @@ sub register {
   my ($self, $app) = @_;
   
   $app->helper($_ => $self->can("_$_"))
-    qw(redirect_to respond_to url_with);
+    qw(respond_to url_with);
   
   $app->helper("reply.$_" => $self->can("_$_")) for qw(asset file static);
   
