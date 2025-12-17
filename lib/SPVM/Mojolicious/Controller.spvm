@@ -691,7 +691,16 @@ class Mojolicious::Controller {
     
     return $self->app->static->is_fresh($self, $options);
   }
-
+  
+  method redirect_to : void ($path : string)  {
+    
+    # Don't override 3xx status
+    my $res = $self->res;
+    $res->headers->set_location($self->url_for($path));
+    
+    $self->rendered($res->is_redirect ? 0 : 302);
+  }
+ 
 }
 
 __END__
