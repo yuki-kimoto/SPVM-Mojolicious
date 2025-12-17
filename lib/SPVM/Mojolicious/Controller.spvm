@@ -679,6 +679,14 @@ class Mojolicious::Controller {
     $stash->{"mojo.exception_format"} = $format;
   }
 
+  method set_inactivity_timeout  : void ($timeout : double){
+  
+    my $connection = $self->tx->connection;
+    if ($connection) {
+      $connection->set_timeout($timeout);
+    }
+  }
+
 }
 
 __END__
@@ -689,7 +697,7 @@ sub register {
   my ($self, $app) = @_;
   
   $app->helper($_ => $self->can("_$_"))
-    for qw(exception_format inactivity_timeout is_fresh),
+    for qw(inactivity_timeout is_fresh),
     qw(redirect_to respond_to url_with);
   
   $app->helper("reply.$_" => $self->can("_$_")) for qw(asset file static);
