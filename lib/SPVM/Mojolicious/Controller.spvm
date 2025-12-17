@@ -86,6 +86,8 @@ class Mojolicious::Controller {
     
     $self->{stash_h} = Hash->new;
     
+    $self->{stash_h}->{"mojo"} = Hash->new;
+    
     return $self;
   }
   
@@ -757,19 +759,6 @@ TODO: DefaultHelper
 sub register {
   my ($self, $app) = @_;
   
-  $app->helper("reply.$_" => $self->can("_$_")) for qw(asset file static);
-  
-  $app->helper('reply.exception',      => sub { shift->helpers->reply->http_exception(@_) });
-  $app->helper('reply.not_found',      => sub { shift->helpers->reply->http_not_found() });
-  $app->helper('reply.http_exception', => \&_http_exception);
-  $app->helper('reply.http_not_found', => \&_http_not_found);
-  $app->helper('reply.html_exception'  => sub { _development('exception', @_) });
-  $app->helper('reply.html_not_found'  => sub { _development('not_found', @_) });
-  $app->helper('reply.json_exception', => \&_json_exception);
-  $app->helper('reply.json_not_found', => \&_json_not_found);
-  $app->helper('reply.txt_exception',  => \&_txt_exception);
-  $app->helper('reply.txt_not_found',  => \&_txt_not_found);
-
   $app->helper('timing.begin'         => \&_timing_begin);
   $app->helper('timing.elapsed'       => \&_timing_elapsed);
   $app->helper('timing.rps'           => \&_timing_rps);
