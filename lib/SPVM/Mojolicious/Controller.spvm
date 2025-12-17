@@ -565,10 +565,15 @@ class Mojolicious::Controller {
   
   method reply : Mojolicious::Helper::Reply () {
     
-    my $reply = Mojolicious::Helper::Reply->new;
-    $reply->set_controller($self);
+    unless ($self->shared_stash_h->exists("reply")) {
+      my $reply = my $_ = Mojolicious::Helper::Reply->new;
+      $_->set_controller($self);
+      
+      $self->shared_stash_h->{"reply"} = $reply;
+    }
     
-    return $reply;
+    
+    return $self->shared_stash_h->{"reply"}->(Mojolicious::Helper::Reply);
   }
   
   method include : Mojo::ByteStream ($options : Hash|object[] = undef) {
