@@ -54,6 +54,8 @@ class Mojolicious::Controller {
   
   has stash_h : rw Hash;
   
+  has shared_stash_h : rw Hash;
+  
   has session_h : virtual ro Hash
     get {
       my $stash = $self->stash_h;
@@ -86,7 +88,7 @@ class Mojolicious::Controller {
     
     $self->{stash_h} = Hash->new;
     
-    $self->{stash_h}->{"mojo"} = Hash->new;
+    $self->{shared_stash_h} = Hash->new;
     
     return $self;
   }
@@ -451,6 +453,14 @@ class Mojolicious::Controller {
   
   method set_stash : void ($name : string, $value : object) {
     $self->{stash_h}{$name} = $value;
+  }
+  
+  method shared_stash : object ($name : string) {
+    return $self->{shared_stash_h}{$name};
+  }
+  
+  method set_shared_stash : void ($name : string, $value : object) {
+    $self->{shared_stash_h}{$name} = $value;
   }
   
   method url_for : Mojo::URL ($target : string|Mojo::URL)  {
