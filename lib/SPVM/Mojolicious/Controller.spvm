@@ -739,6 +739,14 @@ class Mojolicious::Controller {
       $self->render($target->(object[]));
     }
   }
+  
+  method url_with : Mojo::URL ($path : string) {
+    
+    my $url = $self->url_for($path);
+    $url->set_query($self->req->url->query->clone);
+    
+    return $url;
+  }
 
 }
 
@@ -748,9 +756,6 @@ TODO: DefaultHelper
 
 sub register {
   my ($self, $app) = @_;
-  
-  $app->helper($_ => $self->can("_$_"))
-    qw(respond_to url_with);
   
   $app->helper("reply.$_" => $self->can("_$_")) for qw(asset file static);
   
