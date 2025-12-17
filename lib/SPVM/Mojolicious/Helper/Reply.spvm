@@ -122,10 +122,30 @@ class Mojolicious::Helper::Reply {
       $c->render({inline => q'<html><body>Not Found</body></html>'});
     }
   }
-
-
+  
+  method static : void ($file : string) {
+    
+    my $c = $self->{controller};
+    
+    $c->app->static->serve($c, $file);
+    
+    $c->rendered;
+  }
+  
+  method asset : void ($asset : Mojo::Asset) {
+    
+    my $c = $self->{controller};
+    
+    $c->app->static->serve_asset($c, $asset);
+    $c->rendered;
+  }
+  
+  method file : void ($file : string) {
+    
+    my $asset_file = my $_ = Mojo::Asset::File->new;
+    $_->set_path($file);
+    
+    $self->asset($asset_file);
+  }
+  
 }
-
-__END__
-
-  $app->helper("reply.$_" => $self->can("_$_")) for qw(asset file static);

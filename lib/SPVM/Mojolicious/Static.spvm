@@ -103,4 +103,255 @@ class Mojolicious::Static {
 =cut
 
   }
+    
+  method serve : void ($c : Mojolicious::Controller, $rel : string) {
+    
+    die "TODO";
+
+=pod
+
+    my ($self, $c, $rel) = @_;
+
+    # Prefix
+    if (my $prefix = $self->prefix) {
+      $rel = "/$rel";
+      return undef unless $rel =~ s/^\Q$prefix\E\///;
+    }
+
+    return undef unless my $asset = $self->file($rel);
+    $c->app->types->content_type($c, {file => $rel});
+    return !!$self->serve_asset($c, $asset);
+
+=cut
+
+  }
+
+  method serve_asset : void ($c : Mojolicious::Controller, $asset : Mojo::Asset) {
+    
+    die "TODO";
+
+=pod
+
+    # Content-Type
+    $c->app->types->content_type($c, {file => $asset->path}) if $asset->is_file;
+
+    # Last-Modified and ETag
+    my $res = $c->res;
+    $res->code(200)->headers->accept_ranges('bytes');
+    my $mtime   = $asset->mtime;
+    my $options = {etag => md5_sum($mtime), last_modified => $mtime};
+    return $res->code(304) if $self->is_fresh($c, $options);
+
+    # Range
+    return $res->content->asset($asset) unless my $range = $c->req->headers->range;
+
+    # Not satisfiable
+    return $res->code(416) unless my $size = $asset->size;
+    return $res->code(416) unless $range =~ /^bytes=(\d+)?-(\d+)?/;
+    my ($start, $end) = ($1 // 0, defined $2 && $2 < $size ? $2 : $size - 1);
+    return $res->code(416) if $start > $end;
+
+    # Satisfiable
+    $res->code(206)->headers->content_length($end - $start + 1)->content_range("bytes $start-$end/$size");
+    return $res->content->asset($asset->start_range($start)->end_range($end));
+
+=cut
+
+  }
+
 }
+
+__END__
+
+package Mojolicious::Static;
+use Mojo::Base -base;
+
+use Mojo::Asset::File;
+use Mojo::Asset::Memory;
+use Mojo::Date;
+use Mojo::File   qw(curfile path);
+use Mojo::Loader qw(data_section file_is_binary);
+use Mojo::Util   qw(encode md5_sum trim);
+
+# Bundled files
+my $PUBLIC = curfile->sibling('resources', 'public');
+my %EXTRA  = $PUBLIC->list_tree->map(sub { join('/', @{$_->to_rel($PUBLIC)}), $_->realpath->to_string })->each;
+
+has asset_dir => 'assets';
+has classes   => sub { ['main'] };
+has extra     => sub { +{%EXTRA} };
+has paths     => sub { [] };
+has 'prefix';
+
+sub asset_path {
+  my ($self, $asset) = @_;
+  $asset = "/$asset" unless $asset =~ /^\//;
+  my $assets = $self->{assets} //= {};
+  return $self->file_path('/' . $self->asset_dir . ($assets->{$asset} // $asset));
+}
+
+sub dispatch {
+  my ($self, $c) = @_;
+
+  # Method (GET or HEAD)
+  my $req    = $c->req;
+  my $method = $req->method;
+  return undef unless $method eq 'GET' || $method eq 'HEAD';
+
+  # Canonical path
+  my $stash = $c->stash;
+  my $path  = $req->url->path;
+  $path = $stash->{path} ? $path->new($stash->{path}) : $path->clone;
+  return undef unless my @parts = @{$path->canonicalize->parts};
+
+  # Serve static file and prevent path traversal
+  my $canon_path = join '/', @parts;
+  return undef if $canon_path =~ /^\.\.\/|\\/ || !$self->serve($c, $canon_path);
+  $stash->{'mojo.static'} = 1;
+
+  # Development assets will be rebuilt a lot, do not let browsers cache them
+  $c->res->headers->cache_control('no-cache')
+    if $c->app->mode eq 'development' && index($canon_path, $self->asset_dir) == 0;
+
+  return !!$c->rendered;
+}
+
+sub file {
+  my ($self, $rel) = @_;
+
+  $self->warmup unless $self->{index};
+
+  # Search all paths
+  my @parts = split /\//, $rel;
+  for my $path (@{$self->paths}) {
+    next unless my $asset = _get_file(path($path, @parts)->to_string);
+    return $asset;
+  }
+
+  # Search DATA
+  if (my $asset = $self->_get_data_file($rel)) { return $asset }
+
+  # Search extra files
+  my $extra = $self->extra;
+  return exists $extra->{$rel} ? _get_file($extra->{$rel}) : undef;
+}
+
+sub file_path {
+  my ($self, $file) = @_;
+  $file = "/$file" unless $file =~ /^\//;
+  return $file unless my $prefix = $self->prefix;
+  return "$prefix$file";
+}
+
+sub is_fresh {
+  my ($self, $c, $options) = @_;
+
+  my $res_headers = $c->res->headers;
+  my ($last, $etag) = @$options{qw(last_modified etag)};
+  $res_headers->last_modified(Mojo::Date->new($last)->to_string)       if $last;
+  $res_headers->etag($etag = ($etag =~ m!^W/"! ? $etag : qq{"$etag"})) if $etag;
+
+  # Unconditional
+  my $req_headers = $c->req->headers;
+  my $match       = $req_headers->if_none_match;
+  return undef unless (my $since = $req_headers->if_modified_since) || $match;
+
+  # If-None-Match
+  $etag //= $res_headers->etag // '';
+  return undef if $match && !grep { $_ eq $etag || "W/$_" eq $etag } map { trim($_) } split /,/, $match;
+
+  # If-Modified-Since
+  return !!$match unless ($last //= $res_headers->last_modified) && $since;
+  return _epoch($last) <= (_epoch($since) // 0);
+}
+
+sub serve {
+  my ($self, $c, $rel) = @_;
+
+  # Prefix
+  if (my $prefix = $self->prefix) {
+    $rel = "/$rel";
+    return undef unless $rel =~ s/^\Q$prefix\E\///;
+  }
+
+  return undef unless my $asset = $self->file($rel);
+  $c->app->types->content_type($c, {file => $rel});
+  return !!$self->serve_asset($c, $asset);
+}
+
+sub serve_asset {
+  my ($self, $c, $asset) = @_;
+
+  # Content-Type
+  $c->app->types->content_type($c, {file => $asset->path}) if $asset->is_file;
+
+  # Last-Modified and ETag
+  my $res = $c->res;
+  $res->code(200)->headers->accept_ranges('bytes');
+  my $mtime   = $asset->mtime;
+  my $options = {etag => md5_sum($mtime), last_modified => $mtime};
+  return $res->code(304) if $self->is_fresh($c, $options);
+
+  # Range
+  return $res->content->asset($asset) unless my $range = $c->req->headers->range;
+
+  # Not satisfiable
+  return $res->code(416) unless my $size = $asset->size;
+  return $res->code(416) unless $range =~ /^bytes=(\d+)?-(\d+)?/;
+  my ($start, $end) = ($1 // 0, defined $2 && $2 < $size ? $2 : $size - 1);
+  return $res->code(416) if $start > $end;
+
+  # Satisfiable
+  $res->code(206)->headers->content_length($end - $start + 1)->content_range("bytes $start-$end/$size");
+  return $res->content->asset($asset->start_range($start)->end_range($end));
+}
+
+sub warmup {
+  my $self = shift;
+
+  # DATA sections
+  my $index = $self->{index} = {};
+  for my $class (reverse @{$self->classes}) { $index->{$_} = $class for keys %{data_section $class} }
+
+  # Static assets
+  my $assets    = $self->{assets} = {};
+  my $asset_dir = $self->asset_dir;
+  for my $path (@{$self->paths}) {
+    my $asset_path = path($path, $asset_dir);
+    next unless -d $asset_path;
+
+    for my $asset_file ($asset_path->list_tree({recursive => 1})->each) {
+      my $parts    = $asset_file->to_rel($asset_path)->to_array;
+      my $filename = pop @$parts;
+      my $prefix   = join '/', @$parts;
+
+      next unless $filename =~ /^([^.]+)\.([^.]+)\.(.+)$/;
+      my $checksum = $2;
+      my $short    = $prefix eq '' ? "/$1.$3" : "/$prefix/$1.$3";
+      my $long     = '/' . join('/', @$parts, $filename);
+
+      $assets->{$short} = $long if !exists($assets->{$short}) || $checksum eq 'development';
+    }
+  }
+}
+
+sub _epoch { Mojo::Date->new(shift)->epoch }
+
+sub _get_data_file {
+  my ($self, $rel) = @_;
+
+  # Protect files without extensions and templates with two extensions
+  return undef if $rel !~ /\.\w+$/ || $rel =~ /\.\w+\.\w+$/;
+
+  # Find file
+  my @args = ($self->{index}{$rel}, $rel);
+  return undef unless defined(my $data = data_section(@args));
+  return Mojo::Asset::Memory->new->add_chunk(file_is_binary(@args) ? $data : encode 'UTF-8', $data);
+}
+
+sub _get_file {
+  my $path = shift;
+  no warnings 'newline';
+  return -f $path && -r _ ? Mojo::Asset::File->new(path => $path) : undef;
+}
+
