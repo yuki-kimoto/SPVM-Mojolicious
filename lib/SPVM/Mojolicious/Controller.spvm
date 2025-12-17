@@ -662,6 +662,22 @@ class Mojolicious::Controller {
     
     return $route->name;
   }
+  
+  method exception_format : string () {
+    
+    my $stash = $self->stash_h;
+    
+    $stash->{"mojo.exception_format"} //= $self->app->exception_format;
+    
+    return $stash->{"mojo.exception_format"}->(string);
+  }
+  
+  method set_exception_format : void ($format : string) {
+    
+    my $stash = $self->stash_h;
+    
+    $stash->{"mojo.exception_format"} = $format;
+  }
 
 }
 
