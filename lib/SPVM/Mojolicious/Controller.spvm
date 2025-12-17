@@ -686,6 +686,11 @@ class Mojolicious::Controller {
       $connection->set_timeout($timeout);
     }
   }
+  
+  method is_fresh : int ($options : Hash|object[] = undef) {
+    
+    return $self->app->static->is_fresh($self, $options);
+  }
 
 }
 
@@ -697,7 +702,6 @@ sub register {
   my ($self, $app) = @_;
   
   $app->helper($_ => $self->can("_$_"))
-    for qw(inactivity_timeout is_fresh),
     qw(redirect_to respond_to url_with);
   
   $app->helper("reply.$_" => $self->can("_$_")) for qw(asset file static);
