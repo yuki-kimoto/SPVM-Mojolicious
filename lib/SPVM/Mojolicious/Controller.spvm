@@ -641,6 +641,28 @@ class Mojolicious::Controller {
     return $self->session_h->{"csrf_token"}->(string);
   }
   
+  method is_current_route : int ($name : string) {
+    
+    my $route = $self->match->endpoint;
+    
+    unless ($route) {
+      return 0;
+    }
+    
+    return $route->name eq $name;
+  }
+
+  method current_route : string () {
+    
+    my $route = $self->match->endpoint;
+    
+    unless ($route) {
+      return "";
+    }
+    
+    return $route->name;
+  }
+
 }
 
 __END__
@@ -651,7 +673,7 @@ sub register {
   my ($self, $app) = @_;
   
   $app->helper($_ => $self->can("_$_"))
-    for qw(csrf_token current_route exception_format inactivity_timeout is_fresh),
+    for qw(exception_format inactivity_timeout is_fresh),
     qw(redirect_to respond_to url_with);
   
   $app->helper("reply.$_" => $self->can("_$_")) for qw(asset file static);
