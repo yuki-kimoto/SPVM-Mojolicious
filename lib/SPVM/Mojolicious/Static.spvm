@@ -57,6 +57,29 @@ class Mojolicious::Static {
     return $self->file_path("/" . $self->asset_dir . ($assets->{$asset}->(string) // $asset));
   }
   
+  method file : Mojo::Asset ($rel : string) {
+    
+    # Search all paths
+    my $parts = Fn->split("\/", $rel);
+    for my $path (@{$self->paths}) {
+      my $asset = &_get_file(Mojo::File->path(Array->merge_string([$path], $parts))->to_string);
+      unless ($asset) {
+        next;
+      }
+      return $asset;
+    }
+    
+    # Search DATA
+    if (my $asset = $self->_get_data_file($rel)) {
+      return $asset;
+    }
+    
+    # Search extra files
+    my $extra = $self->extra;
+    
+    return $extra->exists($rel) ? &_get_file($extra->{$rel}) : undef;
+  }
+  
   method file_path : string ($file : string) {
     
     unless (Re->m($file, "^\/")) {
@@ -106,30 +129,33 @@ class Mojolicious::Static {
 
   }
     
-  method serve : void ($c : Mojolicious::Controller, $rel : string) {
+  method serve : int ($c : Mojolicious::Controller, $rel : string) {
     
-    die "TODO";
-
-=pod
-
-    my ($self, $c, $rel) = @_;
-
+    $rel = copy $rel;
+    
     # Prefix
     if (my $prefix = $self->prefix) {
       $rel = "/$rel";
-      return undef unless $rel =~ s/^\Q$prefix\E\///;
+      unless (Re->s((mutable string)$rel, "\Q$prefix\E\/", "/")) {
+        return 0;
+      }
     }
-
-    return undef unless my $asset = $self->file($rel);
+    
+    my $asset = $self->file($rel);
+    
+    unless ($asset) {
+      return 0;
+    }
+    
     $c->app->types->content_type($c, {file => $rel});
-    return !!$self->serve_asset($c, $asset);
-
-=cut
-
+    
+    $self->serve_asset($c, $asset);
+    
+    return 1;;
   }
-
+  
   method serve_asset : void ($c : Mojolicious::Controller, $asset : Mojo::Asset) {
-
+    
     # Content-Type
     if ($asset->is_file) {
       $c->app->types->content_type($c, {file => $asset->(Mojo::Asset::File)->path});
@@ -205,7 +231,7 @@ class Mojolicious::Static {
     return Mojo::Asset::Memory->new->add_chunk($data);
   }
   
-  private static method _get_file : Mojo::Asset::File ($path : string) {
+  private static method _get_file : Mojo::Asset ($path : string) {
     
     my $asset_file = (Mojo::Asset::File)undef;
     if (Sys->f($path) && Sys->r($path)) {
@@ -261,26 +287,6 @@ sub dispatch {
   return !!$c->rendered;
 }
 
-sub file {
-  my ($self, $rel) = @_;
-
-  $self->warmup unless $self->{index};
-
-  # Search all paths
-  my @parts = split /\//, $rel;
-  for my $path (@{$self->paths}) {
-    next unless my $asset = _get_file(path($path, @parts)->to_string);
-    return $asset;
-  }
-
-  # Search DATA
-  if (my $asset = $self->_get_data_file($rel)) { return $asset }
-
-  # Search extra files
-  my $extra = $self->extra;
-  return exists $extra->{$rel} ? _get_file($extra->{$rel}) : undef;
-}
-
 sub is_fresh {
   my ($self, $c, $options) = @_;
 
@@ -301,19 +307,5 @@ sub is_fresh {
   # If-Modified-Since
   return !!$match unless ($last //= $res_headers->last_modified) && $since;
   return _epoch($last) <= (_epoch($since) // 0);
-}
-
-sub serve {
-  my ($self, $c, $rel) = @_;
-
-  # Prefix
-  if (my $prefix = $self->prefix) {
-    $rel = "/$rel";
-    return undef unless $rel =~ s/^\Q$prefix\E\///;
-  }
-
-  return undef unless my $asset = $self->file($rel);
-  $c->app->types->content_type($c, {file => $rel});
-  return !!$self->serve_asset($c, $asset);
 }
 
