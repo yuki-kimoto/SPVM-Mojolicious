@@ -14,7 +14,7 @@ class Mojolicious::Static {
   # Fields
   has asset_dir : rw string;
   
-  has classes : rw string[];
+  has data_templates : rw string;
   
   has extra : rw Hash of string;
   
@@ -25,6 +25,8 @@ class Mojolicious::Static {
   # Undocumented Fields
   has assets : Hash;
   
+  has index : Hash;
+  
   # Class Methods
   static method new : Mojolicious::Static () {
     
@@ -34,7 +36,7 @@ class Mojolicious::Static {
     
     $self->{asset_dir} = "assets";
     
-    $self->{classes} = ["main"];
+    $self->{data_templates} = "";
     
     $self->{extra} = Hash->new;
     
@@ -158,7 +160,24 @@ class Mojolicious::Static {
 =cut
 
   }
-
+  
+  private method _get_data_file : Mojo::Asset ($rel : string) {
+    
+    # Protect files without extensions and templates with two extensions
+    if (!Re->m($rel, "\.\w+$") || Re->m($rel, "\.\w+\.\w+$")) {
+      return undef ;
+    }
+    
+    # Find file
+    my $data = Mojo::Util->get_data_file($self->data_templates, $rel);
+    
+    unless ($data) {
+      return undef;
+    }
+    
+    return Mojo::Asset::Memory->new->add_chunk($data);
+  }
+  
   private static method _get_file : Mojo::Asset::File ($path : string) {
     
     my $asset_file = (Mojo::Asset::File)undef;
@@ -317,46 +336,5 @@ sub serve_asset {
   return $res->content->asset($asset->start_range($start)->end_range($end));
 }
 
-sub warmup {
-  my $self = shift;
-
-  # DATA sections
-  my $index = $self->{index} = {};
-  for my $class (reverse @{$self->classes}) { $index->{$_} = $class for keys %{data_section $class} }
-
-  # Static assets
-  my $assets    = $self->{assets} = {};
-  my $asset_dir = $self->asset_dir;
-  for my $path (@{$self->paths}) {
-    my $asset_path = path($path, $asset_dir);
-    next unless -d $asset_path;
-
-    for my $asset_file ($asset_path->list_tree({recursive => 1})->each) {
-      my $parts    = $asset_file->to_rel($asset_path)->to_array;
-      my $filename = pop @$parts;
-      my $prefix   = join '/', @$parts;
-
-      next unless $filename =~ /^([^.]+)\.([^.]+)\.(.+)$/;
-      my $checksum = $2;
-      my $short    = $prefix eq '' ? "/$1.$3" : "/$prefix/$1.$3";
-      my $long     = '/' . join('/', @$parts, $filename);
-
-      $assets->{$short} = $long if !exists($assets->{$short}) || $checksum eq 'development';
-    }
-  }
-}
-
 sub _epoch { Mojo::Date->new(shift)->epoch }
-
-sub _get_data_file {
-  my ($self, $rel) = @_;
-
-  # Protect files without extensions and templates with two extensions
-  return undef if $rel !~ /\.\w+$/ || $rel =~ /\.\w+\.\w+$/;
-
-  # Find file
-  my @args = ($self->{index}{$rel}, $rel);
-  return undef unless defined(my $data = data_section(@args));
-  return Mojo::Asset::Memory->new->add_chunk(file_is_binary(@args) ? $data : encode 'UTF-8', $data);
-}
 
