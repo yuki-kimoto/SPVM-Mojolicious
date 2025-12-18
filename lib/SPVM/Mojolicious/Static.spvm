@@ -159,6 +159,17 @@ class Mojolicious::Static {
 
   }
 
+  private static method _get_file : Mojo::Asset::File ($path : string) {
+    
+    my $asset_file = (Mojo::Asset::File)undef;
+    if (Sys->f($path) && Sys->r($path)) {
+      $asset_file = my $_ = Mojo::Asset::File->new; 
+      $_->set_path($path);
+    }
+    
+    return $asset_file;
+  }
+  
 }
 
 __END__
@@ -347,11 +358,5 @@ sub _get_data_file {
   my @args = ($self->{index}{$rel}, $rel);
   return undef unless defined(my $data = data_section(@args));
   return Mojo::Asset::Memory->new->add_chunk(file_is_binary(@args) ? $data : encode 'UTF-8', $data);
-}
-
-sub _get_file {
-  my $path = shift;
-  no warnings 'newline';
-  return -f $path && -r _ ? Mojo::Asset::File->new(path => $path) : undef;
 }
 
