@@ -18,6 +18,8 @@ class Mojolicious::Controller {
   use Mojo::UserAgent;
   use Mojo::ByteStream;
   use Mojo::Collection;
+  use Mojolicious::Helper::Timing;
+  use Mojolicious::Helper::Reply;
   
   our $ABSOLUTE : string;
   INIT {
@@ -576,6 +578,19 @@ class Mojolicious::Controller {
     return $self->shared_stash_h->{"reply"}->(Mojolicious::Helper::Reply);
   }
   
+  method timing : Mojolicious::Helper::Timing () {
+    
+    unless ($self->shared_stash_h->exists("timing")) {
+      my $timing = my $_ = Mojolicious::Helper::Timing->new;
+      $_->set_controller($self);
+      
+      $self->shared_stash_h->{"timing"} = $timing;
+    }
+    
+    
+    return $self->shared_stash_h->{"timing"}->(Mojolicious::Helper::Timing);
+  }
+  
   method include : Mojo::ByteStream ($options : Hash|object[] = undef) {
     
     return $self->render_to_string($options);
@@ -766,17 +781,3 @@ class Mojolicious::Controller {
   }
 
 }
-
-__END__
-
-TODO: DefaultHelper
-
-sub register {
-  my ($self, $app) = @_;
-  
-  $app->helper('timing.begin'         => \&_timing_begin);
-  $app->helper('timing.elapsed'       => \&_timing_elapsed);
-  $app->helper('timing.rps'           => \&_timing_rps);
-  $app->helper('timing.server_timing' => \&_timing_server_timing);
-}
-
