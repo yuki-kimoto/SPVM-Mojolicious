@@ -94,8 +94,45 @@ class Mojolicious::Static {
     return "$prefix$file";
   }
   
-  method dispatch : void ($c : Mojolicious::Controller) {
-    die "TODO";
+  method dispatch : int ($c : Mojolicious::Controller) {
+    
+    # Method (GET or HEAD)
+    my $req    = $c->req;
+    my $method = $req->method;
+    unless ($method eq "GET" || $method eq "HEAD") {
+      return 0;
+    }
+    
+    # Canonical path
+    my $stash = $c->stash_h;
+    my $path  = $req->url->path->clone;
+    
+    if ($stash->{"path"}) {
+      die "'path' stash value is not supported.";
+    }
+    
+    $path->canonicalize;
+    my $parts = $path->parts;
+    
+    unless ($parts) {
+      return 0;
+    }
+    
+    # Serve static file and prevent path traversal
+    my $canon_path = Fn->join("/", $parts);
+    if (Re->m($canon_path, "^\.\.\/|\\") || !$self->serve($c, $canon_path)) {
+      return 0;
+    }
+    $stash->{"mojo.static"} = 1;
+    
+    # Development assets will be rebuilt a lot, do not let browsers cache them
+    if ($c->app->mode eq "development" && Fn->index($canon_path, $self->asset_dir) == 0) {
+      $c->res->headers->set_cache_control("no-cache");
+    }
+    
+    $c->rendered;
+    
+    return 1;
   }
   
   method is_fresh : int ($c  : Mojolicious::Controller, $options : Hash|object[] = undef) {
@@ -264,44 +301,8 @@ class Mojolicious::Static {
 
 __END__
 
-package Mojolicious::Static;
-use Mojo::Base -base;
-
-use Mojo::Asset::File;
-use Mojo::Asset::Memory;
-use Mojo::Date;
-use Mojo::File   qw(curfile path);
-use Mojo::Loader qw(data_section file_is_binary);
-use Mojo::Util   qw(encode md5_sum trim);
-
 # Bundled files
 my $PUBLIC = curfile->sibling('resources', 'public');
 my %EXTRA  = $PUBLIC->list_tree->map(sub { join('/', @{$_->to_rel($PUBLIC)}), $_->realpath->to_string })->each;
 
-
-sub dispatch {
-  my ($self, $c) = @_;
-
-  # Method (GET or HEAD)
-  my $req    = $c->req;
-  my $method = $req->method;
-  return undef unless $method eq 'GET' || $method eq 'HEAD';
-
-  # Canonical path
-  my $stash = $c->stash;
-  my $path  = $req->url->path;
-  $path = $stash->{path} ? $path->new($stash->{path}) : $path->clone;
-  return undef unless my @parts = @{$path->canonicalize->parts};
-
-  # Serve static file and prevent path traversal
-  my $canon_path = join '/', @parts;
-  return undef if $canon_path =~ /^\.\.\/|\\/ || !$self->serve($c, $canon_path);
-  $stash->{'mojo.static'} = 1;
-
-  # Development assets will be rebuilt a lot, do not let browsers cache them
-  $c->res->headers->cache_control('no-cache')
-    if $c->app->mode eq 'development' && index($canon_path, $self->asset_dir) == 0;
-
-  return !!$c->rendered;
-}
 
