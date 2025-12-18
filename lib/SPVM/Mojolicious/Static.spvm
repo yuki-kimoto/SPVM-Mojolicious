@@ -100,33 +100,51 @@ class Mojolicious::Static {
   
   method is_fresh : int ($c  : Mojolicious::Controller, $options : Hash|object[] = undef) {
     
-    # TODO
-    die "TODO";
+    my $options = Fn->to_hash($options);
     
-=pod
-
-    my ($self, $c, $options) = @_;
-
     my $res_headers = $c->res->headers;
-    my ($last, $etag) = @$options{qw(last_modified etag)};
-    $res_headers->last_modified(Mojo::Date->new($last)->to_string)       if $last;
-    $res_headers->etag($etag = ($etag =~ m!^W/"! ? $etag : qq{"$etag"})) if $etag;
-
+    my $last = $options->{"last_modified"}->(string);
+    my $etag = $options->{"etag"}->(string);
+    
+    if ($last) {
+      $res_headers->set_last_modified(Mojo::Date->new($last)->to_string);
+    }
+    if ($etag) {
+      $res_headers->set_etag($etag = Re->m($etag, "^W/\"") ? $etag : "\"$etag\"") ;
+    }
+    
     # Unconditional
     my $req_headers = $c->req->headers;
-    my $match       = $req_headers->if_none_match;
-    return undef unless (my $since = $req_headers->if_modified_since) || $match;
-
+    my $match  = $req_headers->if_none_match;
+    my $since = $req_headers->if_modified_since;
+    unless (length($since) || $match) {
+      return 0;
+    }
+    
     # If-None-Match
-    $etag //= $res_headers->etag // '';
-    return undef if $match && !grep { $_ eq $etag || "W/$_" eq $etag } map { trim($_) } split /,/, $match;
-
+    $etag //= $res_headers->etag // "";
+    
+    my $etag_found = 0;
+    for my $_ (@{Fn->split(",", $match)}) {
+      $_ = Mojo::Util->trim($_);
+      if ($_ eq $etag || "W/$_" eq $etag) {
+        $etag_found = 1;
+        last;
+      }
+    }
+    
+    if ($match && !$etag_found) {
+      return 0;
+    }
+    
     # If-Modified-Since
-    return !!$match unless ($last //= $res_headers->last_modified) && $since;
-    return _epoch($last) <= (_epoch($since) // 0);
-
-=cut
-
+    unless (($last //= $res_headers->last_modified) && $since) {
+      return !!$match;
+    }
+    
+    my $is_fresh = &_epoch($last) <= &_epoch($since);
+    
+    return $is_fresh;
   }
     
   method serve : int ($c : Mojolicious::Controller, $rel : string) {
@@ -285,27 +303,5 @@ sub dispatch {
     if $c->app->mode eq 'development' && index($canon_path, $self->asset_dir) == 0;
 
   return !!$c->rendered;
-}
-
-sub is_fresh {
-  my ($self, $c, $options) = @_;
-
-  my $res_headers = $c->res->headers;
-  my ($last, $etag) = @$options{qw(last_modified etag)};
-  $res_headers->last_modified(Mojo::Date->new($last)->to_string)       if $last;
-  $res_headers->etag($etag = ($etag =~ m!^W/"! ? $etag : qq{"$etag"})) if $etag;
-
-  # Unconditional
-  my $req_headers = $c->req->headers;
-  my $match       = $req_headers->if_none_match;
-  return undef unless (my $since = $req_headers->if_modified_since) || $match;
-
-  # If-None-Match
-  $etag //= $res_headers->etag // '';
-  return undef if $match && !grep { $_ eq $etag || "W/$_" eq $etag } map { trim($_) } split /,/, $match;
-
-  # If-Modified-Since
-  return !!$match unless ($last //= $res_headers->last_modified) && $since;
-  return _epoch($last) <= (_epoch($since) // 0);
 }
 

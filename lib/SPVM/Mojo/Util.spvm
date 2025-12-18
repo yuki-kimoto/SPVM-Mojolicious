@@ -485,4 +485,15 @@ class Mojo::Util {
     return $template;
   }
   
+  static method trim : string ($str : string) {
+    
+    $str = copy $str;
+    
+    Re->s((mutable string)$str, "^\s+", "");
+    
+    Re->s((mutable string)$str, "\s+$", "");
+    
+    return $str;
+  }
+
 }
