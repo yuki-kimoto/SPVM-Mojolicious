@@ -298,11 +298,3 @@ class Mojolicious::Static {
   }
   
 }
-
-__END__
-
-# Bundled files
-my $PUBLIC = curfile->sibling('resources', 'public');
-my %EXTRA  = $PUBLIC->list_tree->map(sub { join('/', @{$_->to_rel($PUBLIC)}), $_->realpath->to_string })->each;
-
-
