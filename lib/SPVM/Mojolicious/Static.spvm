@@ -123,7 +123,7 @@ class Mojolicious::Static {
     if (Re->m($canon_path, "^\.\.\/|\\") || !$self->serve($c, $canon_path)) {
       return 0;
     }
-    $stash->{"mojo.static"} = 1;
+    $c->set_mojo_static(1);
     
     # Development assets will be rebuilt a lot, do not let browsers cache them
     if ($c->app->mode eq "development" && Fn->index($canon_path, $self->asset_dir) == 0) {
