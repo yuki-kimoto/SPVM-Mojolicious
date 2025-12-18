@@ -234,18 +234,6 @@ use Mojo::Util   qw(encode md5_sum trim);
 my $PUBLIC = curfile->sibling('resources', 'public');
 my %EXTRA  = $PUBLIC->list_tree->map(sub { join('/', @{$_->to_rel($PUBLIC)}), $_->realpath->to_string })->each;
 
-has asset_dir => 'assets';
-has classes   => sub { ['main'] };
-has extra     => sub { +{%EXTRA} };
-has paths     => sub { [] };
-has 'prefix';
-
-sub asset_path {
-  my ($self, $asset) = @_;
-  $asset = "/$asset" unless $asset =~ /^\//;
-  my $assets = $self->{assets} //= {};
-  return $self->file_path('/' . $self->asset_dir . ($assets->{$asset} // $asset));
-}
 
 sub dispatch {
   my ($self, $c) = @_;
@@ -291,13 +279,6 @@ sub file {
   # Search extra files
   my $extra = $self->extra;
   return exists $extra->{$rel} ? _get_file($extra->{$rel}) : undef;
-}
-
-sub file_path {
-  my ($self, $file) = @_;
-  $file = "/$file" unless $file =~ /^\//;
-  return $file unless my $prefix = $self->prefix;
-  return "$prefix$file";
 }
 
 sub is_fresh {
