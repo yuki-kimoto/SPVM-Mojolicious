@@ -614,9 +614,11 @@ EOS
       my $templates = <<'EOS';
 @@ minimal.html.ep
 % $c->set_layout("common");
+% $c->set_title("title");
 abc<%= $c->stash("x") %>
 @@ layouts/common.html.ep
 
+<%= $c->stash("title")->(string) %>
 layout
 <%= $c->content %>
 EOS
@@ -624,7 +626,7 @@ EOS
       $app->renderer->set_data_templates($templates);
       my $bs = $c->render_to_string({template => "minimal"});
       
-      unless (Re->m($bs->to_string, ["layout.+abc123", "s"])) {
+      unless (Re->m($bs->to_string, ["title.+layout.+abc123", "s"])) {
         return 0;
       }
       
