@@ -10,9 +10,13 @@ class Mojolicious::Helper::Timing {
   has controller : rw Mojolicious::Controller;
   
   # Class Methods
-  static method new : Mojolicious::Helper::Timing () {
+  static method new : Mojolicious::Helper::Timing ($c : Mojolicious::Controller) {
     
     my $self = new Mojolicious::Helper::Timing;
+    
+    $self->{controller} = $c;
+    
+    $c->stash_h->{"mojo.timing"} = Hash->new;
     
     return $self;
   }
@@ -21,8 +25,6 @@ class Mojolicious::Helper::Timing {
   method begin : void ($name : string) {
     
     my $c = $self->{controller};
-    
-    $c->stash_h->{"mojo.timing"} //= Hash->new;
     
     $c->stash_h->{"mojo.timing"}->(Hash)->{$name} = Time::HiRes->gettimeofday;
   }

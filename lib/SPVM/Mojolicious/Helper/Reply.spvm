@@ -10,9 +10,11 @@ class Mojolicious::Helper::Reply {
   has controller : rw Mojolicious::Controller;
   
   # Class Methods
-  static method new : Mojolicious::Helper::Reply () {
+  static method new : Mojolicious::Helper::Reply ($c : Mojolicious::Controller) {
     
     my $self = new Mojolicious::Helper::Reply;
+    
+    $self->{controller} = $c;
     
     return $self;
   }

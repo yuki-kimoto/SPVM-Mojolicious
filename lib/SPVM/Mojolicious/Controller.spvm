@@ -562,8 +562,7 @@ class Mojolicious::Controller {
   method reply : Mojolicious::Helper::Reply () {
     
     unless ($self->stash_h->exists("reply")) {
-      my $reply = my $_ = Mojolicious::Helper::Reply->new;
-      $_->set_controller($self);
+      my $reply = my $_ = Mojolicious::Helper::Reply->new($self);
       
       $self->stash_h->{"reply"} = $reply;
     }
@@ -575,12 +574,10 @@ class Mojolicious::Controller {
   method timing : Mojolicious::Helper::Timing () {
     
     unless ($self->stash_h->exists("timing")) {
-      my $timing = my $_ = Mojolicious::Helper::Timing->new;
-      $_->set_controller($self);
+      my $timing = my $_ = Mojolicious::Helper::Timing->new($self);
       
       $self->stash_h->{"timing"} = $timing;
     }
-    
     
     return $self->stash_h->{"timing"}->(Mojolicious::Helper::Timing);
   }
