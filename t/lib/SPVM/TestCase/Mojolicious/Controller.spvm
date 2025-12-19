@@ -614,9 +614,7 @@ EOS
       my $templates = <<'EOS';
 @@ minimal.html.ep
 % $c->set_layout("common");
-
 abc<%= $c->stash("x") %>
-
 @@ layouts/common.html.ep
 
 layout
