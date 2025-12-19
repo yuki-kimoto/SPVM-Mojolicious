@@ -83,6 +83,21 @@ class Mojolicious::Controller {
     }
   ;
   
+  has exception_format : rw string
+    get {
+      
+      unless (exists $self->{exception_format}) {
+        $self->{exception_format} = $self->app->exception_format;
+      }
+      
+      return $self->{exception_format};
+    }
+    
+    set {
+      $self->{exception_format} = $_;
+    }
+  ;
+  
   # Internal fields
   has mojo_captures : rw Hash;
   
@@ -694,22 +709,6 @@ class Mojolicious::Controller {
     return $route->name;
   }
   
-  method exception_format : string () {
-    
-    my $stash = $self->stash_h;
-    
-    $stash->{"mojo.exception_format"} //= $self->app->exception_format;
-    
-    return $stash->{"mojo.exception_format"}->(string);
-  }
-  
-  method set_exception_format : void ($format : string) {
-    
-    my $stash = $self->stash_h;
-    
-    $stash->{"mojo.exception_format"} = $format;
-  }
-
   method set_inactivity_timeout  : void ($timeout : double){
   
     my $connection = $self->tx->connection;
