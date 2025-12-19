@@ -85,7 +85,7 @@ class Mojolicious::Sessions {
       return;
     }
     
-    $c->stash_h->{"mojo.session"} = $session;
+    $c->set_mojo_session($session);
     
     if ($session->get("new_flash")) {
       $session->set(flash => $session->delete("new_flash"));
