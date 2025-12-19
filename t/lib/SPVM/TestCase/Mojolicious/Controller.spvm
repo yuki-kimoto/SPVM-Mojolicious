@@ -411,7 +411,7 @@ class TestCase::Mojolicious::Controller {
         my $tx = Mojo::Transaction::HTTP->new;
         my $c = $app->build_controller($tx);
         
-        $c->set_stash("mojo.captures", Hash->new({var1 => "1"}));
+        $c->set_mojo_captures(Hash->new({var1 => "1"}));
         
         $c->req->url->query->set_param(var1 => "2");
         

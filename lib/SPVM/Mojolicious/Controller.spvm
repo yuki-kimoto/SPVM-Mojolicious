@@ -85,6 +85,8 @@ class Mojolicious::Controller {
   ;
   
   # Internal fields
+  has mojo_captures : rw Hash;
+  
   has mojo_static : rw byte;
   
   # Class Methods
@@ -164,9 +166,9 @@ class Mojolicious::Controller {
   method every_param : string[] ($name : string) {
     
     # Captured unreserved values
-    $self->stash_h->{"mojo.captures"} //= Hash->new;
+    $self->set_mojo_captures($self->mojo_captures // Hash->new);
     
-    my $captures = $self->stash_h->{"mojo.captures"}->(Hash);
+    my $captures = $self->mojo_captures;
     
     if ($captures->exists($name) && !$self->app->routes->is_reserved($name)) {
       my $value = $captures->get("$name");
@@ -338,7 +340,7 @@ class Mojolicious::Controller {
       }
     }
     
-    $self->stash_h->{"mojo.captures"}->(Hash)->{$name} = $value_;
+    $self->mojo_captures->{$name} = $value_;
   }
   
   method render : Mojo::ByteStream ($template : string|Hash|object[] = undef, $options : Hash|object[] = undef) {
