@@ -534,10 +534,10 @@ class TestCase::Mojolicious::Controller {
       $c->set_stash(x => 123);
       
       my $templates = <<'EOS';
-@@minimal.html.ep
+@@ minimal.html.ep
 abc<%= $c->stash("x") %>
 
-@@other.html.ep
+@@ other.html.ep
 other
 EOS
       
@@ -597,6 +597,36 @@ EOS
       my $bs = $c->render_to_string({data => "foo"});
       
       unless ($bs->to_string eq "foo") {
+        return 0;
+      }
+      
+    }
+    
+    {
+      my $app = Mojolicious::Lite->new;
+      my $tx = Mojo::Transaction::HTTP->new;
+      
+      my $c = Mojolicious::Controller->new;
+      $c->set_app($app);
+      $c->set_tx($tx);
+      $c->set_stash(x => 123);
+      
+      my $templates = <<'EOS';
+@@ minimal.html.ep
+abc<%= $c->stash("x") %>
+
+@@ other.html.ep
+other
+EOS
+      
+      $app->renderer->set_data_templates($templates);
+      my $bs = $c->render_to_string({template => "minimal"});
+      
+      unless (Re->m($bs->to_string, "abc123")) {
+        return 0;
+      }
+      
+      if (Re->m($bs->to_string, "other")) {
         return 0;
       }
       
