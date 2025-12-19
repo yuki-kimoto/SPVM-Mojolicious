@@ -461,7 +461,7 @@ class Mojolicious::Controller {
       };
     }
     
-    $tx->(Mojo::Transaction::WebSocket)->send($msg, $cb_with_instance);
+    $tx->(Mojo::Transaction::WebSocket)->send($msg);
     
     unless ($tx->(Mojo::Transaction::WebSocket)->established) {
       $self->rendered(101);
@@ -552,46 +552,19 @@ class Mojolicious::Controller {
     return $self->url_for($target);
   }
 
-  method write : void ($chunk : string, $cb : Mojo::Callback = undef) {
+  method write : void ($chunk : string) {
     
-    my $cb_with_instance = (Mojo::Callback)undef;
-    if ($cb) {
-      $cb_with_instance = [$self : Mojolicious::Controller, $cb : Mojo::Callback] method : void ($that : object, $arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
-        $cb->($self, $arg1, $arg2, $arg3);
-      };
-    }
-    
-    $self->res->content->write($chunk, $cb_with_instance);
-    
-    $self->rendered;
-  }
-
-  method write_chunk : void ($chunk : string, $cb : Mojo::Callback = undef) {
-    
-    my $cb_with_instance = (Mojo::Callback)undef;
-    if ($cb) {
-      $cb_with_instance = [$self : Mojolicious::Controller, $cb : Mojo::Callback] method : void ($that : object, $arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
-        $cb->($self, $arg1, $arg2, $arg3);
-      };
-    }
-    
-    $self->res->content->write_chunk($chunk, $cb_with_instance);
-    
-    $self->rendered;
+    $self->res->content->write($chunk);
   }
   
-  method write_sse : void ($event : Mojo::SSE::Event, $cb : Mojo::Callback = undef) {
+  method write_chunk : void ($chunk : string) {
     
-    my $cb_with_instance = (Mojo::Callback)undef;
-    if ($cb) {
-      $cb_with_instance = [$self : Mojolicious::Controller, $cb : Mojo::Callback] method : void ($that : object, $arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
-        $cb->($self, $arg1, $arg2, $arg3);
-      };
-    }
+    $self->res->content->write_chunk($chunk);
+  }
+  
+  method write_sse : void ($event : Mojo::SSE::Event) {
     
-    $self->res->content->write_sse($event, $cb_with_instance);
-   
-   $self->rendered;
+    $self->res->content->write_sse($event);
   }
   
   method reply : Mojolicious::Helper::Reply () {
