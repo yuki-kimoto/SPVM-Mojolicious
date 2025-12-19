@@ -79,7 +79,7 @@ class Mojolicious::Sessions {
     
     my $session_keys_length = @$session_keys;
     
-    $c->stash_h->{"mojo.active_session"} = $session_keys_length;
+    $c->set_mojo_active_session($session_keys_length);
     
     unless ($session_keys_length) {
       return;
@@ -103,7 +103,7 @@ class Mojolicious::Sessions {
       return;
     }
     
-    unless ($session->keys_length || $stash->{"mojo.active_session"}->(int)) {
+    unless ($session->keys_length || $c->mojo_active_session) {
       return;
     }
     

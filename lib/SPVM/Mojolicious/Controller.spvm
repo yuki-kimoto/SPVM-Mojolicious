@@ -61,7 +61,7 @@ class Mojolicious::Controller {
   has session_h : virtual ro Hash
     get {
       my $stash = $self->stash_h;
-      unless ($stash->{"mojo.active_session"}->(int)) {
+      unless ($self->mojo_active_session) {
         $self->app->sessions->load($self);
       }
       
@@ -88,6 +88,8 @@ class Mojolicious::Controller {
   has mojo_captures : rw Hash;
   
   has mojo_static : rw byte;
+  
+  has mojo_active_session : rw int;
   
   # Class Methods
   static method new : Mojolicious::Controller () {
