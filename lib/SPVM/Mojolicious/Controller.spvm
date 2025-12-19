@@ -411,10 +411,25 @@ class Mojolicious::Controller {
     $renderer->respond($self, $output, $format, $options->{"status"});
   }
   
-  method render_to_string : Mojo::ByteStream ($options : Hash|object[] = undef) {
+  method render_to_string : Mojo::ByteStream ($template : string|Hash|object[] = undef, $options : Hash|object[] = undef) {
+    
+    my $template_ = (string)undef;
+    if ($template isa string) {
+      $template_ = $template->(string);
+    }
+    else {
+      $options = $template;
+      $template = undef;
+    }
     
     my $options = Fn->to_hash($options);
+    
+    if ($template_) {
+      $options->{"template"} = $template_;
+    }
+    
     $options->merge_options({"mojo.string" => 1});
+    
     my $string = $self->render($options);
     
     return $string;
@@ -583,9 +598,9 @@ class Mojolicious::Controller {
     return $timing;
   }
   
-  method include : Mojo::ByteStream ($options : Hash|object[] = undef) {
+  method include : Mojo::ByteStream ($template_name : string, $options : Hash|object[] = undef) {
     
-    return $self->render_to_string($options);
+    return $self->render_to_string($template_name, $options);
   }
   
   method content : Mojo::ByteStream ($name : string = undef) {
