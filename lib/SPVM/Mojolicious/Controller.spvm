@@ -755,5 +755,9 @@ class Mojolicious::Controller {
     
     return $url;
   }
-
+  
+  method render_later : void () {
+    $self->rendered;
+  }
+  
 }
