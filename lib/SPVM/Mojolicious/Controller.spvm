@@ -573,28 +573,18 @@ class Mojolicious::Controller {
   
   method reply : Mojolicious::Helper::Reply () {
     
-    unless ($self->shared_stash_h->exists("reply")) {
-      my $reply = my $_ = Mojolicious::Helper::Reply->new;
-      $_->set_controller($self);
-      
-      $self->shared_stash_h->{"reply"} = $reply;
-    }
+    my $reply = my $_ = Mojolicious::Helper::Reply->new;
+    $_->set_controller($self);
     
-    
-    return $self->shared_stash_h->{"reply"}->(Mojolicious::Helper::Reply);
+    return $reply;
   }
   
   method timing : Mojolicious::Helper::Timing () {
     
-    unless ($self->shared_stash_h->exists("timing")) {
-      my $timing = my $_ = Mojolicious::Helper::Timing->new;
-      $_->set_controller($self);
-      
-      $self->shared_stash_h->{"timing"} = $timing;
-    }
+    my $timing = my $_ = Mojolicious::Helper::Timing->new;
+    $_->set_controller($self);
     
-    
-    return $self->shared_stash_h->{"timing"}->(Mojolicious::Helper::Timing);
+    return $timing;
   }
   
   method include : Mojo::ByteStream ($options : Hash|object[] = undef) {
