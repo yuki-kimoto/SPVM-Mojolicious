@@ -362,7 +362,7 @@ class Mojolicious::Controller {
     
     my $app = $self->app;
     my $plugins = $app->plugins;
-    my $render_to_string = $options->{"mojo.string"}->(int);
+    my $render_to_string = $options->delete("mojo.string")->(int);
     
     unless ($render_to_string) {
       $plugins->emit_hook(before_render => $self, $options);
