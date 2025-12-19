@@ -22,16 +22,16 @@ class Mojolicious::Helper::Timing {
     
     my $c = $self->{controller};
     
-    $c->shared_stash_h->{"mojo.timing"} //= Hash->new;
+    $c->stash_h->{"mojo.timing"} //= Hash->new;
     
-    $c->shared_stash_h->{"mojo.timing"}->(Hash)->{$name} = Time::HiRes->gettimeofday;
+    $c->stash_h->{"mojo.timing"}->(Hash)->{$name} = Time::HiRes->gettimeofday;
   }
   
   method elapsed : double ($name : string){
     
     my $c = $self->{controller};
     
-    my $started = $c->shared_stash_h->{"mojo.timing"}->(Hash)->{$name}->(Sys::Time::Timeval);
+    my $started = $c->stash_h->{"mojo.timing"}->(Hash)->{$name}->(Sys::Time::Timeval);
     
     unless ($started) {
       die "Started time must be set.";

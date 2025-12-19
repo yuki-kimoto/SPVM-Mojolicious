@@ -56,8 +56,6 @@ class Mojolicious::Controller {
   
   has stash_h : rw Hash;
   
-  has shared_stash_h : rw Hash;
-  
   has session_h : virtual ro Hash
     get {
       my $stash = $self->stash_h;
@@ -95,8 +93,6 @@ class Mojolicious::Controller {
     my $self = new Mojolicious::Controller;
     
     $self->{stash_h} = Hash->new;
-    
-    $self->{shared_stash_h} = Hash->new;
     
     return $self;
   }
@@ -463,14 +459,6 @@ class Mojolicious::Controller {
     $self->{stash_h}{$name} = $value;
   }
   
-  method shared_stash : object ($name : string) {
-    return $self->{shared_stash_h}{$name};
-  }
-  
-  method set_shared_stash : void ($name : string, $value : object) {
-    $self->{shared_stash_h}{$name} = $value;
-  }
-  
   method url_for : Mojo::URL ($target : string|Mojo::URL)  {
     
     # Absolute URL
@@ -573,28 +561,28 @@ class Mojolicious::Controller {
   
   method reply : Mojolicious::Helper::Reply () {
     
-    unless ($self->shared_stash_h->exists("reply")) {
+    unless ($self->stash_h->exists("reply")) {
       my $reply = my $_ = Mojolicious::Helper::Reply->new;
       $_->set_controller($self);
       
-      $self->shared_stash_h->{"reply"} = $reply;
+      $self->stash_h->{"reply"} = $reply;
     }
     
     
-    return $self->shared_stash_h->{"reply"}->(Mojolicious::Helper::Reply);
+    return $self->stash_h->{"reply"}->(Mojolicious::Helper::Reply);
   }
   
   method timing : Mojolicious::Helper::Timing () {
     
-    unless ($self->shared_stash_h->exists("timing")) {
+    unless ($self->stash_h->exists("timing")) {
       my $timing = my $_ = Mojolicious::Helper::Timing->new;
       $_->set_controller($self);
       
-      $self->shared_stash_h->{"timing"} = $timing;
+      $self->stash_h->{"timing"} = $timing;
     }
     
     
-    return $self->shared_stash_h->{"timing"}->(Mojolicious::Helper::Timing);
+    return $self->stash_h->{"timing"}->(Mojolicious::Helper::Timing);
   }
   
   method include : Mojo::ByteStream ($options : Hash|object[] = undef) {
