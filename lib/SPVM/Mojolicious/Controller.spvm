@@ -107,6 +107,12 @@ class Mojolicious::Controller {
   
   has mojo_session : rw Hash;
   
+  # Finish header data building
+  has mojo_finished : rw byte;
+  
+  # Finish header and body data building
+  has mojo_respond : rw byte;
+  
   # Class Methods
   static method new : Mojolicious::Controller () {
     
@@ -422,9 +428,8 @@ class Mojolicious::Controller {
     }
     
     # Finish transaction
-    my $stash = $self->stash_h;
-    if (!$stash->{"mojo.finished"}->(int)) {
-      $stash->{"mojo.finished"} = 1;
+    if (!$self->{mojo_finished}) {
+      $self->{mojo_finished} = 1;
       
       my $res = $self->res;
       if (!$status && !$res->code) {

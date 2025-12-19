@@ -204,10 +204,10 @@ class Mojolicious::Renderer {
   
   method respond : void ($c : Mojolicious::Controller, $output : string, $format : string, $status : int) {
     
-    if ($c->stash_h->{"mojo.respond"}->(int)) {
+    if ($c->mojo_respond) {
       die "A response has already been rendered.";
     }
-    $c->stash_h->{"mojo.respond"} = 1;
+    $c->set_mojo_respond(1);
     
     # Gzip compression
     my $res = $c->res;
