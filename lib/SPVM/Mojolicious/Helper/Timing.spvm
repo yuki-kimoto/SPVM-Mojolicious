@@ -16,7 +16,7 @@ class Mojolicious::Helper::Timing {
     
     $self->{controller} = $c;
     
-    $c->stash_h->{"mojo.timing"} = Hash->new;
+    $c->stash_h->{"mojo.timing"} //= Hash->new;
     
     return $self;
   }
