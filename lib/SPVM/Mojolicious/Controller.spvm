@@ -561,25 +561,12 @@ class Mojolicious::Controller {
   
   method reply : Mojolicious::Helper::Reply () {
     
-    unless ($self->stash_h->exists("reply")) {
-      my $reply = my $_ = Mojolicious::Helper::Reply->new($self);
-      
-      $self->stash_h->{"reply"} = $reply;
-    }
-    
-    
-    return $self->stash_h->{"reply"}->(Mojolicious::Helper::Reply);
+    return Mojolicious::Helper::Reply->new($self);
   }
   
   method timing : Mojolicious::Helper::Timing () {
     
-    unless ($self->stash_h->exists("timing")) {
-      my $timing = my $_ = Mojolicious::Helper::Timing->new($self);
-      
-      $self->stash_h->{"timing"} = $timing;
-    }
-    
-    return $self->stash_h->{"timing"}->(Mojolicious::Helper::Timing);
+    return Mojolicious::Helper::Timing->new($self);
   }
   
   method include : Mojo::ByteStream ($options : Hash|object[] = undef) {
