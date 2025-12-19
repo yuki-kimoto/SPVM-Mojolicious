@@ -662,4 +662,29 @@ EOS
     return 1;
   }
   
+  static method render : int () {
+    
+    my $template_path = FindBin->Bin . "/templates";
+    {
+      my $app = Mojolicious::Lite->new;
+      my $tx = Mojo::Transaction::HTTP->new;
+      
+      my $c = Mojolicious::Controller->new;
+      $c->set_app($app);
+      $c->set_tx($tx);
+      
+      $c->render({inline => "abc<%= 123 %>"});
+      
+      unless ($c->res->code == 200) {
+        return 0;
+      }
+      
+      unless (Re->m($c->res->body, "abc123")) {
+        return 0;
+      }
+      
+    }
+    
+    return 1;
+  }
 }
