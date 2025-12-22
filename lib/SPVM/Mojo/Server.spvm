@@ -9,6 +9,7 @@ class Mojo::Server extends Mojo::EventEmitter {
   use Sys;
   use Re;
   use Mojo::Transaction;
+  use Sys;
   
   # Fields
   has app : rw Mojolicious;
@@ -61,6 +62,29 @@ class Mojo::Server extends Mojo::EventEmitter {
     }
     
     return $tx;
+  }
+  
+  method daemonize : void () {
+    
+    my $pid = Sys->fork;
+    
+    # Fork and kill parent
+    if ($pid) {
+      Sys->exit(0);
+    }
+    
+    # Start a new Unix session
+    Sys::Process->setsid;
+    
+    # Close C filehandles
+    Sys::IO->freopen("/dev/null", "r", Sys::IO->stdin);
+    Sys::IO->freopen("/dev/null", "w", Sys::IO->stdout);
+    Sys::IO->dup2(Sys->fileno(Sys::IO->stdout), Sys->fileno(Sys::IO->stderr));
+    
+    # Close SPVM filehandles
+    Sys::IO->freopen("/dev/null", "r", Sys::IO->spvm_stdin);
+    Sys::IO->freopen("/dev/null", "w", Sys::IO->spvm_stdout);
+    Sys::IO->dup2(Sys->fileno(Sys::IO->spvm_stdout), Sys->fileno(Sys::IO->spvm_stderr));
   }
   
   method run : void () { die "Not implemented."; }
