@@ -145,7 +145,7 @@ EOS
     # Greedy accept
     my $args     = $self->{args};
     my $accepted = 0;
-    while ($self->{active} && !((int)$args->get("single_accept") && $accepted++)) {
+    while ($self->{active} && $accepted++) {
       
       my $handle = $self->{handle}->accept;
       unless ($handle) {
@@ -229,10 +229,6 @@ EOS
     $self->{args} = $args;
     
     $self->{handle} = $handle;
-  }
-  
-  private method _expand : void ($args : Hash) {
-    
   }
   
 }

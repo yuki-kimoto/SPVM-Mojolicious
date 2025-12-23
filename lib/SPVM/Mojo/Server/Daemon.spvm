@@ -342,7 +342,6 @@ class Mojo::Server::Daemon extends Mojo::Server {
     my $options = Hash->new({backlog => $self->backlog});
     
     $options->set("fd" => $query->param("fd"));
-    $options->set("single_accept" => $query->param("single_accept"));
     $options->set("reuse" => $query->param("reuse"));
     
     if ($proto eq "http+unix") { $options->set(path => $url->host); }
