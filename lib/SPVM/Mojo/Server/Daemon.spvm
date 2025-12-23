@@ -37,6 +37,8 @@ class Mojo::Server::Daemon extends Mojo::Server {
   
   has silent : rw byte;
   
+  has stop_signal_handler_ch : Go::Channel;
+  
   # Undocumented Fields
   has servers : Mojo::Connection::Server[];
   
@@ -83,12 +85,34 @@ class Mojo::Server::Daemon extends Mojo::Server {
   
   method run : void () {
     
-    my $signal_channel = Go->make(1);
-    Go::OS::Signal->notify($signal_channel, SIGNAL->SIGTERM);
-    Go::OS::Signal->notify($signal_channel, SIGNAL->SIGINT);
+    my $stop_signal_handler_ch = Go->make(1);
     
-    # TODO
-    # local $SIG{INT} = local $SIG{TERM} = sub { $self->stop };
+    Go->go([$self : Mojo::Server::Daemon, $stop_signal_handler_ch : Go::Channel] method : void () {
+      
+      my $signal_ch = Go->make(1);
+      Go::OS::Signal->notify($signal_ch, SIGNAL->SIGTERM);
+      Go::OS::Signal->notify($signal_ch, SIGNAL->SIGINT);
+      
+      my $select = Go->new_select;
+      $select->add_read($signal_ch);
+      $select->add_read($stop_signal_handler_ch);
+      
+      while (1) {
+        
+        my $result = $select->select;
+        
+        if ($result) {
+          if ($result->channel == $signal_ch) {
+            $self->stop;
+          }
+          elsif ($result->channel == $stop_signal_handler_ch) {
+            last;
+          }
+        }
+      }
+    });
+    
+    $self->{stop_signal_handler_ch} = $stop_signal_handler_ch;
     
     $self->start;
   }
