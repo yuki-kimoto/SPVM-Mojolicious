@@ -43,8 +43,6 @@ class Mojo::Server extends Mojo::EventEmitter {
     }
     
     $self->{reverse_proxy} = (byte)$reverse_proxy;
-    
-    $self->on(request => method : void ($server : Mojo::Server, $tx : Mojo::Transaction::HTTP)  { $server->app->handler($tx); });
   }
   
   method build_app : Mojolicious ($app : Mojolicious) {
