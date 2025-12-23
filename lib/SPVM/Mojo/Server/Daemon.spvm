@@ -39,9 +39,6 @@ class Mojo::Server::Daemon extends Mojo::Server {
   
   has stop_signal_handler_ch : Go::Channel;
   
-  # Undocumented Fields
-  has servers : Mojo::Connection::Server[];
-  
   # Class Methods
   static method new : Mojo::Server::Daemon () {
     
@@ -121,13 +118,8 @@ class Mojo::Server::Daemon extends Mojo::Server {
     
     my $max = $self->max_clients;
     
-    # Resume accepting connections
-    if (my $servers = $self->{servers}) {
-      $self->set_acceptors($self->{servers});
-    }
-    
     # Start listening
-    elsif (!@{$self->acceptors}) {
+    if (!@{$self->acceptors}) {
       $self->app->server($self);
       for my $_ (@{$self->listen}) {
         $self->_listen($_);

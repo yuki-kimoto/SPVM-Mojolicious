@@ -205,7 +205,7 @@ class Mojolicious {
   }
   
   method server : void ($server : Mojo::Server) {
-    
+    $self->plugins->emit_hook(before_server_start => $server, $self);
   }
   
   method build_tx : Mojo::Transaction::HTTP () {
