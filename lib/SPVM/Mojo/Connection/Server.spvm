@@ -145,8 +145,6 @@ EOS
       
       # Disable Nagle's algorithm
       $handle->setsockopt(SOCKET->IPPROTO_TCP, SOCKET->TCP_NODELAY, 1);
-      
-      $self->emit(accept => $handle);
     }
     
   }
