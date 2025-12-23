@@ -71,6 +71,7 @@ WriteMakefile(
     'SPVM::Compress::Raw::Zlib' => '0.003',
     'SPVM::Getopt::Long' => '0.003',
     'SPVM::Sys' => '0.553',
+    'SPVM::Go' => '0.013',
   },
   TEST_REQUIRES => {
     

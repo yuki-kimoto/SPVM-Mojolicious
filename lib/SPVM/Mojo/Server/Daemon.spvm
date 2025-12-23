@@ -12,6 +12,9 @@ class Mojo::Server::Daemon extends Mojo::Server {
   use IO::Socket::IP;
   use Mojo::Connection::Server;
   use Mojo::Connection::Stream;
+  use Go::Channel;
+  use Go::OS::Signal;
+  use Sys::Signal::Constant as SIGNAL;
   
   # Fields
   has acceptors : rw Mojo::Connection::Server[];
@@ -79,6 +82,10 @@ class Mojo::Server::Daemon extends Mojo::Server {
   }
   
   method run : void () {
+    
+    my $signal_channel = Go->make(1);
+    Go::OS::Signal->notify($signal_channel, SIGNAL->SIGTERM);
+    Go::OS::Signal->notify($signal_channel, SIGNAL->SIGINT);
     
     # TODO
     # local $SIG{INT} = local $SIG{TERM} = sub { $self->stop };
