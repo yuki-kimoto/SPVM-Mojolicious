@@ -103,8 +103,6 @@ EOS
   }
   
   # Undocumented Fields
-  has active : byte;
-  
   has args : Hash of string;
   
   static method new : Mojo::Connection::Server () {
@@ -119,10 +117,6 @@ EOS
   }
   
   # Static Methods
-  method is_accepting : int () {
-    return !!$self->{active};
-  }
-  
   method port : int () {
   
     return $self->{handle}->(IO::Socket::IP)->sockport;
@@ -130,14 +124,11 @@ EOS
   
   method start : void () {
     
-    $self->{active} = 1;
-    
     $self->_accept;
   }
   
   method stop : void () {
     
-    $self->{active} = 0;
   }
   
   method _accept : void () {
@@ -145,7 +136,7 @@ EOS
     # Greedy accept
     my $args     = $self->{args};
     my $accepted = 0;
-    while ($self->{active} && $accepted++) {
+    while ($accepted++) {
       
       my $handle = $self->{handle}->accept;
       unless ($handle) {

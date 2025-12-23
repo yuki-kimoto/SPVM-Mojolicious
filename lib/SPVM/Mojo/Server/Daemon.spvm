@@ -128,6 +128,11 @@ class Mojo::Server::Daemon extends Mojo::Server {
     
     # Start accept
     for my $acceptor (@{$self->acceptors}) {
+      
+      Go->go([$acceptor : Mojo::Connection::Server] method : void () {
+        $acceptor->start;
+      });
+      
 =pod
       my $req = $tx->req;
       
