@@ -384,15 +384,15 @@ class Mojo::Server::Daemon extends Mojo::Server {
     my $tls =  $proto eq "https";
     $options->set(tls => $tls);
     
-    my $c = Mojo::Connection::Server->new;
+    my $acceptor = Mojo::Connection::Server->new;
     
-    $c->set_timeout($self->inactivity_timeout);
+    $acceptor->set_timeout($self->inactivity_timeout);
     
-    $c->listen($options);
+    $acceptor->listen($options);
     
     my $acceptors = (List of Mojo::Connection::Server)List->new_ref($self->{acceptors});
     
-    $acceptors->push($c);
+    $acceptors->push($acceptor);
     
     if ($self->silent) {
       return;
