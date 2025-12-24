@@ -147,8 +147,8 @@ class Mojo::Server::Daemon extends Mojo::Server {
         while (1) {
           $semaphore_accept->write(1);
           
-          my $accepted_socket = (IO::Socket)undef;
-          eval { $accepted_socket = $acceptor->handle->accept; }
+          my $accepted_handle = (IO::Socket)undef;
+          eval { $accepted_handle = $acceptor->handle->accept; }
           
           if ($@) {
             my $ok = 0;
@@ -156,15 +156,20 @@ class Mojo::Server::Daemon extends Mojo::Server {
             next;
           }
           
-          Go->go([$semaphore_accept : Go::Channel, $accepted_socket : IO::Socket] method : void () {
+          Go->go([$self : Mojo::Server::Daemon, $semaphore_accept : Go::Channel, $accepted_handle : IO::Socket] method : void () {
             Fn->defer([$semaphore_accept : Go::Channel] method : void () {
               my $ok = 0;
               $semaphore_accept->read(\$ok);
             });
             
             # Disable Nagle's algorithm
-            $accepted_socket->setsockopt(SOCKET->IPPROTO_TCP, SOCKET->TCP_NODELAY, 1);
-
+            $accepted_handle->setsockopt(SOCKET->IPPROTO_TCP, SOCKET->TCP_NODELAY, 1);
+            
+            my $accepted_connection = Mojo::Connection::Stream->new;
+            $accepted_connection->set_handle($accepted_handle);
+            
+            my $tx = $self->_build_tx($accepted_connection);
+            $accepted_connection->set_tx($tx);
 =pod
 
             while (1) {
