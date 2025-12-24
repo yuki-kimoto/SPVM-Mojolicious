@@ -218,6 +218,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
               $accepted_connection->write($chunk);
             }
             
+            $self->_finish($accepted_connection);
           });
         }
       });
