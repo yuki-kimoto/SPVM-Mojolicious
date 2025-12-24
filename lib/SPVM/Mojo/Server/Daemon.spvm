@@ -148,28 +148,19 @@ class Mojo::Server::Daemon extends Mojo::Server {
           
           $semaphore_accept->write(1);
           
-          my $accepted_connection = (Mojo::Connection::Stream)undef;
-          eval {
-            my $accepted_handle = $acceptor->handle->accept;
-            # Disable Nagle's algorithm
-            $accepted_handle->setsockopt(SOCKET->IPPROTO_TCP, SOCKET->TCP_NODELAY, 1);
-            
-            $accepted_connection = Mojo::Connection::Stream->new;
-            $accepted_connection->set_handle($accepted_handle);
-          }
-          
-          if ($@) {
-            my $ok = 0;
-            $semaphore_accept->read(\$ok);
-            next;
-          }
-          
-          Go->go([$self : Mojo::Server::Daemon, $semaphore_accept : Go::Channel, $accepted_connection : Mojo::Connection::Stream] method : void () {
+          Go->go([$self : Mojo::Server::Daemon, $acceptor : Mojo::Connection::Server, $semaphore_accept : Go::Channel] method : void () {
             
             Fn->defer([$semaphore_accept : Go::Channel] method : void () {
               my $ok = 0;
               $semaphore_accept->read(\$ok);
             });
+            
+            my $accepted_handle = $acceptor->handle->accept;
+            # Disable Nagle's algorithm
+            $accepted_handle->setsockopt(SOCKET->IPPROTO_TCP, SOCKET->TCP_NODELAY, 1);
+            
+            my $accepted_connection = Mojo::Connection::Stream->new;
+            $accepted_connection->set_handle($accepted_handle);
             
             while (1) {
               
