@@ -16,6 +16,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
   use Go::OS::Signal;
   use Sys::Signal::Constant as SIGNAL;
   use Go::Sync::WaitGroup;
+  use Sys::Socket::Constant as SOCKET;
   
   # Fields
   has acceptors : rw Mojo::Connection::Server[];
@@ -131,83 +132,84 @@ class Mojo::Server::Daemon extends Mojo::Server {
     my $wg_listens = Go::Sync::WaitGroup->new;
     $wg_listens->add(@{$self->acceptors});
         
+    my $max_clients = $self->max_clients;
+    
+    my $semaphore_accept = Go->make($max_clients);
+    
     for my $acceptor (@{$self->acceptors}) {
       
-      Go->go([$self : Mojo::Server::Daemon, $acceptor : Mojo::Connection::Server, $wg_listens : Go::Sync::WaitGroup] method : void () {
+      Go->go([$self : Mojo::Server::Daemon, $acceptor : Mojo::Connection::Server, $wg_listens : Go::Sync::WaitGroup, $semaphore_accept : Go::Channel] method : void () {
         
         Fn->defer([$wg_listens : Go::Sync::WaitGroup] method : void () {
           $wg_listens->done;
         });
-
-=pod
-
-        my $max_clients = $self->max_clients;
-        
-        my $semaphore = Go->make($max_clients)
         
         while (1) {
-          $semaphore->write(1);
+          $semaphore_accept->write(1);
           
           my $accepted_socket = (IO::Socket)undef;
-          eval { $accepted_socket = $self->{handle}->accept; }
+          eval { $accepted_socket = $acceptor->handle->accept; }
           
           if ($@) {
-            $semaphore->read;
+            my $ok = 0;
+            $semaphore_accept->read(\$ok);
             next;
           }
           
-          # Disable Nagle's algorithm
-          $accepted_socket->setsockopt(SOCKET->IPPROTO_TCP, SOCKET->TCP_NODELAY, 1);
-          
-          Go->go([$semaphore : Go::Channel, $accepted_socket : IO::Socket] method : void () {
-            Fn->defer([$semaphore : Go::Channel] method : void () {
-              
-              $semaphore->read;
-              
-              while (1) {
-                if ($tx->req->is_finished) {
-                  last;
-                }
-                
-                my $chunk = Fn->substr($input, 0, 10, "");
-                
-                $tx->server_read($chunk);
-              }
-              
-              # Do process
-              my $req = $tx->req;
-              
-              # WebSocket
-              if ($req->is_handshake) {
-                
-                my $ws = Mojo::Transaction::WebSocket->new;
-                $ws->set_handshake($tx);
-                
-                $conn_accepted->set_next($ws);
-                
-                $self->app->handler(Mojo::WebSocket->server_handshake($ws));
-              }
-              
-              # HTTP
-              else {
-                $self->app->handler($tx);
-              }
-              
-              # Last keep-alive request or corrupted connection
-              if (($conn_accepted->requests || 1) >= $this->max_requests) {
-                $tx->res->headers->set_connection("close");
-              }
-              
-              my $resume_cb = [$this : Mojo::Server::Daemon, $conn_accepted : Mojo::Connection::Stream] method : void () {
-                $this->_write($conn_accepted);
-              };
-              
-              $tx->on(resume => $resume_cb);
-              $this->_write($conn_accepted);
+          Go->go([$semaphore_accept : Go::Channel, $accepted_socket : IO::Socket] method : void () {
+            Fn->defer([$semaphore_accept : Go::Channel] method : void () {
+              my $ok = 0;
+              $semaphore_accept->read(\$ok);
             });
+            
+            # Disable Nagle's algorithm
+            $accepted_socket->setsockopt(SOCKET->IPPROTO_TCP, SOCKET->TCP_NODELAY, 1);
+
+=pod
+
+            while (1) {
+              if ($tx->req->is_finished) {
+                last;
+              }
+              
+              my $chunk = Fn->substr($input, 0, 10, "");
+              
+              $tx->server_read($chunk);
+            }
+            
+            # Do process
+            my $req = $tx->req;
+            
+            # WebSocket
+            if ($req->is_handshake) {
+              
+              my $ws = Mojo::Transaction::WebSocket->new;
+              $ws->set_handshake($tx);
+              
+              $conn_accepted->set_next($ws);
+              
+              $self->app->handler(Mojo::WebSocket->server_handshake($ws));
+            }
+            
+            # HTTP
+            else {
+              $self->app->handler($tx);
+            }
+            
+            # Last keep-alive request or corrupted connection
+            if (($conn_accepted->requests || 1) >= $this->max_requests) {
+              $tx->res->headers->set_connection("close");
+            }
+            
+            my $resume_cb = [$this : Mojo::Server::Daemon, $conn_accepted : Mojo::Connection::Stream] method : void () {
+              $this->_write($conn_accepted);
+            };
+            
+            $tx->on(resume => $resume_cb);
+            $this->_write($conn_accepted);
+=cut
           });
         }
-=cut
       });
     }
     
@@ -364,14 +366,6 @@ class Mojo::Server::Daemon extends Mojo::Server {
     }
     
     return $peer;
-  }
-  
-  private method _read : void ($c : Mojo::Connection::Stream, $chunk : string) {
-    
-    # Make sure we have a transaction
-    my $tx = $self->_build_tx($c);
-    $c->set_tx($tx);
-    $tx->server_read($chunk);
   }
   
   private static method _url : string ($tx : Mojo::Transaction) {
