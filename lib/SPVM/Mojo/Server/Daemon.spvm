@@ -145,10 +145,18 @@ class Mojo::Server::Daemon extends Mojo::Server {
         });
         
         while (1) {
+          
           $semaphore_accept->write(1);
           
-          my $accepted_handle = (IO::Socket)undef;
-          eval { $accepted_handle = $acceptor->handle->accept; }
+          my $accepted_connection = (Mojo::Connection::Stream)undef;
+          eval {
+            my $accepted_handle = $acceptor->handle->accept;
+            # Disable Nagle's algorithm
+            $accepted_handle->setsockopt(SOCKET->IPPROTO_TCP, SOCKET->TCP_NODELAY, 1);
+            
+            $accepted_connection = Mojo::Connection::Stream->new;
+            $accepted_connection->set_handle($accepted_handle);
+          }
           
           if ($@) {
             my $ok = 0;
@@ -156,75 +164,71 @@ class Mojo::Server::Daemon extends Mojo::Server {
             next;
           }
           
-          Go->go([$self : Mojo::Server::Daemon, $semaphore_accept : Go::Channel, $accepted_handle : IO::Socket] method : void () {
+          Go->go([$self : Mojo::Server::Daemon, $semaphore_accept : Go::Channel, $accepted_connection : Mojo::Connection::Stream] method : void () {
             
-            my $kept_alive_ref = [0];
-            Fn->defer([$semaphore_accept : Go::Channel, $kept_alive_ref : int[]] method : void () {
-              unless ($kept_alive_ref->[0]) {
-                my $ok = 0;
-                $semaphore_accept->read(\$ok);
-              }
+            Fn->defer([$semaphore_accept : Go::Channel] method : void () {
+              my $ok = 0;
+              $semaphore_accept->read(\$ok);
             });
             
-            # Disable Nagle's algorithm
-            $accepted_handle->setsockopt(SOCKET->IPPROTO_TCP, SOCKET->TCP_NODELAY, 1);
-            
-            my $accepted_connection = Mojo::Connection::Stream->new;
-            $accepted_connection->set_handle($accepted_handle);
-            
-            my $tx = $self->_build_tx($accepted_connection);
-            $accepted_connection->set_tx($tx);
-            
-            my $chunk = new_string_len 4096;
-            my $chunk_length = length $chunk;
             while (1) {
-              if ($tx->req->is_finished) {
-                last;
+              
+              my $tx = $self->_build_tx($accepted_connection);
+              $accepted_connection->set_tx($tx);
+              
+              my $chunk = new_string_len 4096;
+              my $chunk_length = length $chunk;
+              while (1) {
+                if ($tx->req->is_finished) {
+                  last;
+                }
+                
+                my $read_length = $accepted_connection->read($chunk);
+                
+                $tx->server_read($read_length < $chunk_length ? Fn->substr($chunk, 0, $read_length) : (string)$chunk);
               }
               
-              my $read_length = $accepted_connection->read($chunk);
+              # Do process
+              my $req = $tx->req;
               
-              $tx->server_read($read_length < $chunk_length ? Fn->substr($chunk, 0, $read_length) : (string)$chunk);
-            }
-            
-            # Do process
-            my $req = $tx->req;
-            
-            # WebSocket
-            if ($req->is_handshake) {
-              
-              my $ws = Mojo::Transaction::WebSocket->new;
-              $ws->set_handshake($tx);
-              
-              $accepted_connection->set_next($ws);
-              
-              $self->app->handler(Mojo::WebSocket->server_handshake($ws));
-            }
-            
-            # HTTP
-            else {
-              $self->app->handler($tx);
-            }
-            
-            # Last keep-alive request or corrupted connection
-            if (($accepted_connection->requests || 1) >= $self->max_requests) {
-              $tx->res->headers->set_connection("close");
-            }
-            
-            my $output = "";
-            while (1) {
-              my $chunk = $tx->server_write;
-              
-              unless (length $chunk) {
-                last;
+              # WebSocket
+              if ($req->is_handshake) {
+                
+                my $ws = Mojo::Transaction::WebSocket->new;
+                $ws->set_handshake($tx);
+                
+                $accepted_connection->set_next($ws);
+                
+                $self->app->handler(Mojo::WebSocket->server_handshake($ws));
               }
               
-              $accepted_connection->write($chunk);
+              # HTTP
+              else {
+                $self->app->handler($tx);
+              }
+              
+              # Last keep-alive request or corrupted connection
+              if (($accepted_connection->requests || 1) >= $self->max_requests) {
+                $tx->res->headers->set_connection("close");
+              }
+              
+              my $output = "";
+              while (1) {
+                my $chunk = $tx->server_write;
+                
+                unless (length $chunk) {
+                  last;
+                }
+                
+                $accepted_connection->write($chunk);
+              }
+              
+              $self->_finish($accepted_connection);
+              
+              if ($tx->kept_alive) {
+                last;
+              }
             }
-            
-            $self->_finish($accepted_connection);
-            
-            $kept_alive_ref->[0] = $tx->kept_alive;
           });
         }
       });
