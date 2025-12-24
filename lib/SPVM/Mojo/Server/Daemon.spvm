@@ -170,16 +170,17 @@ class Mojo::Server::Daemon extends Mojo::Server {
             
             my $tx = $self->_build_tx($accepted_connection);
             $accepted_connection->set_tx($tx);
-=pod
-
+            
+            my $chunk = new_string_len 4096;
+            my $chunk_length = length $chunk;
             while (1) {
               if ($tx->req->is_finished) {
                 last;
               }
               
-              my $chunk = Fn->substr($input, 0, 10, "");
+              my $read_length = $accepted_connection->read($chunk);
               
-              $tx->server_read($chunk);
+              $tx->server_read($read_length < $chunk_length ? Fn->substr($chunk, 0, $read_length) : (string)$chunk);
             }
             
             # Do process
@@ -191,7 +192,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
               my $ws = Mojo::Transaction::WebSocket->new;
               $ws->set_handshake($tx);
               
-              $conn_accepted->set_next($ws);
+              $accepted_connection->set_next($ws);
               
               $self->app->handler(Mojo::WebSocket->server_handshake($ws));
             }
@@ -202,17 +203,21 @@ class Mojo::Server::Daemon extends Mojo::Server {
             }
             
             # Last keep-alive request or corrupted connection
-            if (($conn_accepted->requests || 1) >= $this->max_requests) {
+            if (($accepted_connection->requests || 1) >= $self->max_requests) {
               $tx->res->headers->set_connection("close");
             }
             
-            my $resume_cb = [$this : Mojo::Server::Daemon, $conn_accepted : Mojo::Connection::Stream] method : void () {
-              $this->_write($conn_accepted);
-            };
+            my $output = "";
+            while (1) {
+              my $chunk = $tx->server_write;
+              
+              unless (length $chunk) {
+                last;
+              }
+              
+              $accepted_connection->write($chunk);
+            }
             
-            $tx->on(resume => $resume_cb);
-            $this->_write($conn_accepted);
-=cut
           });
         }
       });
@@ -229,18 +234,18 @@ class Mojo::Server::Daemon extends Mojo::Server {
     
   }
   
-  method _build_tx : Mojo::Transaction::HTTP ($conn_accepted : Mojo::Connection::Stream) {
+  method _build_tx : Mojo::Transaction::HTTP ($accepted_connection : Mojo::Connection::Stream) {
     
     my $tx = $self->build_tx;
     
-    $tx->set_connection($conn_accepted);
+    $tx->set_connection($accepted_connection);
     
     $tx->res->headers->set_server("Mojolicious (SPVM)");
     
-    my $handle = $conn_accepted->handle;
+    my $handle = $accepted_connection->handle;
     
     # TODO: set this to goroutine
-    $conn_accepted->set_timeout($self->inactivity_timeout);
+    $accepted_connection->set_timeout($self->inactivity_timeout);
     
     unless ($handle isa IO::Socket::UNIX) {
       $tx->set_local_address($handle->(IO::Socket::IP)->sockhost);
@@ -249,19 +254,19 @@ class Mojo::Server::Daemon extends Mojo::Server {
       $tx->set_remote_port($handle->(IO::Socket::IP)->peerport);
     }
     
-    if ($conn_accepted->tls) {
+    if ($accepted_connection->tls) {
       $tx->req->url->base->set_scheme("https");
     }
     
     # Kept alive if we have more than one request on the connection
-    my $requests = $conn_accepted->requests;
+    my $requests = $accepted_connection->requests;
     ++$requests;
     
     if ($requests > 1) {
       $tx->set_kept_alive(1);
     }
     
-    $conn_accepted->set_requests($requests);
+    $accepted_connection->set_requests($requests);
     
     return $tx;
   }
@@ -292,18 +297,18 @@ class Mojo::Server::Daemon extends Mojo::Server {
       return;
     }
     
-    my $write_cb = [$this : Mojo::Server::Daemon = $self, $next : string, $c : Mojo::Connection::Stream] method : void () {
+    my $write_cb = [$self : Mojo::Server::Daemon = $self, $next : string, $c : Mojo::Connection::Stream] method : void () {
       if ($next eq "_finish") {
-        $this->_finish($c);
+        $self->_finish($c);
       }
       elsif ($next eq "_write") {
-        $this->_write($c);
+        $self->_write($c);
       }
       else {
         die "[Unexpected Error]\$next is invalid.";
       }
     };
-    weaken $write_cb->{this};
+    weaken $write_cb->{self};
     
     $c->write($chunk => $write_cb);
     
@@ -328,8 +333,8 @@ class Mojo::Server::Daemon extends Mojo::Server {
       if ($ws->handshake->res->code == 101) {
         $ws->set_established(1);
         $c->set_tx($ws);
-        $ws->on(resume => [$this : Mojo::Server::Daemon = $self, $c : Mojo::Connection::Stream] method : void () {
-          $this->_write($c);
+        $ws->on(resume => [$self : Mojo::Server::Daemon = $self, $c : Mojo::Connection::Stream] method : void () {
+          $self->_write($c);
         });
         $self->_write($c);
       }

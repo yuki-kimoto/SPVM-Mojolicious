@@ -97,23 +97,13 @@ class Mojo::Connection::Stream extends Mojo::Connection {
     }
   }
   
-  method read : void () {
+  method read : int ($buffer : mutable string) {
     
     my $handle = $self->{handle};
     
-    my $buffer = (mutable string)new_string_len 4096;
+    my $read_length = $handle->sysread($buffer);
     
-    while (1) {
-      my $read_length = $handle->sysread($buffer);
-      
-      unless ($read_length) {
-        return;
-      }
-      
-      $self->{read} += $read_length;
-      
-      $self->emit(read => Fn->substr($buffer, 0, $read_length));
-    }
+    return $read_length;
   }
   
 }
