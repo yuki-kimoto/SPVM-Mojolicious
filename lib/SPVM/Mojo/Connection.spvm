@@ -22,8 +22,6 @@ class Mojo::Connection extends Mojo::EventEmitter {
   
   has requests : rw int;
   
-  has writing : rw byte;
-  
   has tx : rw Mojo::Transaction;
   
   has tls : rw byte;

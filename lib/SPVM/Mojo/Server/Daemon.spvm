@@ -271,49 +271,6 @@ class Mojo::Server::Daemon extends Mojo::Server {
     return $tx;
   }
   
-  method _write : void ($c : Mojo::Connection::Stream) {
-    
-    # Protect from resume event recursion
-    my $tx = $c->tx;
-    if (!$tx || $c->writing) {
-      return;
-    }
-    
-    my $writing_save = $c->writing;
-    Fn->defer([$c : Mojo::Connection::Stream, $writing_save : int] method : void () {
-      $c->set_writing($writing_save);
-    });
-    
-    $c->set_writing(1);
-    
-    my $chunk = $tx->server_write;
-    if (&DEBUG) {
-      # warn term_escape "-- Server >>> Client (@{[_url($tx)]})\n$chunk\n" ;
-    }
-    my $next = $tx->is_finished ? "_finish" : length $chunk ? "_write" : undef;
-    
-    unless ($next) {
-      $c->write($chunk);
-      return;
-    }
-    
-    my $write_cb = [$self : Mojo::Server::Daemon = $self, $next : string, $c : Mojo::Connection::Stream] method : void () {
-      if ($next eq "_finish") {
-        $self->_finish($c);
-      }
-      elsif ($next eq "_write") {
-        $self->_write($c);
-      }
-      else {
-        die "[Unexpected Error]\$next is invalid.";
-      }
-    };
-    weaken $write_cb->{self};
-    
-    $c->write($chunk => $write_cb);
-    
-  }
-  
   method _finish : void ($c : Mojo::Connection::Stream) {
     
     # Always remove connection for WebSockets
@@ -333,10 +290,8 @@ class Mojo::Server::Daemon extends Mojo::Server {
       if ($ws->handshake->res->code == 101) {
         $ws->set_established(1);
         $c->set_tx($ws);
-        $ws->on(resume => [$self : Mojo::Server::Daemon = $self, $c : Mojo::Connection::Stream] method : void () {
-          $self->_write($c);
-        });
-        $self->_write($c);
+        
+        # TODO : write logic
       }
       
       # Failed upgrade
