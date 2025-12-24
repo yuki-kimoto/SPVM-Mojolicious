@@ -24,8 +24,6 @@ class Mojo::Connection::Stream extends Mojo::Connection {
     
     my $self = new Mojo::Connection::Stream;
     
-    $self->{timeout} = 15;
-    
     $self->{buffer} = StringBuffer->new;
     
     $self->{high_water_mark} = 1048576;
@@ -53,8 +51,6 @@ class Mojo::Connection::Stream extends Mojo::Connection {
   
   method close : void () {
     
-    # TODO: if gorutine scheduler is not yet run, reutrn.
-    $self->set_timeout(0);
     my $handle = $self->{handle};
     unless ($handle) {
       return;
