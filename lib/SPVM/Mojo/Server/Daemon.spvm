@@ -157,9 +157,13 @@ class Mojo::Server::Daemon extends Mojo::Server {
           }
           
           Go->go([$self : Mojo::Server::Daemon, $semaphore_accept : Go::Channel, $accepted_handle : IO::Socket] method : void () {
-            Fn->defer([$semaphore_accept : Go::Channel] method : void () {
-              my $ok = 0;
-              $semaphore_accept->read(\$ok);
+            
+            my $kept_alive_ref = [0];
+            Fn->defer([$semaphore_accept : Go::Channel, $kept_alive_ref : int[]] method : void () {
+              unless ($kept_alive_ref->[0]) {
+                my $ok = 0;
+                $semaphore_accept->read(\$ok);
+              }
             });
             
             # Disable Nagle's algorithm
@@ -219,6 +223,8 @@ class Mojo::Server::Daemon extends Mojo::Server {
             }
             
             $self->_finish($accepted_connection);
+            
+            $kept_alive_ref->[0] = $tx->kept_alive;
           });
         }
       });
