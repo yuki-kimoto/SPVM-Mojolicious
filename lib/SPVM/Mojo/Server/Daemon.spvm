@@ -158,13 +158,22 @@ class Mojo::Server::Daemon extends Mojo::Server {
         
         while (1) {
           
+          my $stop_ch = $self->{stop_ch};
+          my $select_stop_ch = Go->new_select;
+          $select_stop_ch->set_non_blocking(1);
+          my $result = $select_stop_ch->select;
+          if ($result) {
+            last;
+          }
+           
           $semaphore_accept->write(1);
           
-          Go->go([$self : Mojo::Server::Daemon, $acceptor : Mojo::Connection::Server, $semaphore_accept : Go::Channel] method : void () {
+          Go->go([$self : Mojo::Server::Daemon, $acceptor : Mojo::Connection::Server, $main_wg : Go::Sync::WaitGroup, $semaphore_accept : Go::Channel] method : void () {
             
-            Fn->defer([$semaphore_accept : Go::Channel] method : void () {
+            Fn->defer([$main_wg : Go::Sync::WaitGroup, $semaphore_accept : Go::Channel] method : void () {
               my $ok = 0;
               $semaphore_accept->read(\$ok);
+              $main_wg->done;
             });
             
             my $accepted_handle = $acceptor->handle->accept;
