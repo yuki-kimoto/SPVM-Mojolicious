@@ -191,7 +191,6 @@ class Mojo::Server::Daemon extends Mojo::Server {
                 
                 my $ws = Mojo::Transaction::WebSocket->new;
                 $ws->set_handshake($tx->(Mojo::Transaction::HTTP));
-                
                 $accepted_connection->set_next($ws);
                 
                 $self->app->handler(Mojo::WebSocket->server_handshake($ws));
@@ -282,26 +281,19 @@ class Mojo::Server::Daemon extends Mojo::Server {
     $accepted_connection->set_tx(undef);
     $tx->closed;
     
-    my $ws = (Mojo::Transaction::WebSocket)$accepted_connection->next;
+    my $tx_ws = (Mojo::Transaction::WebSocket)$accepted_connection->next;
     $accepted_connection->set_next(undef);
     
     # Upgrade connection to WebSocket
-    if ($ws) {
+    if ($tx_ws) {
       # Successful upgrade
-      if ($ws->handshake->res->code == 101) {
-        $ws->set_established(1);
-        $accepted_connection->set_tx($ws);
-        
-        # TODO : write logic
+      if ($tx_ws->handshake->res->code == 101) {
+        $tx_ws->set_established(1);
+        $accepted_connection->set_tx($tx_ws);
       }
       
       # Failed upgrade
-      else { $ws->closed; }
-    }
-    
-    # Close connection if necessary
-    if ($tx isa Mojo::Transaction::HTTP && !$tx->(Mojo::Transaction::HTTP)->keep_alive) {
-      $tx->closed;
+      else { $tx_ws->closed; }
     }
     
     # Build new transaction for leftovers
