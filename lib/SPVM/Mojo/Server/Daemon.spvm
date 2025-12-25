@@ -41,6 +41,8 @@ class Mojo::Server::Daemon extends Mojo::Server {
   
   has stop_ch : Go::Channel;
   
+  has accept_ch : Go::Channel;
+  
   # Class Methods
   static method new : Mojo::Server::Daemon () {
     
@@ -51,6 +53,8 @@ class Mojo::Server::Daemon extends Mojo::Server {
     $self->{main_wg} = Go::Sync::WaitGroup->new;
     
     $self->{stop_ch} = Go->make;
+    
+    $self->{accept_ch} = Go->make($self->max_clients);
     
     return $self;
   }
@@ -143,14 +147,10 @@ class Mojo::Server::Daemon extends Mojo::Server {
     # Start accept
     my $main_wg = $self->{main_wg};
     
-    my $max_clients = $self->max_clients;
-    
-    my $accept_ch = Go->make($max_clients);
-    
     for my $acceptor (@{$self->acceptors}) {
       
       $main_wg->add(1);
-      Go->go([$self : Mojo::Server::Daemon, $acceptor : Mojo::Connection::Server, $main_wg : Go::Sync::WaitGroup, $accept_ch : Go::Channel] method : void () {
+      Go->go([$self : Mojo::Server::Daemon, $acceptor : Mojo::Connection::Server, $main_wg : Go::Sync::WaitGroup] method : void () {
         
         Fn->defer([$main_wg : Go::Sync::WaitGroup] method : void () {
           $main_wg->done;
@@ -165,14 +165,14 @@ class Mojo::Server::Daemon extends Mojo::Server {
           if ($result) {
             last;
           }
-           
-          $accept_ch->write(1);
           
-          Go->go([$self : Mojo::Server::Daemon, $acceptor : Mojo::Connection::Server, $main_wg : Go::Sync::WaitGroup, $accept_ch : Go::Channel] method : void () {
+          $self->{accept_ch}->write(1);
+          
+          Go->go([$self : Mojo::Server::Daemon, $acceptor : Mojo::Connection::Server, $main_wg : Go::Sync::WaitGroup] method : void () {
             
-            Fn->defer([$main_wg : Go::Sync::WaitGroup, $accept_ch : Go::Channel] method : void () {
+            Fn->defer([$self : Mojo::Server::Daemon, $main_wg : Go::Sync::WaitGroup] method : void () {
               my $ok = 0;
-              $accept_ch->read(\$ok);
+              $self->{accept_ch}->read(\$ok);
               $main_wg->done;
             });
             
