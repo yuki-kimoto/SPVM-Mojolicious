@@ -4,10 +4,8 @@
 class Mojo::Server::Daemon extends Mojo::Server {
   version_from Mojolicious;
   
-  use Mojo::Transaction::WebSocket;
   use Mojo::URL;
   use Mojo::Util;
-  use Mojo::WebSocket;
   use IO::Socket;
   use IO::Socket::IP;
   use Mojo::Connection::Server;
@@ -186,20 +184,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
               # Do process
               my $req = $tx->req;
               
-              # WebSocket
-              if ($req->is_handshake) {
-                
-                my $ws = Mojo::Transaction::WebSocket->new;
-                $ws->set_handshake($tx->(Mojo::Transaction::HTTP));
-                $accepted_connection->set_next($ws);
-                
-                $self->app->handler(Mojo::WebSocket->server_handshake($ws));
-              }
-              
-              # HTTP
-              else {
-                $self->app->handler($tx);
-              }
+              $self->app->handler($tx);
               
               # Last keep-alive request or corrupted connection
               if (($accepted_connection->requests || 1) >= $self->max_requests) {
@@ -280,21 +265,6 @@ class Mojo::Server::Daemon extends Mojo::Server {
     my $tx = $accepted_connection->tx;
     $accepted_connection->set_tx(undef);
     $tx->closed;
-    
-    my $tx_ws = (Mojo::Transaction::WebSocket)$accepted_connection->next;
-    $accepted_connection->set_next(undef);
-    
-    # Upgrade connection to WebSocket
-    if ($tx_ws) {
-      # Successful upgrade
-      if ($tx_ws->handshake->res->code == 101) {
-        $tx_ws->set_established(1);
-        $accepted_connection->set_tx($tx_ws);
-      }
-      
-      # Failed upgrade
-      else { $tx_ws->closed; }
-    }
     
     # Build new transaction for leftovers
     if (length(my $leftovers = $tx->req->content->leftovers)) {
