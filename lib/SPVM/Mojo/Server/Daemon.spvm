@@ -95,11 +95,11 @@ class Mojo::Server::Daemon extends Mojo::Server {
     my $main_wg = $self->{main_wg};
     my $stop_ch = $self->{stop_ch};
     
-    $main_wg->add(1);
-    Go->go([$self : Mojo::Server::Daemon, $main_wg : Go::Sync::WaitGroup, $stop_ch : Go::Channel] method : void () {
+    $self->{main_wg}->add(1);
+    Go->go([$self : Mojo::Server::Daemon, $stop_ch : Go::Channel] method : void () {
         
-      Fn->defer([$main_wg : Go::Sync::WaitGroup] method : void () {
-        $main_wg->done;
+      Fn->defer([$self : Mojo::Server::Daemon] method : void () {
+        $self->{main_wg}->done;
       });
       
       my $signal_ch = Go->make(1);
@@ -145,15 +145,13 @@ class Mojo::Server::Daemon extends Mojo::Server {
     }
     
     # Start accept
-    my $main_wg = $self->{main_wg};
-    
     for my $acceptor (@{$self->acceptors}) {
       
-      $main_wg->add(1);
-      Go->go([$self : Mojo::Server::Daemon, $acceptor : Mojo::Connection::Server, $main_wg : Go::Sync::WaitGroup] method : void () {
+      $self->{main_wg}->add(1);
+      Go->go([$self : Mojo::Server::Daemon, $acceptor : Mojo::Connection::Server] method : void () {
         
-        Fn->defer([$main_wg : Go::Sync::WaitGroup] method : void () {
-          $main_wg->done;
+        Fn->defer([$self : Mojo::Server::Daemon, ] method : void () {
+          $self->{main_wg}->done;
         });
         
         while (1) {
@@ -168,12 +166,12 @@ class Mojo::Server::Daemon extends Mojo::Server {
           
           $self->{accept_ch}->write(1);
           
-          Go->go([$self : Mojo::Server::Daemon, $acceptor : Mojo::Connection::Server, $main_wg : Go::Sync::WaitGroup] method : void () {
+          Go->go([$self : Mojo::Server::Daemon, $acceptor : Mojo::Connection::Server] method : void () {
             
-            Fn->defer([$self : Mojo::Server::Daemon, $main_wg : Go::Sync::WaitGroup] method : void () {
+            Fn->defer([$self : Mojo::Server::Daemon] method : void () {
               my $ok = 0;
               $self->{accept_ch}->read(\$ok);
-              $main_wg->done;
+              $self->{main_wg}->done;
             });
             
             my $accepted_handle = $acceptor->handle->accept;
@@ -244,7 +242,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
       });
     }
     
-    $main_wg->wait;
+    $self->{main_wg}->wait;
   }
   
   method stop : void () {
