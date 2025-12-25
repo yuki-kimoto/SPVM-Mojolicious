@@ -178,7 +178,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
                 
                 my $read_length = $accepted_connection->read($chunk);
                 
-                $tx->server_read($read_length < $chunk_length ? Fn->substr($chunk, 0, $read_length) : (string)$chunk);
+                $tx->server_read(Fn->substr($chunk, 0, $read_length));
               }
               
               # Do process
