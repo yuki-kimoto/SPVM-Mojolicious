@@ -92,11 +92,8 @@ class Mojo::Server::Daemon extends Mojo::Server {
   
   method run : void () {
     
-    my $main_wg = $self->{main_wg};
-    my $stop_ch = $self->{stop_ch};
-    
     $self->{main_wg}->add(1);
-    Go->go([$self : Mojo::Server::Daemon, $stop_ch : Go::Channel] method : void () {
+    Go->go([$self : Mojo::Server::Daemon] method : void () {
         
       Fn->defer([$self : Mojo::Server::Daemon] method : void () {
         $self->{main_wg}->done;
@@ -108,7 +105,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
       
       my $select = Go->new_select;
       $select->add_read($signal_ch);
-      $select->add_read($stop_ch);
+      $select->add_read($self->{stop_ch});
       
       my $closed = 0;
       while (1) {
@@ -119,10 +116,10 @@ class Mojo::Server::Daemon extends Mojo::Server {
           if ($result->channel == $signal_ch) {
             unless ($closed) {
               $closed = 1;
-              $stop_ch->close;
+              $self->{stop_ch}->close;
             }
           }
-          elsif ($result->channel == $stop_ch) {
+          elsif ($result->channel == $self->{stop_ch}) {
             last;
           }
         }
@@ -156,16 +153,16 @@ class Mojo::Server::Daemon extends Mojo::Server {
         
         while (1) {
           
-          my $stop_ch = $self->{stop_ch};
           my $select_stop_ch = Go->new_select;
           $select_stop_ch->set_non_blocking(1);
+          $select_stop_ch->add_read($self->{stop_ch});
           my $result = $select_stop_ch->select;
           if ($result) {
             last;
           }
           
           $self->{accept_ch}->write(1);
-          
+          $self->{main_wg}->add(1);
           Go->go([$self : Mojo::Server::Daemon, $acceptor : Mojo::Connection::Server] method : void () {
             
             Fn->defer([$self : Mojo::Server::Daemon] method : void () {
@@ -225,9 +222,9 @@ class Mojo::Server::Daemon extends Mojo::Server {
               
               $self->_finish($accepted_connection);
               
-              my $stop_ch = $self->{stop_ch};
               my $select_stop_ch = Go->new_select;
               $select_stop_ch->set_non_blocking(1);
+              $select_stop_ch->add_read($self->{stop_ch});
               my $result = $select_stop_ch->select;
               if ($result) {
                 last;
