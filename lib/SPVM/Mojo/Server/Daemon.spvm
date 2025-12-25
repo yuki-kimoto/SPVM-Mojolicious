@@ -246,7 +246,6 @@ class Mojo::Server::Daemon extends Mojo::Server {
     
     my $handle = $accepted_connection->handle;
     
-    # TODO: set this to goroutine
     $accepted_connection->set_timeout($self->inactivity_timeout);
     
     unless ($handle isa IO::Socket::UNIX) {
@@ -273,25 +272,25 @@ class Mojo::Server::Daemon extends Mojo::Server {
     return $tx;
   }
   
-  method _finish : void ($c : Mojo::Connection::Stream) {
+  method _finish : void ($accepted_connection : Mojo::Connection::Stream) {
     
     # Always remove connection for WebSockets
-    my $tx = $c->tx;
+    my $tx = $accepted_connection->tx;
     unless ($tx) {
       return;
     }
     
     $tx->closed;
     
-    my $ws = (Mojo::Transaction::WebSocket)$c->next;
-    $c->set_next(undef);
+    my $ws = (Mojo::Transaction::WebSocket)$accepted_connection->next;
+    $accepted_connection->set_next(undef);
     
     # Upgrade connection to WebSocket
     if ($ws) {
       # Successful upgrade
       if ($ws->handshake->res->code == 101) {
         $ws->set_established(1);
-        $c->set_tx($ws);
+        $accepted_connection->set_tx($ws);
         
         # TODO : write logic
       }
@@ -308,16 +307,16 @@ class Mojo::Server::Daemon extends Mojo::Server {
     # Build new transaction for leftovers
     if (length(my $leftovers = $tx->req->content->leftovers)) {
     
-      $tx = $self->_build_tx($c);
+      $tx = $self->_build_tx($accepted_connection);
       
-      $c->set_tx($tx);
+      $accepted_connection->set_tx($tx);
       
       $tx->server_read($leftovers);
     }
     
     # Keep-alive connection
-    unless ($c->tx) {
-      $c->set_timeout($self->keep_alive_timeout);
+    unless ($accepted_connection->tx) {
+      $accepted_connection->set_timeout($self->keep_alive_timeout);
     }
   }
   
