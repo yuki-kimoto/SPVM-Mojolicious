@@ -37,7 +37,9 @@ class Mojo::Server::Daemon extends Mojo::Server {
   
   has silent : rw byte;
   
-  has stop_signal_handler_ch : Go::Channel;
+  has main_wg : Go::Sync::WaitGroup;
+  
+  has stop_ch : Go::Channel;
   
   # Class Methods
   static method new : Mojo::Server::Daemon () {
@@ -45,6 +47,10 @@ class Mojo::Server::Daemon extends Mojo::Server {
     my $self = new Mojo::Server::Daemon;
     
     $self->init;
+    
+    $self->{main_wg} = Go::Sync::WaitGroup->new;
+    
+    $self->{stop_ch} = Go->make;
     
     return $self;
   }
@@ -82,9 +88,15 @@ class Mojo::Server::Daemon extends Mojo::Server {
   
   method run : void () {
     
-    my $stop_signal_handler_ch = Go->make(1);
+    my $main_wg = $self->{main_wg};
+    my $stop_ch = $self->{stop_ch};
     
-    Go->go([$self : Mojo::Server::Daemon, $stop_signal_handler_ch : Go::Channel] method : void () {
+    $main_wg->add(1);
+    Go->go([$self : Mojo::Server::Daemon, $main_wg : Go::Sync::WaitGroup, $stop_ch : Go::Channel] method : void () {
+        
+      Fn->defer([$main_wg : Go::Sync::WaitGroup] method : void () {
+        $main_wg->done;
+      });
       
       my $signal_ch = Go->make(1);
       Go::OS::Signal->notify($signal_ch, SIGNAL->SIGTERM);
@@ -92,24 +104,26 @@ class Mojo::Server::Daemon extends Mojo::Server {
       
       my $select = Go->new_select;
       $select->add_read($signal_ch);
-      $select->add_read($stop_signal_handler_ch);
+      $select->add_read($stop_ch);
       
+      my $closed = 0;
       while (1) {
         
         my $result = $select->select;
         
         if ($result) {
           if ($result->channel == $signal_ch) {
-            $self->stop;
+            unless ($closed) {
+              $closed = 1;
+              $stop_ch->close;
+            }
           }
-          elsif ($result->channel == $stop_signal_handler_ch) {
+          elsif ($result->channel == $stop_ch) {
             last;
           }
         }
       }
     });
-    
-    $self->{stop_signal_handler_ch} = $stop_signal_handler_ch;
     
     $self->start;
   }
@@ -127,19 +141,19 @@ class Mojo::Server::Daemon extends Mojo::Server {
     }
     
     # Start accept
-    my $wg_listens = Go::Sync::WaitGroup->new;
-    $wg_listens->add(@{$self->acceptors});
-        
+    my $main_wg = $self->{main_wg};
+    
     my $max_clients = $self->max_clients;
     
     my $semaphore_accept = Go->make($max_clients);
     
     for my $acceptor (@{$self->acceptors}) {
       
-      Go->go([$self : Mojo::Server::Daemon, $acceptor : Mojo::Connection::Server, $wg_listens : Go::Sync::WaitGroup, $semaphore_accept : Go::Channel] method : void () {
+      $main_wg->add(1);
+      Go->go([$self : Mojo::Server::Daemon, $acceptor : Mojo::Connection::Server, $main_wg : Go::Sync::WaitGroup, $semaphore_accept : Go::Channel] method : void () {
         
-        Fn->defer([$wg_listens : Go::Sync::WaitGroup] method : void () {
-          $wg_listens->done;
+        Fn->defer([$main_wg : Go::Sync::WaitGroup] method : void () {
+          $main_wg->done;
         });
         
         while (1) {
@@ -213,7 +227,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
       });
     }
     
-    $wg_listens->wait;
+    $main_wg->wait;
   }
   
   method stop : void () {
