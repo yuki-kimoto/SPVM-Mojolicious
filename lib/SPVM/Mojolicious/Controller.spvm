@@ -319,27 +319,6 @@ class Mojolicious::Controller {
     }
   }
   
-  method on : void ($name : string, $cb : Mojo::Callback) {
-  
-    my $tx = $self->tx;
-    unless ($tx) {
-      die "Transaction already destroyed.";
-    }
-    
-    if ($tx->is_websocket && !$tx->(Mojo::Transaction::WebSocket)->established) {
-      $self->rendered(101);
-    }
-    
-    my $cb_with_instance = (Mojo::Callback)undef;
-    if ($cb) {
-      $cb_with_instance = [$self : Mojolicious::Controller, $cb : Mojo::Callback] method : void ($that : object, $arg1 : object = undef, $arg2 : object = undef, $arg3 : object = undef) {
-        $cb->($self, $arg1, $arg2, $arg3);
-      };
-    }
-    
-    $tx->on($name => $cb_with_instance);
-  }
-
   method param : string ($name : string) {
     
     my $every_param = $self->every_param($name);

@@ -101,8 +101,6 @@ class Mojo::Transaction::WebSocket extends Mojo::Transaction {
     my $code = (my $_ = $self->{close_code}) > 0 ? $_ : 1006;
     
     my $reason = $self->{close_reason};
-    
-    $self->emit(finish => $code, $reason);
   }
   
   method connection : Mojo::Connection () { return $self->handshake->connection; }
