@@ -164,8 +164,12 @@ class Mojo::Server::Daemon extends Mojo::Server {
             
             while (1) {
               
-              my $tx = $self->_build_tx($accepted_connection);
-              $accepted_connection->set_tx($tx);
+              unless ($accepted_connection->tx) {
+                my $tx = $self->_build_tx($accepted_connection);
+                $accepted_connection->set_tx($tx);
+              }
+              
+              my $tx = $accepted_connection->tx;
               
               my $chunk = new_string_len 4096;
               my $chunk_length = length $chunk;
@@ -186,7 +190,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
               if ($req->is_handshake) {
                 
                 my $ws = Mojo::Transaction::WebSocket->new;
-                $ws->set_handshake($tx);
+                $ws->set_handshake($tx->(Mojo::Transaction::HTTP));
                 
                 $accepted_connection->set_next($ws);
                 
@@ -274,12 +278,8 @@ class Mojo::Server::Daemon extends Mojo::Server {
   
   method _finish : void ($accepted_connection : Mojo::Connection::Stream) {
     
-    # Always remove connection for WebSockets
     my $tx = $accepted_connection->tx;
-    unless ($tx) {
-      return;
-    }
-    
+    $accepted_connection->set_tx(undef);
     $tx->closed;
     
     my $ws = (Mojo::Transaction::WebSocket)$accepted_connection->next;
@@ -306,7 +306,6 @@ class Mojo::Server::Daemon extends Mojo::Server {
     
     # Build new transaction for leftovers
     if (length(my $leftovers = $tx->req->content->leftovers)) {
-    
       $tx = $self->_build_tx($accepted_connection);
       
       $accepted_connection->set_tx($tx);
