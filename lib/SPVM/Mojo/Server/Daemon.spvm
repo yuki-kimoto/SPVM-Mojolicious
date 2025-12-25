@@ -219,7 +219,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
               
               $self->_finish($accepted_connection);
               
-              if ($tx->kept_alive) {
+              if ($tx isa Mojo::Transaction::HTTP && !$tx->(Mojo::Transaction::HTTP)->keep_alive) {
                 last;
               }
             }
