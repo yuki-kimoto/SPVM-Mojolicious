@@ -145,12 +145,12 @@ class Mojo::Server::Daemon extends Mojo::Server {
     
     my $max_clients = $self->max_clients;
     
-    my $semaphore_accept = Go->make($max_clients);
+    my $accept_ch = Go->make($max_clients);
     
     for my $acceptor (@{$self->acceptors}) {
       
       $main_wg->add(1);
-      Go->go([$self : Mojo::Server::Daemon, $acceptor : Mojo::Connection::Server, $main_wg : Go::Sync::WaitGroup, $semaphore_accept : Go::Channel] method : void () {
+      Go->go([$self : Mojo::Server::Daemon, $acceptor : Mojo::Connection::Server, $main_wg : Go::Sync::WaitGroup, $accept_ch : Go::Channel] method : void () {
         
         Fn->defer([$main_wg : Go::Sync::WaitGroup] method : void () {
           $main_wg->done;
@@ -166,13 +166,13 @@ class Mojo::Server::Daemon extends Mojo::Server {
             last;
           }
            
-          $semaphore_accept->write(1);
+          $accept_ch->write(1);
           
-          Go->go([$self : Mojo::Server::Daemon, $acceptor : Mojo::Connection::Server, $main_wg : Go::Sync::WaitGroup, $semaphore_accept : Go::Channel] method : void () {
+          Go->go([$self : Mojo::Server::Daemon, $acceptor : Mojo::Connection::Server, $main_wg : Go::Sync::WaitGroup, $accept_ch : Go::Channel] method : void () {
             
-            Fn->defer([$main_wg : Go::Sync::WaitGroup, $semaphore_accept : Go::Channel] method : void () {
+            Fn->defer([$main_wg : Go::Sync::WaitGroup, $accept_ch : Go::Channel] method : void () {
               my $ok = 0;
-              $semaphore_accept->read(\$ok);
+              $accept_ch->read(\$ok);
               $main_wg->done;
             });
             
