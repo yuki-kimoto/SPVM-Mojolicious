@@ -50,6 +50,8 @@ class Mojo::Server::Daemon extends Mojo::Server {
     
     $self->init;
     
+    $self->{max_clients} = 1000;
+    
     $self->{main_wg} = Go::Sync::WaitGroup->new;
     
     $self->{stop_ch} = Go->make;
@@ -166,9 +168,9 @@ class Mojo::Server::Daemon extends Mojo::Server {
           }
           
           $self->{accept_ch}->write(1);
+          
           $self->{main_wg}->add(1);
           Go->go([$self : Mojo::Server::Daemon, $acceptor : Mojo::Connection::Server] method : void () {
-            
             Fn->defer([$self : Mojo::Server::Daemon] method : void () {
               my $ok = 0;
               $self->{accept_ch}->read(\$ok);
