@@ -4,91 +4,21 @@
 class Mojo::Connection::Stream extends Mojo::Connection {
   version_from Mojolicious;
   
-  use StringBuffer;
-  
-  has high_water_mark : rw int;
-  
-  has is_writing : ro byte;
-  
-  # Undocumented Fields
-  has read : int;
-  
-  has buffer : StringBuffer;
-  
-  has written : int;
-  
-  has graceful : byte;
-  
   # Class Methods
   static method new : Mojo::Connection::Stream () {
     
     my $self = new Mojo::Connection::Stream;
     
-    $self->{buffer} = StringBuffer->new;
-    
-    $self->{high_water_mark} = 1048576;
-    
     return $self;
   }
   
-  # Instance Methods
-  method bytes_read : int () {
-    return $self->{read};
-  }
-  
-  method bytes_waiting : int () {
-    return $self->{buffer}->length;
-  }
-  
-  method bytes_written : int () {
-    
-    return $self->{written};
-  }
-  
-  method can_write : int () {
-    return $self->{handle} && $self->bytes_waiting < $self->high_water_mark;
-  }
-  
-  method close : void () {
-    
-    my $handle = $self->{handle};
-    unless ($handle) {
-      return;
-    }
-    
-    $self->emit("close");
-  }
-  
-  method close_gracefully : void () {
-    
-    if ($self->is_writing) {
-      $self->{graceful}++;
-    }
-    else {
-      $self->close;
-    }
-  }
-  
-  method write : void ($chunk : string) {
+  method write : int ($chunk : string) {
     
     my $handle = $self->{handle};
     
-    my $offset = 0;
-    while (1) {
-      my $write_length = $handle->syswrite($chunk, $offset);
-      
-      unless ($write_length) {
-        last;
-      }
-      
-      $offset += $write_length;
-      
-      $self->{written} += $offset;
-    }
+    my $write_length = $handle->syswrite($chunk);
     
-    if ($self->{graceful}) {
-      $self->close;
-    }
+    return $write_length;
   }
   
   method read : int ($buffer : mutable string) {
