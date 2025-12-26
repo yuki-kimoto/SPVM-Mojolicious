@@ -4,17 +4,7 @@
 class Mojolicious::Command {
   version_from Mojolicious;
   
-  use Mojo::File;
-  use Mojo::Loader;
-  use Mojo::Server;
-  use Mojo::Template;
-  
-  has app : rw Mojolicious
-    set {
-      $self->{app} = $_;
-      weaken $self->{app};
-    }
-  ;
+  has app : rw Mojolicious;
   
   has description : rw string;
   
@@ -22,25 +12,9 @@ class Mojolicious::Command {
   
   has usage : rw string;
   
-  # Undocumented Fields
-  has app_ref : Mojolicious;
-  
-  # Class Methods
-  static method new : Mojolicious::Command () {
-    
-    my $self = new Mojolicious::Command;
-    
-    $self->init;
-    
-    return $self;
-  }
-  
   # Instance Methods
   protected method init : void () {
     
-    $self->{description} = "No description";
-    
-    $self->{usage} = "Usage: APPLICATION\n";
   }
   
   method run : void ($argv : string[]) { die "Not implemented."; }
