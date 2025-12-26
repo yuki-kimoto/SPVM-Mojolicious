@@ -69,7 +69,7 @@ class Mojo::Connection::Stream extends Mojo::Connection {
     }
   }
   
-  method write : void ($chunk : string, $cb : Mojo::Callback = undef) {
+  method write : void ($chunk : string) {
     
     my $handle = $self->{handle};
     
@@ -85,8 +85,6 @@ class Mojo::Connection::Stream extends Mojo::Connection {
       
       $self->{written} += $offset;
     }
-    
-    $cb->($self);
     
     if ($self->{graceful}) {
       $self->close;

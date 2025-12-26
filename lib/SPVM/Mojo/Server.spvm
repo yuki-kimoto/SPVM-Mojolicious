@@ -54,7 +54,7 @@ class Mojo::Server extends Mojo::EventEmitter {
     
     my $tx = $self->app->build_tx;
     
-    $tx->req->set_trusted_proxies(Array->merge_string($tx->req->trusted_proxies, $self->trusted_proxies));
+    $tx->req->set_trusted_proxies(Array->merge_string($tx->req->trusted_proxies, $self->trusted_proxies // new string[0]));
     
     if ($self->reverse_proxy) {
       $tx->req->set_reverse_proxy(1) ;
