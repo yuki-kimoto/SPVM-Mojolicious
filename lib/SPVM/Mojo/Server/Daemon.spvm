@@ -91,7 +91,9 @@ class Mojo::Server::Daemon extends Mojo::Server {
   }
   
   method run : void () {
-    
+
+=pod
+
     $self->{main_wg}->add(1);
     Go->go([$self : Mojo::Server::Daemon] method : void () {
         
@@ -125,7 +127,9 @@ class Mojo::Server::Daemon extends Mojo::Server {
         }
       }
     });
-    
+
+=cut
+
     $self->start;
   }
   

@@ -153,7 +153,6 @@ EOS
     
     # Look for reusable file descriptor
     my $path    = $args->{"path"}->(string);
-    my $address = $args->{"address"}->(string) // "0.0.0.0";
     my $port    = (int)$args->get("port");
     
     my $options = Hash->new({Listen => $args->exists("backlog") ? (int)$args->get("backlog") : SOCKET->SOMAXCONN, Type => SOCKET->SOCK_STREAM});
@@ -173,13 +172,20 @@ EOS
     
     # IP socket
     else {
-      $options->set(LocalAddr => $address);
-      if ($port) {
-        $options->set(LocalPort => $port);
+      if ($args->exists("address")) {
+        $options->{"LocalAddr"} = $args->{"address"}->(string);
       }
-      $options->set(ReuseAddr => 1);
+      else {
+        $options->{"LocalAddr"} = "0.0.0.0";
+      }
       
-      my $tsl = (int)$args->get("tls");
+      if ($port) {
+        $options->{"LocalPort"} = $port;
+      }
+      
+      $options->{"ReuseAddr"} = 1;
+      
+      my $tsl = (int)$args->{"tls"};
       
       if ($tsl) {
       
