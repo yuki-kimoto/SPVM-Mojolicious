@@ -111,11 +111,11 @@ class Mojolicious::Command {
     }
   }
   
+  method run : void ($argv : string[]) { die "Not implemented."; }
+  
 }
 
 __END__
-
-sub run { croak 'Method "run" not implemented by subclass' }
 
 sub write_file {
   my ($self, $path, $data) = @_;

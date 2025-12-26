@@ -201,6 +201,8 @@ class Mojolicious {
       $argv = CommandInfo->ARGV;
     }
     
+    $self->commands->set_app($self);
+    
     $self->commands->run($argv);
   }
   

@@ -336,7 +336,11 @@ class Mojo::Server::Daemon extends Mojo::Server {
     }
     
     my $query   = $url->query;
-    my $options = Hash->new({backlog => $self->backlog});
+    my $options = Hash->new;
+    
+    if (exists $self->{backlog}) {
+      $options->{"backlog"} = $self->{backlog};
+    }
     
     $options->set("fd" => $query->param("fd"));
     $options->set("reuse" => $query->param("reuse"));
@@ -382,9 +386,9 @@ class Mojo::Server::Daemon extends Mojo::Server {
     
     my $acceptor = Mojo::Connection::Server->new;
     
-    $acceptor->set_timeout($self->inactivity_timeout);
-    
     $acceptor->listen($options);
+    
+    $acceptor->set_timeout($self->inactivity_timeout);
     
     my $acceptors = (List of Mojo::Connection::Server)List->new_ref($self->{acceptors});
     

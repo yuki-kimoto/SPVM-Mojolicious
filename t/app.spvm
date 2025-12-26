@@ -1,0 +1,14 @@
+use Mojolicious::Lite;
+
+my $app = Mojolicious::Lite->new;
+
+$app->get("/", "index");
+
+my $data_templates = <<'EOS';
+@@ index.html.ep
+Hello
+EOS
+
+$app->set_data_templates($data_templates);
+
+$app->start;
