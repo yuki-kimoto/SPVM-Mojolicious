@@ -232,14 +232,6 @@ class Mojo::Server::Daemon extends Mojo::Server {
               
               $self->_finish($accepted_connection);
               
-              my $select_stop_ch = Go->new_select;
-              $select_stop_ch->set_non_blocking(1);
-              $select_stop_ch->add_read($self->{stop_ch});
-              my $result = $select_stop_ch->select;
-              if ($result) {
-                last;
-              }
-              
               if ($tx isa Mojo::Transaction::HTTP && !$tx->(Mojo::Transaction::HTTP)->keep_alive) {
                 last;
               }
