@@ -50,7 +50,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
     
     $self->init;
     
-    $self->{max_clients} = 1;
+    $self->{max_clients} = 1000;
     
     $self->{accept_wg} = Go::Sync::WaitGroup->new;
     
