@@ -172,7 +172,16 @@ class Mojo::Server::Daemon extends Mojo::Server {
               $self->{accept_wg}->done;
             });
             
-            my $accepted_handle = $acceptor->handle->accept;
+            my $accepted_handle = (IO::Socket)undef;
+            
+            eval {
+              $accepted_handle = $acceptor->handle->accept;
+            }
+            
+            if ($@) {
+              return;
+            }
+            
             # Disable Nagle's algorithm
             $accepted_handle->setsockopt(SOCKET->IPPROTO_TCP, SOCKET->TCP_NODELAY, 1);
             
