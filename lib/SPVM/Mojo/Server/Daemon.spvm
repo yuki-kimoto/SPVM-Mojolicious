@@ -41,7 +41,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
   
   has stop_ch : Go::Channel;
   
-  has accept_ch : Go::Channel;
+  has accept_semaphore_ch : Go::Channel;
   
   # Class Methods
   static method new : Mojo::Server::Daemon () {
@@ -56,7 +56,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
     
     $self->{stop_ch} = Go->make;
     
-    $self->{accept_ch} = Go->make($self->max_clients);
+    $self->{accept_semaphore_ch} = Go->make($self->max_clients);
     
     return $self;
   }
@@ -173,13 +173,13 @@ class Mojo::Server::Daemon extends Mojo::Server {
             last;
           }
           
-          $self->{accept_ch}->write(1);
+          $self->{accept_semaphore_ch}->write(1);
           
           $self->{accept_wg}->add(1);
           Go->go([$self : Mojo::Server::Daemon, $acceptor : Mojo::Connection::Server] method : void () {
             Fn->defer([$self : Mojo::Server::Daemon] method : void () {
               my $ok = 0;
-              $self->{accept_ch}->read(\$ok);
+              $self->{accept_semaphore_ch}->read(\$ok);
               $self->{accept_wg}->done;
             });
             
