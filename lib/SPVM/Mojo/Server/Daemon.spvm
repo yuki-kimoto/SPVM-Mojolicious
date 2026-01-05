@@ -162,15 +162,6 @@ class Mojo::Server::Daemon extends Mojo::Server {
         });
         
         while (1) {
-          
-          my $select_stop_ch = Go->new_select;
-          $select_stop_ch->set_non_blocking(1);
-          $select_stop_ch->add_read($self->{stop_ch});
-          my $result = $select_stop_ch->select;
-          if ($result) {
-            last;
-          }
-          
           $self->{accept_semaphore_ch}->write(1);
           
           $self->{accept_wg}->add(1);
