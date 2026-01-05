@@ -179,8 +179,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
           $self->{accept_wg}->add(1);
           Go->go([$self : Mojo::Server::Daemon, $accepted_handle : IO::Socket] method : void () {
             Fn->defer([$self : Mojo::Server::Daemon] method : void () {
-              my $ok = 0;
-              $self->{accept_semaphore_ch}->read(\$ok);
+              $self->{accept_semaphore_ch}->read;
               $self->{accept_wg}->done;
             });
             
