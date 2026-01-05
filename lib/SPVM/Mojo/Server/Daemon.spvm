@@ -39,7 +39,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
   
   has accept_wg : Go::Sync::WaitGroup;
   
-  has stop_ch : Go::Channel;
+  has signal_handler_stop_ch : Go::Channel;
   
   has accept_semaphore_ch : Go::Channel;
   
@@ -54,7 +54,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
     
     $self->{accept_wg} = Go::Sync::WaitGroup->new;
     
-    $self->{stop_ch} = Go->make;
+    $self->{signal_handler_stop_ch} = Go->make;
     
     $self->{accept_semaphore_ch} = Go->make($self->max_clients);
     
@@ -109,7 +109,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
       
       my $select = Go->new_select;
       $select->add_read($signal_ch);
-      $select->add_read($self->{stop_ch});
+      $select->add_read($self->{signal_handler_stop_ch});
       
       my $closed = 0;
       while (1) {
@@ -120,10 +120,10 @@ class Mojo::Server::Daemon extends Mojo::Server {
           if ($result->channel == $signal_ch) {
             unless ($closed) {
               $closed = 1;
-              $self->{stop_ch}->close;
+              $self->{signal_handler_stop_ch}->close;
             }
           }
-          elsif ($result->channel == $self->{stop_ch}) {
+          elsif ($result->channel == $self->{signal_handler_stop_ch}) {
             last;
           }
         }
