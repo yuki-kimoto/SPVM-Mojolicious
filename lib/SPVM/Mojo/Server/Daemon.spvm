@@ -133,6 +133,8 @@ class Mojo::Server::Daemon extends Mojo::Server {
 =cut
 
     $self->start;
+    
+    $self->{main_wg}->wait;
   }
   
   method start : void () {
@@ -244,8 +246,6 @@ class Mojo::Server::Daemon extends Mojo::Server {
         }
       });
     }
-    
-    $self->{main_wg}->wait;
   }
   
   method stop : void () {
