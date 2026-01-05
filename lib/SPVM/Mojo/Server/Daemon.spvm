@@ -143,8 +143,6 @@ class Mojo::Server::Daemon extends Mojo::Server {
   
   method start : void () {
     
-    my $max = $self->max_clients;
-    
     # Start listening
     if (!@{$self->acceptors}) {
       $self->app->server($self);
