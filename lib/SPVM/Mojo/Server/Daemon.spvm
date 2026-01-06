@@ -52,14 +52,6 @@ class Mojo::Server::Daemon extends Mojo::Server {
     
     $self->init;
     
-    $self->{max_clients} = 1000;
-    
-    $self->{accept_wg} = Go::Sync::WaitGroup->new;
-    
-    $self->{signal_handler_stop_ch} = Go->make;
-    
-    $self->{accept_semaphore_ch} = Go->make($self->max_clients);
-    
     return $self;
   }
   
@@ -79,6 +71,15 @@ class Mojo::Server::Daemon extends Mojo::Server {
     $self->{max_requests} = 100;
     
     $self->{listen} = length(my $_ = Sys->env("SPVM_MOJO_KEEP_ALIVE_TIMEOUT")) ? Fn->split(",", $_) : ["http://*:3000"];
+    
+    $self->{max_clients} = 1000;
+    
+    $self->{accept_wg} = Go::Sync::WaitGroup->new;
+    
+    $self->{signal_handler_stop_ch} = Go->make;
+    
+    $self->{accept_semaphore_ch} = Go->make($self->max_clients);
+    
   }
   
   method ports : int[] () {
