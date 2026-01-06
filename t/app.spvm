@@ -7,6 +7,8 @@ $app->get("/", "index");
 my $data_templates = <<'EOS';
 @@ index.html.ep
 Hello
+
+<%= Sys->time %>
 EOS
 
 $app->set_data_templates($data_templates);
