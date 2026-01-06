@@ -99,8 +99,21 @@ class Mojo::Server::Daemon extends Mojo::Server {
   
   method run : void () {
     
-=pod
-
+    Go->go([$self : Mojo::Server::Daemon] method : void () {
+      $self->start;
+    });
+    
+    Go->gosched;
+    
+    $self->{accept_wg}->wait;
+    
+    $self->{signal_handler_stop_ch}->close;
+    
+    $self->{signal_handler_wg}->wait;
+  }
+  
+  private method add_signal_handler : void () {
+    
     $self->{signal_handler_wg}->add(1);
     Go->go([$self : Mojo::Server::Daemon] method : void () {
         
@@ -135,20 +148,6 @@ class Mojo::Server::Daemon extends Mojo::Server {
         }
       }
     });
-
-=cut
-    
-    Go->go([$self : Mojo::Server::Daemon] method : void () {
-      $self->start;
-    });
-    
-    Go->gosched;
-    
-    $self->{accept_wg}->wait;
-    
-    $self->{signal_handler_stop_ch}->close;
-    
-    $self->{signal_handler_wg}->wait;
   }
   
   method start : void () {
