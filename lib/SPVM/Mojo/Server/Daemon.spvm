@@ -76,6 +76,8 @@ class Mojo::Server::Daemon extends Mojo::Server {
     
     $self->{accept_wg} = Go::Sync::WaitGroup->new;
     
+    $self->{signal_handler_wg} = Go::Sync::WaitGroup->new;
+    
     $self->{signal_handler_stop_ch} = Go->make;
     
     $self->{accept_semaphore_ch} = Go->make($self->max_clients);
@@ -143,6 +145,10 @@ class Mojo::Server::Daemon extends Mojo::Server {
     Go->gosched;
     
     $self->{accept_wg}->wait;
+    
+    $self->{signal_handler_stop_ch}->close;
+    
+    $self->{signal_handler_wg}->wait;
   }
   
   method start : void () {
