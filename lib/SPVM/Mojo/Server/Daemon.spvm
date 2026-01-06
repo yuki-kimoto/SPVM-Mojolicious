@@ -39,6 +39,8 @@ class Mojo::Server::Daemon extends Mojo::Server {
   
   has accept_wg : Go::Sync::WaitGroup;
   
+  has signal_handler_wg : Go::Sync::WaitGroup;
+  
   has signal_handler_stop_ch : Go::Channel;
   
   has accept_semaphore_ch : Go::Channel;
@@ -96,11 +98,11 @@ class Mojo::Server::Daemon extends Mojo::Server {
     
 =pod
 
-    $self->{accept_wg}->add(1);
+    $self->{signal_handler_wg}->add(1);
     Go->go([$self : Mojo::Server::Daemon] method : void () {
         
       Fn->defer([$self : Mojo::Server::Daemon] method : void () {
-        $self->{accept_wg}->done;
+        $self->{signal_handler_wg}->done;
       });
       
       my $signal_ch = Go->make(1);
@@ -111,20 +113,21 @@ class Mojo::Server::Daemon extends Mojo::Server {
       $select->add_read($signal_ch);
       $select->add_read($self->{signal_handler_stop_ch});
       
-      my $closed = 0;
+      my $server_closed = 0;
       while (1) {
         
         my $result = $select->select;
         
         if ($result) {
           if ($result->channel == $signal_ch) {
-            unless ($closed) {
-              $closed = 1;
-              $self->{signal_handler_stop_ch}->close;
+            unless ($server_closed) {
+              for my $acceptor (@{$self->acceptors}) {
+                $acceptor->handle->close;
+              }
             }
           }
           elsif ($result->channel == $self->{signal_handler_stop_ch}) {
-            last;
+            return;
           }
         }
       }
