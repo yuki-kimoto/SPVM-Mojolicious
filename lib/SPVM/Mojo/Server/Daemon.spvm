@@ -129,15 +129,14 @@ class Mojo::Server::Daemon extends Mojo::Server {
       $select->add_read($signal_ch);
       $select->add_read($self->{signal_handler_stop_ch});
       
-      my $server_closed = 0;
       while (1) {
         
         my $result = $select->select;
         
         if ($result) {
           if ($result->channel == $signal_ch) {
-            unless ($server_closed) {
-              for my $acceptor (@{$self->acceptors}) {
+            for my $acceptor (@{$self->acceptors}) {
+              unless ($acceptor->handle->opened) {
                 $acceptor->handle->close;
               }
             }
