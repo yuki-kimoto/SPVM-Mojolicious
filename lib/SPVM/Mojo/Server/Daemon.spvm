@@ -101,15 +101,15 @@ class Mojo::Server::Daemon extends Mojo::Server {
     
     Go->go([$self : Mojo::Server::Daemon] method : void () {
       $self->start;
+      
+      $self->{accept_wg}->wait;
+      
+      $self->{signal_handler_stop_ch}->close;
+      
+      $self->{signal_handler_wg}->wait;
     });
     
     Go->gosched;
-    
-    $self->{accept_wg}->wait;
-    
-    $self->{signal_handler_stop_ch}->close;
-    
-    $self->{signal_handler_wg}->wait;
   }
   
   private method add_signal_handler : void () {
