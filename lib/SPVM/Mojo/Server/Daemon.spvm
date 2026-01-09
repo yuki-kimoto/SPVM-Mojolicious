@@ -296,6 +296,11 @@ class Mojo::Server::Daemon extends Mojo::Server {
       $acceptor->stop;
     }
     
+    my $idle_accepted_connections_h = $self->{idle_accepted_connections_h};
+    for my $address (@{$idle_accepted_connections_h->keys}) {
+      my $idle_accepted_connection = $idle_accepted_connections_h->{$address};
+      $idle_accepted_connection->handle->close;
+    }
   }
   
   method _build_tx : Mojo::Transaction::HTTP ($accepted_connection : Mojo::Connection::Stream) {
