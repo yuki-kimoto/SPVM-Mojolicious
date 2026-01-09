@@ -193,7 +193,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
           }
           
           $self->{accept_wg}->add(1);
-          Go->go([$self : Mojo::Server::Daemon, $accepted_handle : IO::Socket] method : void () {
+          Go->go([$self : Mojo::Server::Daemon, $accepted_handle : IO::Socket, $acceptor : Mojo::Connection::Server] method : void () {
             Fn->defer([$self : Mojo::Server::Daemon] method : void () {
               $self->{accept_semaphore_ch}->read;
               $self->{accept_wg}->done;
@@ -204,6 +204,11 @@ class Mojo::Server::Daemon extends Mojo::Server {
               $accepted_connection->set_handle($accepted_handle);
               
               while (1) {
+                
+                unless ($acceptor->handle->opened) {
+                  
+                  return;
+                }
                 
                 unless ($accepted_connection->tx) {
                   my $tx = $self->_build_tx($accepted_connection);
