@@ -135,11 +135,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
         
         if ($result) {
           if ($result->channel == $signal_ch) {
-            for my $acceptor (@{$self->acceptors}) {
-              unless ($acceptor->handle->opened) {
-                $acceptor->handle->close;
-              }
-            }
+            $self->stop;
           }
           elsif ($result->channel == $self->{signal_handler_stop_ch}) {
             return;
@@ -252,8 +248,8 @@ class Mojo::Server::Daemon extends Mojo::Server {
   
   method stop : void () {
     
-    for my $server (@{$self->acceptors}) {
-      $server->stop;
+    for my $acceptor (@{$self->acceptors}) {
+      $acceptor->stop;
     }
     
   }
