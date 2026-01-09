@@ -244,10 +244,16 @@ class Mojo::Server::Daemon extends Mojo::Server {
                   if ($tx->req->is_finished) {
                     last;
                   }
-                  
-                  my $read_length = $accepted_connection->read($chunk);
-                  
-                  $tx->server_read(Fn->substr($chunk, 0, $read_length));
+                  else {
+                    my $read_length = $accepted_connection->read($chunk);
+                    
+                    if ($read_length == 0) {
+                      # Client connection is closed with invalid HTTP request
+                      return;
+                    }
+                    
+                    $tx->server_read(Fn->substr($chunk, 0, $read_length));
+                  }
                 }
                 
                 # Do process
