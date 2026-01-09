@@ -106,6 +106,8 @@ class Mojo::Server::Daemon extends Mojo::Server {
         Go::OS::Signal->stop_signal_handler;
       });
       
+      $self->add_signal_handler;
+      
       $self->start;
       
       $self->{accept_wg}->wait;
@@ -136,7 +138,6 @@ class Mojo::Server::Daemon extends Mojo::Server {
       $select->add_read($self->{signal_handler_stop_ch});
       
       while (1) {
-        
         my $result = $select->select;
         
         if ($result) {
@@ -172,6 +173,11 @@ class Mojo::Server::Daemon extends Mojo::Server {
         });
         
         while (1) {
+          
+          unless ($acceptor->handle->opened) {
+            return;
+          }
+          
           $self->{accept_semaphore_ch}->write(1);
           
           my $accepted_handle = (IO::Socket)undef;
