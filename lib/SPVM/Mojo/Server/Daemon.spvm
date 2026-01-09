@@ -114,15 +114,9 @@ class Mojo::Server::Daemon extends Mojo::Server {
       
       $self->start;
       
-      warn;
-      
       $self->{accept_wg}->wait;
       
-      warn;
-      
       $self->{signal_handler_stop_ch}->close;
-      
-      warn;
       
       $self->{signal_handler_wg}->wait;
     });
@@ -148,9 +142,6 @@ class Mojo::Server::Daemon extends Mojo::Server {
       $select->add_read($self->{signal_handler_stop_ch});
       
       while (1) {
-        
-        warn;
-        
         my $result = $select->select;
         
         if ($result) {
@@ -188,9 +179,6 @@ class Mojo::Server::Daemon extends Mojo::Server {
         while (1) {
           
           unless ($acceptor->handle->opened) {
-            
-            warn;
-            
             return;
           }
           
@@ -204,9 +192,6 @@ class Mojo::Server::Daemon extends Mojo::Server {
             $accepted_handle->setsockopt(SOCKET->IPPROTO_TCP, SOCKET->TCP_NODELAY, 1);
           }
           if ($@) {
-            
-            warn;
-            
             $self->{accept_semaphore_ch}->read;
             next;
           }
@@ -224,10 +209,13 @@ class Mojo::Server::Daemon extends Mojo::Server {
               
               while (1) {
                 
+                my $idle = 1;
+                
+                my $idle_accepted_connections_h = $self->{idle_accepted_connections_h};
+                
+                $idle_accepted_connections_h->{Fn->to_address($accepted_connection)} = $accepted_connection;
+                
                 unless ($acceptor->handle->opened) {
-                  
-                  warn;
-                  
                   return;
                 }
                 
@@ -245,7 +233,17 @@ class Mojo::Server::Daemon extends Mojo::Server {
                     last;
                   }
                   else {
-                    my $read_length = $accepted_connection->read($chunk);
+                    my $read_length = (int)-1;
+                    eval { $read_length = $accepted_connection->read($chunk); }
+                    if ($@) {
+                      # Connection is closed
+                      return;
+                    }
+                    
+                    if ($idle) {
+                      $idle_accepted_connections_h->delete(Fn->to_address($accepted_connection));
+                      $idle = 0;
+                    }
                     
                     if ($read_length == 0) {
                       # Client connection is closed with invalid HTTP request
