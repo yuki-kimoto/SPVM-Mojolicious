@@ -45,6 +45,8 @@ class Mojo::Server::Daemon extends Mojo::Server {
   
   has accept_semaphore_ch : Go::Channel;
   
+  has idle_accepted_connections_h : Hash of Mojo::Connection::Stream;
+  
   # Class Methods
   static method new : Mojo::Server::Daemon () {
     
@@ -82,6 +84,8 @@ class Mojo::Server::Daemon extends Mojo::Server {
     
     $self->{accept_semaphore_ch} = Go->make($self->max_clients);
     
+    $self->{idle_accepted_connections_h} = Hash->new;
+    
   }
   
   method ports : int[] () {
@@ -110,9 +114,15 @@ class Mojo::Server::Daemon extends Mojo::Server {
       
       $self->start;
       
+      warn;
+      
       $self->{accept_wg}->wait;
       
+      warn;
+      
       $self->{signal_handler_stop_ch}->close;
+      
+      warn;
       
       $self->{signal_handler_wg}->wait;
     });
@@ -138,6 +148,9 @@ class Mojo::Server::Daemon extends Mojo::Server {
       $select->add_read($self->{signal_handler_stop_ch});
       
       while (1) {
+        
+        warn;
+        
         my $result = $select->select;
         
         if ($result) {
@@ -175,6 +188,9 @@ class Mojo::Server::Daemon extends Mojo::Server {
         while (1) {
           
           unless ($acceptor->handle->opened) {
+            
+            warn;
+            
             return;
           }
           
@@ -188,6 +204,9 @@ class Mojo::Server::Daemon extends Mojo::Server {
             $accepted_handle->setsockopt(SOCKET->IPPROTO_TCP, SOCKET->TCP_NODELAY, 1);
           }
           if ($@) {
+            
+            warn;
+            
             $self->{accept_semaphore_ch}->read;
             next;
           }
@@ -206,6 +225,8 @@ class Mojo::Server::Daemon extends Mojo::Server {
               while (1) {
                 
                 unless ($acceptor->handle->opened) {
+                  
+                  warn;
                   
                   return;
                 }
