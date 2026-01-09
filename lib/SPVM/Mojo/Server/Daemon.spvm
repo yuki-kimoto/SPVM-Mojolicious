@@ -99,7 +99,13 @@ class Mojo::Server::Daemon extends Mojo::Server {
   
   method run : void () {
     
+    Go::OS::Signal->start_signal_handler;
     Go->go([$self : Mojo::Server::Daemon] method : void () {
+      
+      Fn->defer(method : void () {
+        Go::OS::Signal->stop_signal_handler;
+      });
+      
       $self->start;
       
       $self->{accept_wg}->wait;
