@@ -415,7 +415,9 @@ EOS
     }
     
     my $options_h = Hash->new;
-    $options_h->set(Timeout => $self->connect_timeout);
+    
+    # TODO
+    # $options_h->set(Timeout => $self->connect_timeout);
     
     if ($proto eq "http+unix") { $options_h->set(path => $host); }
     else {

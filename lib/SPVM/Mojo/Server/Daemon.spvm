@@ -314,7 +314,8 @@ class Mojo::Server::Daemon extends Mojo::Server {
     
     my $handle = $accepted_connection->handle;
     
-    $accepted_connection->set_timeout($self->inactivity_timeout);
+    # TODO
+    # $accepted_connection->set_timeout($self->inactivity_timeout);
     
     unless ($handle isa IO::Socket::UNIX) {
       $tx->set_local_address($handle->(IO::Socket::IP)->sockhost);
@@ -357,7 +358,8 @@ class Mojo::Server::Daemon extends Mojo::Server {
     
     # Keep-alive connection
     unless ($accepted_connection->tx) {
-      $accepted_connection->set_timeout($self->keep_alive_timeout);
+      # TODO
+      # $accepted_connection->set_timeout($self->keep_alive_timeout);
     }
   }
   
@@ -442,7 +444,8 @@ class Mojo::Server::Daemon extends Mojo::Server {
     
     $acceptor->listen($options);
     
-    $acceptor->set_timeout($self->inactivity_timeout);
+    # TODO
+    # $acceptor->set_timeout($self->inactivity_timeout);
     
     my $acceptors = (List of Mojo::Connection::Server)List->new_ref($self->{acceptors});
     
