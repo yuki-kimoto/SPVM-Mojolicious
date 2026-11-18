@@ -237,7 +237,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
                   }
                   else {
                     my $read_length = (int)-1;
-                    eval { $read_length = $accepted_connection->read($chunk); }
+                    eval { $read_length = $accepted_connection->read(Go->bg, $chunk); }
                     if ($@) {
                       # Connection is closed
                       return;
@@ -275,7 +275,7 @@ class Mojo::Server::Daemon extends Mojo::Server {
                     last;
                   }
                   
-                  $accepted_connection->write($chunk);
+                  $accepted_connection->write(Go->bg, $chunk);
                 }
                 
                 $self->_finish($accepted_connection);
