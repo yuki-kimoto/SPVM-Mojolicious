@@ -1,3 +1,7 @@
+0.045 2026-11-18
+  [Bug Fix]
+    * Fix 0.044 bugs.
+    
 0.044 2026-11-18
   [Incompatibe Changes]
     * Support Go::Context in needed methods.
