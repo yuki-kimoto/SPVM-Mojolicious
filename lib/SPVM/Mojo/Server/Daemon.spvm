@@ -47,6 +47,8 @@ class Mojo::Server::Daemon extends Mojo::Server {
   
   has idle_accepted_connections_h : Hash of Mojo::Connection::Stream;
   
+  has signal : Go::OS::Signal;
+  
   # Class Methods
   static method new : Mojo::Server::Daemon () {
     
@@ -103,11 +105,12 @@ class Mojo::Server::Daemon extends Mojo::Server {
   
   method run : void () {
     
-    Go::OS::Signal->start_signal_handler;
     Go->go([$self : Mojo::Server::Daemon] method : void () {
       
-      Fn->defer(method : void () {
-        Go::OS::Signal->stop_signal_handler;
+      $self->{signal} = Go::OS::Signal->new;
+      
+      Fn->defer([$self : , ] method : void () {
+        $self->{signal} = undef;
       });
       
       $self->add_signal_handler;
@@ -134,8 +137,8 @@ class Mojo::Server::Daemon extends Mojo::Server {
       });
       
       my $signal_ch = Go->make(1);
-      Go::OS::Signal->notify($signal_ch, SIGNAL->SIGTERM);
-      Go::OS::Signal->notify($signal_ch, SIGNAL->SIGINT);
+      $self->{signal}->notify($signal_ch, SIGNAL->SIGTERM);
+      $self->{signal}->notify($signal_ch, SIGNAL->SIGINT);
       
       my $select = Go->new_select;
       $select->add_read($signal_ch);
