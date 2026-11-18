@@ -16,7 +16,7 @@ class Mojo::Connection::Stream extends Mojo::Connection {
     
     my $handle = $self->{handle};
     
-    my $write_length = $handle->syswrite_v2($context, $chunk);
+    my $write_length = $handle->syswrite($context, $chunk);
     
     return $write_length;
   }
@@ -25,7 +25,7 @@ class Mojo::Connection::Stream extends Mojo::Connection {
     
     my $handle = $self->{handle};
     
-    my $read_length = $handle->sysread_v2($context, $buffer);
+    my $read_length = $handle->sysread($context, $buffer);
     
     return $read_length;
   }

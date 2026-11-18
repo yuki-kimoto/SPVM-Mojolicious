@@ -498,14 +498,14 @@ EOS
     
     # Check context before I/O
     if ($context->err > 0) { die "Write aborted: " . $context->cause; }
-    $handle->syswrite_v2($context, $start_line);
+    $handle->syswrite($context, $start_line);
     
     my $header_lines = $req->build_headers;
     
     if ($context->err > 0) { die "Write aborted: " . $context->cause; }
-    $handle->syswrite_v2($context, $header_lines);
+    $handle->syswrite($context, $header_lines);
     
-    $handle->syswrite_v2($context, "\r\n");
+    $handle->syswrite($context, "\r\n");
   }
   
   private method read_response : void ($context : Go::Context, $tx : Mojo::Transaction::HTTP) {
@@ -521,7 +521,7 @@ EOS
 
       my $chunk = (mutable string)new_string_len &READ_BUFFER_SIZE;
       
-      my $read_length = $handle->sysread_v2($context, $chunk);
+      my $read_length = $handle->sysread($context, $chunk);
       
       if ($read_length == 0) {
         $res->finish;

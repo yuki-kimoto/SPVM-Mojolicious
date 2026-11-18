@@ -140,7 +140,7 @@ EOS
     my $accepted = 0;
     while ($accepted++) {
       
-      my $handle = $self->{handle}->accept_v2($context);
+      my $handle = $self->{handle}->accept($context);
       unless ($handle) {
         return;
       }
